@@ -45,19 +45,19 @@ export function ProductCard({
   return (
     <>
       <article
-        className="group relative bg-white border border-border-subtle rounded-xs overflow-hidden flex flex-col justify-between product-card-hover"
+        className="group relative bg-white border border-border-subtle rounded-xs overflow-hidden flex flex-col justify-between product-card-hover hover:border-champagne/80 hover:shadow-xl transition-all duration-300"
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
       >
         {/* Top Badges */}
         <div className="absolute top-2.5 left-2.5 z-10 flex flex-col gap-1 items-start">
           {product.bestseller && (
-            <span className="text-[10px] uppercase font-bold tracking-wider bg-forest text-ivory px-2.5 py-0.5 rounded-xs shadow-md">
+            <span className="text-[10px] uppercase font-bold tracking-wider bg-forest text-ivory px-2.5 py-0.5 rounded-xs shadow-md border border-forest-light">
               Bán chạy
             </span>
           )}
           {discount && (
-            <span className="text-[10px] font-bold bg-agarwood text-white px-2 py-0.5 rounded-xs shadow-md">
+            <span className="text-[10px] font-bold bg-agarwood text-white px-2 py-0.5 rounded-xs shadow-md animate-shimmer">
               -{discount}%
             </span>
           )}
@@ -112,11 +112,11 @@ export function ProductCard({
         <div className="p-4 sm:p-5 flex-1 flex flex-col justify-between bg-white">
           <div>
             <div className="flex items-center justify-between text-[11px] text-muted mb-1.5">
-              <span className="font-medium">{product.categoryName}</span>
+              <span className="font-medium tracking-wide uppercase text-[10px] text-agarwood-dark">{product.categoryName}</span>
               <StockBadge status={product.inventoryStatus} />
             </div>
 
-            <h3 className="font-serif text-base sm:text-lg font-semibold text-charcoal group-hover:text-forest transition-colors line-clamp-2 min-h-[48px] leading-snug">
+            <h3 className="font-serif text-[17px] sm:text-lg font-bold text-charcoal group-hover:text-forest transition-colors line-clamp-2 min-h-[46px] leading-snug tracking-tight">
               <Link href={`/san-pham/${product.slug}`}>{product.name}</Link>
             </h3>
 
@@ -129,9 +129,9 @@ export function ProductCard({
             </div>
           </div>
 
-          <div className="pt-2.5 border-t border-border-subtle/50 flex items-baseline justify-between">
-            <div className="flex items-baseline gap-2">
-              <span className="font-serif text-lg font-bold text-forest">
+          <div className="pt-2.5 border-t border-border-subtle/50 flex flex-wrap items-center justify-between gap-1.5">
+            <div className="flex items-baseline gap-1.5 flex-wrap">
+              <span className="font-sans text-base sm:text-lg font-bold text-forest tracking-tight">
                 {formatVND(price)}
               </span>
               {compareAtPrice && compareAtPrice > price && (
@@ -142,7 +142,7 @@ export function ProductCard({
             </div>
 
             {product.variants.length > 1 && (
-              <span className="text-[11px] text-muted font-medium">
+              <span className="text-[10px] text-muted font-medium bg-ivory px-2 py-0.5 rounded-xs border border-border-subtle shrink-0">
                 {product.variants.length} quy cách
               </span>
             )}

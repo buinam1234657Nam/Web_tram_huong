@@ -16,7 +16,7 @@ import { catalogRepository } from "@/data/repositories/catalog-repository";
 import { brandConfig } from "@/lib/config/brand";
 import { Button } from "@/components/ui/Button";
 import { StarRating } from "@/components/ui/StarRating";
-import { ProductGrid } from "@/components/product/ProductGrid";
+import { ProductCard } from "@/components/product/ProductCard";
 import { CategoryCarousel } from "@/components/home/CategoryCarousel";
 import { GuidedShopping } from "@/components/home/GuidedShopping";
 import { AtmosphericSmoke } from "@/components/home/AtmosphericSmoke";
@@ -130,6 +130,18 @@ export default async function HomePage() {
               </div>
             </FadeIn>
           </div>
+
+          {/* Floating Artisan Authenticity Seal on Desktop */}
+          <div className="hidden lg:flex absolute right-8 top-1/2 -translate-y-1/2 z-20 items-center gap-3.5 bg-forest-dark/85 border border-champagne/40 backdrop-blur-md px-5 py-4 rounded-xs shadow-2xl animate-float">
+            <div className="w-12 h-12 rounded-full bg-champagne/15 border border-champagne/50 flex items-center justify-center text-champagne shrink-0">
+              <Award className="w-6 h-6 animate-pulse" />
+            </div>
+            <div>
+              <p className="text-[10px] tracking-widest uppercase font-semibold text-champagne">Khánh Hòa & Tiên Phước</p>
+              <h4 className="font-serif text-sm font-bold text-ivory">Trầm Mộc Tự Nhiên</h4>
+              <p className="text-[11px] text-ivory/70">Cam kết đền 200% nếu phát hiện nấu dầu</p>
+            </div>
+          </div>
         </div>
 
         {/* Infinite Luxury Marquee Ticker */}
@@ -215,14 +227,15 @@ export default async function HomePage() {
           </div>
         </FadeIn>
 
-        <FadeInStagger staggerDelay={0.1}>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {bestsellers.map((product) => (
-              <FadeInStaggerItem key={product.id}>
-                <ProductGrid products={[product]} columns={4} />
-              </FadeInStaggerItem>
-            ))}
-          </div>
+        <FadeInStagger
+          staggerDelay={0.08}
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
+        >
+          {bestsellers.map((product, idx) => (
+            <FadeInStaggerItem key={product.id}>
+              <ProductCard product={product} priority={idx < 2} />
+            </FadeInStaggerItem>
+          ))}
         </FadeInStagger>
       </section>
 
@@ -311,37 +324,39 @@ export default async function HomePage() {
           </div>
         </FadeIn>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <FadeInStagger
+          staggerDelay={0.1}
+          className="grid grid-cols-1 md:grid-cols-3 gap-6"
+        >
           {reviews.slice(0, 3).map((review) => (
-            <div
-              key={review.id}
-              className="bg-white border border-border-subtle rounded-sm p-6 flex flex-col justify-between shadow-xs hover:shadow-lg hover:border-champagne transition-all duration-300 hover:translate-y-[-4px]"
-            >
-              <div>
-                <Quote className="w-8 h-8 text-champagne/45 mb-3" />
-                <StarRating rating={review.rating} showScore={false} size="sm" />
-                <h3 className="font-serif text-base font-bold text-charcoal mt-3 mb-2">
-                  &quot;{review.title}&quot;
-                </h3>
-                <p className="text-xs text-charcoal/80 leading-relaxed italic font-light">
-                  {review.content}
-                </p>
-              </div>
-
-              <div className="pt-4 mt-4 border-t border-border-subtle/60 flex items-center justify-between text-xs">
+            <FadeInStaggerItem key={review.id}>
+              <div className="bg-white border border-border-subtle rounded-sm p-6 flex flex-col justify-between shadow-xs hover:shadow-lg hover:border-champagne transition-all duration-300 hover:translate-y-[-4px] h-full">
                 <div>
-                  <p className="font-bold text-charcoal">{review.authorName}</p>
-                  <p className="text-[11px] text-muted">{review.authorLocation}</p>
+                  <Quote className="w-8 h-8 text-champagne/45 mb-3" />
+                  <StarRating rating={review.rating} showScore={false} size="sm" />
+                  <h3 className="font-serif text-base font-bold text-charcoal mt-3 mb-2">
+                    &quot;{review.title}&quot;
+                  </h3>
+                  <p className="text-xs text-charcoal/80 leading-relaxed italic font-light">
+                    {review.content}
+                  </p>
                 </div>
-                {review.verifiedPurchase && (
-                  <span className="text-[10px] text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded font-medium border border-emerald-200">
-                    Đã mua hàng
-                  </span>
-                )}
+
+                <div className="pt-4 mt-4 border-t border-border-subtle/60 flex items-center justify-between text-xs">
+                  <div>
+                    <p className="font-bold text-charcoal">{review.authorName}</p>
+                    <p className="text-[11px] text-muted">{review.authorLocation}</p>
+                  </div>
+                  {review.verifiedPurchase && (
+                    <span className="text-[10px] text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded font-medium border border-emerald-200">
+                      Đã mua hàng
+                    </span>
+                  )}
+                </div>
               </div>
-            </div>
+            </FadeInStaggerItem>
           ))}
-        </div>
+        </FadeInStagger>
       </section>
 
       {/* ============================================================
@@ -368,61 +383,65 @@ export default async function HomePage() {
           </div>
         </FadeIn>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <FadeInStagger
+          staggerDelay={0.1}
+          className="grid grid-cols-1 md:grid-cols-3 gap-6"
+        >
           {articles.map((art) => (
-            <article
-              key={art.id}
-              className="bg-white border border-border-subtle rounded-sm overflow-hidden flex flex-col justify-between group hover:shadow-xl hover:border-champagne/60 transition-all duration-300 hover:translate-y-[-4px]"
-            >
-              <div className="relative aspect-16/10 w-full bg-ivory overflow-hidden">
-                <Image
-                  src={art.coverImage}
-                  alt={art.title}
-                  fill
-                  sizes="(max-width: 768px) 100vw, 33vw"
-                  className="object-cover group-hover:scale-108 transition-transform duration-700 ease-out"
-                />
-                <span className="absolute top-2.5 left-2.5 text-[11px] font-semibold bg-forest text-ivory px-2.5 py-0.5 rounded-xs shadow-xs">
-                  {art.category}
-                </span>
-              </div>
+            <FadeInStaggerItem key={art.id}>
+              <article
+                className="bg-white border border-border-subtle rounded-sm overflow-hidden flex flex-col justify-between group hover:shadow-xl hover:border-champagne/60 transition-all duration-300 hover:translate-y-[-4px] h-full"
+              >
+                <div className="relative aspect-16/10 w-full bg-ivory overflow-hidden">
+                  <Image
+                    src={art.coverImage}
+                    alt={art.title}
+                    fill
+                    sizes="(max-width: 768px) 100vw, 33vw"
+                    className="object-cover group-hover:scale-108 transition-transform duration-700 ease-out"
+                  />
+                  <span className="absolute top-2.5 left-2.5 text-[11px] font-semibold bg-forest text-ivory px-2.5 py-0.5 rounded-xs shadow-xs">
+                    {art.category}
+                  </span>
+                </div>
 
-              <div className="p-5 sm:p-6 flex-1 flex flex-col justify-between">
-                <div>
-                  <div className="flex items-center gap-3 text-[11px] text-muted mb-2">
-                    <span className="flex items-center gap-1">
-                      <Clock className="w-3 h-3" />
-                      {art.readingTimeMinutes} phút đọc
-                    </span>
-                    <span>•</span>
-                    <span className="flex items-center gap-1">
-                      <BookOpen className="w-3 h-3" />
-                      {art.author.name}
-                    </span>
+                <div className="p-5 sm:p-6 flex-1 flex flex-col justify-between">
+                  <div>
+                    <div className="flex items-center gap-3 text-[11px] text-muted mb-2">
+                      <span className="flex items-center gap-1">
+                        <Clock className="w-3 h-3" />
+                        {art.readingTimeMinutes} phút đọc
+                      </span>
+                      <span>•</span>
+                      <span className="flex items-center gap-1">
+                        <BookOpen className="w-3 h-3" />
+                        {art.author.name}
+                      </span>
+                    </div>
+
+                    <h3 className="font-serif text-lg font-bold text-charcoal group-hover:text-forest transition-colors line-clamp-2 mb-2 leading-snug">
+                      <Link href={`/bai-viet/${art.slug}`}>{art.title}</Link>
+                    </h3>
+
+                    <p className="text-xs text-muted leading-relaxed line-clamp-3 font-light">
+                      {art.excerpt}
+                    </p>
                   </div>
 
-                  <h3 className="font-serif text-lg font-bold text-charcoal group-hover:text-forest transition-colors line-clamp-2 mb-2 leading-snug">
-                    <Link href={`/bai-viet/${art.slug}`}>{art.title}</Link>
-                  </h3>
-
-                  <p className="text-xs text-muted leading-relaxed line-clamp-3 font-light">
-                    {art.excerpt}
-                  </p>
+                  <div className="pt-4 mt-4 border-t border-border-subtle/50">
+                    <Link
+                      href={`/bai-viet/${art.slug}`}
+                      className="text-xs font-semibold text-agarwood-dark group-hover:text-forest transition-colors inline-flex items-center gap-1"
+                    >
+                      Đọc tiếp
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </Link>
+                  </div>
                 </div>
-
-                <div className="pt-4 mt-4 border-t border-border-subtle/50">
-                  <Link
-                    href={`/bai-viet/${art.slug}`}
-                    className="text-xs font-semibold text-agarwood-dark group-hover:text-forest transition-colors inline-flex items-center gap-1"
-                  >
-                    Đọc tiếp
-                    <ArrowRight className="w-3.5 h-3.5" />
-                  </Link>
-                </div>
-              </div>
-            </article>
+              </article>
+            </FadeInStaggerItem>
           ))}
-        </div>
+        </FadeInStagger>
       </section>
     </div>
   );

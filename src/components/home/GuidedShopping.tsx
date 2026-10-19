@@ -3,6 +3,7 @@
 import React, { useState, useMemo } from "react";
 import Link from "next/link";
 import { Compass, Sparkles, ArrowRight } from "lucide-react";
+import { motion, AnimatePresence } from "motion/react";
 import { Product } from "@/types/product";
 import { ProductCard } from "@/components/product/ProductCard";
 
@@ -56,11 +57,11 @@ export function GuidedShopping({ products }: GuidedShoppingProps) {
   }, [products, selectedPurpose, selectedBudget]);
 
   return (
-    <div className="bg-ivory-dark/40 border border-border-subtle rounded-sm p-6 sm:p-10">
+    <div className="bg-ivory-dark/40 border border-border-subtle rounded-sm p-6 sm:p-10 shadow-sm relative overflow-hidden">
       <div className="text-center max-w-2xl mx-auto mb-8">
-        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-forest/10 text-forest text-xs font-semibold mb-2">
-          <Compass className="w-3.5 h-3.5" />
-          <span>Trợ Lý Chọn Trầm</span>
+        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-forest/10 text-forest text-xs font-semibold mb-2 shadow-xs">
+          <Compass className="w-3.5 h-3.5 animate-spin duration-1000" />
+          <span>Trợ Lý Chọn Trầm Thông Minh</span>
         </div>
         <h2 className="font-serif text-2xl sm:text-3xl font-bold text-charcoal mb-2">
           Tìm Kiếm Mùi Hương Phù Hợp Với Bạn
@@ -78,20 +79,23 @@ export function GuidedShopping({ products }: GuidedShoppingProps) {
             1. Mục đích của Quý khách:
           </label>
           <div className="flex flex-wrap gap-2">
-            {purposes.map((p) => (
-              <button
-                key={p.id}
-                type="button"
-                onClick={() => setSelectedPurpose(p.id)}
-                className={`text-xs px-3.5 py-2 rounded-xs border transition-all cursor-pointer ${
-                  selectedPurpose === p.id
-                    ? "bg-forest text-ivory border-forest font-semibold shadow-xs"
-                    : "bg-white text-charcoal border-border-subtle hover:border-stone-400"
-                }`}
-              >
-                {p.label}
-              </button>
-            ))}
+            {purposes.map((p) => {
+              const isSelected = selectedPurpose === p.id;
+              return (
+                <button
+                  key={p.id}
+                  type="button"
+                  onClick={() => setSelectedPurpose(p.id)}
+                  className={`relative text-xs px-3.5 py-2 rounded-xs border transition-all cursor-pointer ${
+                    isSelected
+                      ? "bg-forest text-ivory border-forest font-semibold shadow-md"
+                      : "bg-white text-charcoal border-border-subtle hover:border-champagne hover:text-forest"
+                  }`}
+                >
+                  {p.label}
+                </button>
+              );
+            })}
           </div>
         </div>
 
@@ -101,20 +105,23 @@ export function GuidedShopping({ products }: GuidedShoppingProps) {
             2. Khoảng ngân sách:
           </label>
           <div className="flex flex-wrap gap-2">
-            {budgets.map((b) => (
-              <button
-                key={b.id}
-                type="button"
-                onClick={() => setSelectedBudget(b.id)}
-                className={`text-xs px-3.5 py-2 rounded-xs border transition-all cursor-pointer ${
-                  selectedBudget === b.id
-                    ? "bg-agarwood text-white border-agarwood font-semibold shadow-xs"
-                    : "bg-white text-charcoal border-border-subtle hover:border-stone-400"
-                }`}
-              >
-                {b.label}
-              </button>
-            ))}
+            {budgets.map((b) => {
+              const isSelected = selectedBudget === b.id;
+              return (
+                <button
+                  key={b.id}
+                  type="button"
+                  onClick={() => setSelectedBudget(b.id)}
+                  className={`relative text-xs px-3.5 py-2 rounded-xs border transition-all cursor-pointer ${
+                    isSelected
+                      ? "bg-agarwood text-white border-agarwood font-semibold shadow-md"
+                      : "bg-white text-charcoal border-border-subtle hover:border-champagne hover:text-agarwood"
+                  }`}
+                >
+                  {b.label}
+                </button>
+              );
+            })}
           </div>
         </div>
       </div>
@@ -127,18 +134,29 @@ export function GuidedShopping({ products }: GuidedShoppingProps) {
           </span>
           <Link
             href="/san-pham"
-            className="text-xs font-semibold text-forest hover:underline flex items-center gap-1"
+            className="text-xs font-semibold text-forest hover:text-agarwood flex items-center gap-1 group transition-colors"
           >
-            Xem tất cả sản phẩm
-            <ArrowRight className="w-3.5 h-3.5" />
+            <span>Xem tất cả sản phẩm</span>
+            <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
           </Link>
         </div>
 
         {filteredProducts.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredProducts.slice(0, 3).map((product) => (
-              <ProductCard key={product.id} product={product} />
-            ))}
+            <AnimatePresence mode="popLayout">
+              {filteredProducts.slice(0, 3).map((product) => (
+                <motion.div
+                  key={product.id}
+                  layout
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+                >
+                  <ProductCard product={product} />
+                </motion.div>
+              ))}
+            </AnimatePresence>
           </div>
         ) : (
           <div className="text-center py-12 bg-white rounded border border-border-subtle">

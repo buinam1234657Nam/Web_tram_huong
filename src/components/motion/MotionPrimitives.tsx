@@ -18,16 +18,16 @@ export function FadeIn({
 }: MotionProps) {
   const shouldReduceMotion = useReducedMotion();
 
-  if (shouldReduceMotion) {
-    return <div className={className}>{children}</div>;
-  }
-
   return (
     <motion.div
-      initial={{ opacity: 0, y: 24 }}
+      initial={{ opacity: 0, y: shouldReduceMotion ? 0 : 28 }}
       whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-50px" }}
-      transition={{ duration, delay, ease: [0.22, 1, 0.36, 1] }}
+      viewport={{ once: true, amount: 0.15 }}
+      transition={{
+        duration: shouldReduceMotion ? 0.3 : duration,
+        delay,
+        ease: [0.16, 1, 0.3, 1],
+      }}
       className={className}
     >
       {children}
@@ -42,16 +42,16 @@ export function SlideInLeft({
 }: MotionProps) {
   const shouldReduceMotion = useReducedMotion();
 
-  if (shouldReduceMotion) {
-    return <div className={className}>{children}</div>;
-  }
-
   return (
     <motion.div
-      initial={{ opacity: 0, x: -35 }}
+      initial={{ opacity: 0, x: shouldReduceMotion ? 0 : -35 }}
       whileInView={{ opacity: 1, x: 0 }}
-      viewport={{ once: true, margin: "-40px" }}
-      transition={{ duration: 0.8, delay, ease: [0.22, 1, 0.36, 1] }}
+      viewport={{ once: true, amount: 0.15 }}
+      transition={{
+        duration: shouldReduceMotion ? 0.3 : 0.75,
+        delay,
+        ease: [0.16, 1, 0.3, 1],
+      }}
       className={className}
     >
       {children}
@@ -66,16 +66,16 @@ export function SlideInRight({
 }: MotionProps) {
   const shouldReduceMotion = useReducedMotion();
 
-  if (shouldReduceMotion) {
-    return <div className={className}>{children}</div>;
-  }
-
   return (
     <motion.div
-      initial={{ opacity: 0, x: 35 }}
+      initial={{ opacity: 0, x: shouldReduceMotion ? 0 : 35 }}
       whileInView={{ opacity: 1, x: 0 }}
-      viewport={{ once: true, margin: "-40px" }}
-      transition={{ duration: 0.8, delay, ease: [0.22, 1, 0.36, 1] }}
+      viewport={{ once: true, amount: 0.15 }}
+      transition={{
+        duration: shouldReduceMotion ? 0.3 : 0.75,
+        delay,
+        ease: [0.16, 1, 0.3, 1],
+      }}
       className={className}
     >
       {children}
@@ -86,23 +86,17 @@ export function SlideInRight({
 export function FadeInStagger({
   children,
   className = "",
-  staggerDelay = 0.12,
+  staggerDelay = 0.1,
 }: {
   children: React.ReactNode;
   className?: string;
   staggerDelay?: number;
 }) {
-  const shouldReduceMotion = useReducedMotion();
-
-  if (shouldReduceMotion) {
-    return <div className={className}>{children}</div>;
-  }
-
   return (
     <motion.div
       initial="hidden"
       whileInView="visible"
-      viewport={{ once: true, margin: "-40px" }}
+      viewport={{ once: true, amount: 0.1 }}
       variants={{
         hidden: {},
         visible: {
@@ -127,18 +121,15 @@ export function FadeInStaggerItem({
 }) {
   const shouldReduceMotion = useReducedMotion();
 
-  if (shouldReduceMotion) {
-    return <div className={className}>{children}</div>;
-  }
-
   return (
     <motion.div
       variants={{
-        hidden: { opacity: 0, y: 25 },
+        hidden: { opacity: 0, y: shouldReduceMotion ? 0 : 25, scale: shouldReduceMotion ? 1 : 0.98 },
         visible: {
           opacity: 1,
           y: 0,
-          transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] },
+          scale: 1,
+          transition: { duration: 0.6, ease: [0.16, 1, 0.3, 1] },
         },
       }}
       className={className}
@@ -157,17 +148,39 @@ export function ScaleOnHover({
   className?: string;
   scale?: number;
 }) {
-  const shouldReduceMotion = useReducedMotion();
-
-  if (shouldReduceMotion) {
-    return <div className={className}>{children}</div>;
-  }
-
   return (
     <motion.div
       whileHover={{ scale, y: -4 }}
       whileTap={{ scale: 0.98 }}
-      transition={{ duration: 0.3, ease: "easeOut" }}
+      transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+      className={className}
+    >
+      {children}
+    </motion.div>
+  );
+}
+
+export function FloatElement({
+  children,
+  className = "",
+  yOffset = 8,
+  duration = 4,
+}: {
+  children: React.ReactNode;
+  className?: string;
+  yOffset?: number;
+  duration?: number;
+}) {
+  return (
+    <motion.div
+      animate={{
+        y: [-yOffset, yOffset, -yOffset],
+      }}
+      transition={{
+        duration,
+        repeat: Infinity,
+        ease: "easeInOut",
+      }}
       className={className}
     >
       {children}
