@@ -2,8 +2,10 @@
 
 import React, { useEffect } from "react";
 import Link from "next/link";
-import { AlertCircle, RotateCcw, Home } from "lucide-react";
+import { AlertCircle, RotateCcw, Home, PhoneCall } from "lucide-react";
+import { motion } from "motion/react";
 import { Button } from "@/components/ui/Button";
+import { brandConfig } from "@/lib/config/brand";
 
 export default function GlobalError({
   error,
@@ -18,18 +20,39 @@ export default function GlobalError({
   }, [error]);
 
   return (
-    <div className="min-h-[60vh] flex items-center justify-center px-4 py-16">
-      <div className="max-w-md w-full bg-white border border-border-subtle rounded-sm p-8 text-center space-y-5 shadow-xs">
-        <div className="w-16 h-16 rounded-full bg-rose-50 text-rose-600 flex items-center justify-center mx-auto border border-rose-200">
+    <div className="min-h-[70vh] flex items-center justify-center px-4 py-16 bg-ivory relative overflow-hidden">
+      {/* Subtle warm glow background */}
+      <div
+        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[460px] h-[460px] rounded-full opacity-30 pointer-events-none -z-10"
+        style={{
+          background:
+            "radial-gradient(circle, rgba(150, 107, 69, 0.25) 0%, transparent 70%)",
+        }}
+      />
+
+      <motion.div
+        initial={{ opacity: 0, y: 20, scale: 0.98 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+        className="max-w-md w-full bg-white/95 backdrop-blur-md border border-border-subtle rounded-sm p-8 sm:p-10 text-center space-y-6 shadow-xl"
+      >
+        <motion.div
+          animate={{ scale: [1, 1.08, 1] }}
+          transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
+          className="w-16 h-16 rounded-full bg-rose-50 text-rose-600 flex items-center justify-center mx-auto border border-rose-200 shadow-xs"
+        >
           <AlertCircle className="w-8 h-8" />
-        </div>
+        </motion.div>
 
         <div>
-          <h1 className="font-serif text-xl sm:text-2xl font-bold text-charcoal">
+          <span className="text-[10px] font-bold uppercase tracking-widest text-muted block mb-1">
+            Thông Báo Hệ Thống
+          </span>
+          <h1 className="font-serif text-2xl font-bold text-charcoal">
             Có Lỗi Phát Sinh
           </h1>
           <p className="text-xs text-muted mt-2 leading-relaxed">
-            Hệ thống gặp sự cố ngoài dự kiến trong quá trình xử lý yêu cầu. Quý khách vui lòng thử tải lại trang hoặc liên hệ bộ phận hỗ trợ.
+            Hệ thống gặp sự cố ngoài dự kiến trong quá trình xử lý yêu cầu. Quý khách vui lòng thử tải lại trang hoặc liên hệ trực tiếp nghệ nhân hỗ trợ.
           </p>
         </div>
 
@@ -43,14 +66,28 @@ export default function GlobalError({
           >
             Thử Lại
           </Button>
-          <Button variant="outline" size="md" className="flex-1">
-            <Link href="/" className="flex items-center justify-center gap-1.5 w-full">
-              <Home className="w-4 h-4" />
-              <span>Trang Chủ</span>
-            </Link>
+          <Button
+            href="/"
+            variant="outline"
+            size="md"
+            className="flex-1"
+            leftIcon={<Home className="w-4 h-4" />}
+          >
+            Trang Chủ
           </Button>
         </div>
-      </div>
+
+        <div className="pt-2 border-t border-border-subtle/70 text-xs text-stone-500 flex items-center justify-center gap-1.5">
+          <PhoneCall className="w-3.5 h-3.5 text-champagne-dark" />
+          <span>Hỗ trợ kỹ thuật 24/7:</span>
+          <a
+            href={`tel:${brandConfig.contact.hotline}`}
+            className="font-semibold text-forest hover:underline"
+          >
+            {brandConfig.contact.phoneFormatted}
+          </a>
+        </div>
+      </motion.div>
     </div>
   );
 }

@@ -1,12 +1,17 @@
 import React, { forwardRef } from "react";
+import Link from "next/link";
 import { Loader2 } from "lucide-react";
 
-export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: "primary" | "secondary" | "outline" | "ghost" | "champagne";
+export interface ButtonProps
+  extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+  variant?: "primary" | "secondary" | "outline" | "outline-light" | "ghost" | "champagne";
   size?: "sm" | "md" | "lg";
   isLoading?: boolean;
   leftIcon?: React.ReactNode;
   rightIcon?: React.ReactNode;
+  href?: string;
+  target?: string;
+  rel?: string;
 }
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
@@ -20,6 +25,9 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       disabled,
       leftIcon,
       rightIcon,
+      href,
+      target,
+      rel,
       ...props
     },
     ref
@@ -34,6 +42,8 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         "bg-agarwood hover:bg-agarwood-dark text-white focus-visible:ring-agarwood shadow-sm active:scale-[0.98]",
       outline:
         "border border-forest text-forest hover:bg-forest hover:text-ivory focus-visible:ring-forest active:scale-[0.98]",
+      "outline-light":
+        "border border-ivory/60 text-ivory hover:bg-ivory hover:text-forest-dark focus-visible:ring-ivory active:scale-[0.98]",
       ghost:
         "text-charcoal hover:bg-black/5 focus-visible:ring-forest active:scale-[0.98]",
       champagne:
@@ -46,11 +56,33 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       lg: "text-base px-7 py-3.5 rounded-sm gap-2.5",
     };
 
+    const combinedClasses = `${baseStyles} ${variantStyles[variant]} ${sizeStyles[size]} ${className}`;
+
+    if (href) {
+      return (
+        <Link
+          href={href}
+          target={target}
+          rel={rel}
+          className={combinedClasses}
+          onClick={props.onClick as unknown as React.MouseEventHandler<HTMLAnchorElement>}
+        >
+          {isLoading ? (
+            <Loader2 className="w-4 h-4 animate-spin text-current" />
+          ) : (
+            leftIcon
+          )}
+          <span>{children}</span>
+          {!isLoading && rightIcon}
+        </Link>
+      );
+    }
+
     return (
       <button
         ref={ref}
         disabled={disabled || isLoading}
-        className={`${baseStyles} ${variantStyles[variant]} ${sizeStyles[size]} ${className}`}
+        className={combinedClasses}
         {...props}
       >
         {isLoading ? (

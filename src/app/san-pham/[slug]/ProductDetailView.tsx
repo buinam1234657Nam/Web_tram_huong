@@ -1,7 +1,9 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
+import Link from "next/link";
 import {
   ShieldCheck,
   Truck,
@@ -12,7 +14,13 @@ import {
   Plus,
   Minus,
   Award,
+  Ruler,
+  X,
+  CheckCircle2,
+  ArrowRight,
+  Clock,
 } from "lucide-react";
+import { motion, AnimatePresence } from "motion/react";
 import { Product, ProductVariant } from "@/types/product";
 import { Review } from "@/types/review";
 import { formatVND, calculateDiscountPercentage } from "@/lib/format/currency";
@@ -31,6 +39,7 @@ export function ProductDetailView({
   relatedProducts: Product[];
   reviews: Review[];
 }) {
+  const router = useRouter();
   const [selectedVariant, setSelectedVariant] = useState<ProductVariant>(
     product.variants[0]
   );
@@ -38,6 +47,13 @@ export function ProductDetailView({
   const [quantity, setQuantity] = useState(1);
   const [activeTab, setActiveTab] = useState<"desc" | "specs" | "reviews">("desc");
   const [isAdded, setIsAdded] = useState(false);
+  const [isSizeGuideOpen, setIsSizeGuideOpen] = useState(false);
+  const [showStickyBar, setShowStickyBar] = useState(false);
+
+  // Zoom on Hover Coordinates
+  const [isHovered, setIsHovered] = useState(false);
+  const [mousePos, setMousePos] = useState({ x: 50, y: 50 });
+  const imageContainerRef = useRef<HTMLDivElement>(null);
 
   const addItem = useCartStore((state) => state.addItem);
 
@@ -46,32 +62,90 @@ export function ProductDetailView({
   const discount = calculateDiscountPercentage(price, compareAtPrice);
   const maxQty = selectedVariant.inventoryQuantity;
 
+  // Track scroll position to show Sticky Bottom Add-to-Cart Bar
+  useEffect(() => {
+    let ticking = false;
+    const handleScroll = () => {
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          setShowStickyBar((prev) => {
+            const next = window.scrollY > 450;
+            return prev !== next ? next : prev;
+          });
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!imageContainerRef.current) return;
+    const { left, top, width, height } = imageContainerRef.current.getBoundingClientRect();
+    const x = ((e.clientX - left) / width) * 100;
+    const y = ((e.clientY - top) / height) * 100;
+    setMousePos({ x, y });
+  };
+
   const handleAddToCart = () => {
     addItem(product, selectedVariant, quantity);
     setIsAdded(true);
     setTimeout(() => setIsAdded(false), 2000);
   };
 
+  const handleBuyNow = () => {
+    addItem(product, selectedVariant, quantity);
+    router.push("/thanh-toan");
+  };
+
   return (
     <div className="space-y-16">
       {/* Top Product Presentation */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-14">
-        {/* Left: Gallery */}
-        <div className="space-y-4">
-          <div className="relative aspect-square w-full rounded-sm overflow-hidden bg-white border border-border-subtle shadow-xs">
-            <Image
-              src={product.images[activeImageIndex] || product.images[0]}
-              alt={product.name}
-              fill
-              priority
-              sizes="(max-width: 1024px) 100vw, 50vw"
-              className="object-cover transition-all duration-500 ease-out"
-            />
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-14 items-start">
+        {/* Left: Gallery with Smooth Crossfade & Coordinate Zoom */}
+        <div className="space-y-4 lg:sticky lg:top-28">
+          <div
+            ref={imageContainerRef}
+            onMouseEnter={() => setIsHovered(true)}
+            onMouseLeave={() => setIsHovered(false)}
+            onMouseMove={handleMouseMove}
+            className="relative aspect-square w-full rounded-sm overflow-hidden bg-[#FAF8F4] border border-[#E8DFD1] shadow-xs cursor-crosshair group"
+          >
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={activeImageIndex}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.3 }}
+                className="relative w-full h-full"
+              >
+                <Image
+                  src={product.images[activeImageIndex] || product.images[0]}
+                  alt={`Tác phẩm trầm hương tự nhiên ${product.name} - góc chụp ${activeImageIndex + 1}`}
+                  fill
+                  priority
+                  sizes="(max-width: 1024px) 100vw, 50vw"
+                  style={{
+                    transformOrigin: `${mousePos.x}% ${mousePos.y}%`,
+                    transform: isHovered ? "scale(1.75)" : "scale(1)",
+                  }}
+                  className="object-cover transition-transform duration-200 ease-out will-change-transform"
+                />
+              </motion.div>
+            </AnimatePresence>
+
             {discount && (
-              <span className="absolute top-4 left-4 text-xs font-bold bg-agarwood text-white px-2.5 py-1 rounded-xs shadow-md">
+              <span className="absolute top-4 left-4 text-xs font-bold bg-agarwood text-white px-2.5 py-1 rounded-xs shadow-md z-10">
                 Tiết kiệm {discount}%
               </span>
             )}
+
+            <div className="absolute bottom-3 right-3 text-[11px] bg-black/60 text-ivory px-2 py-0.5 rounded-xs backdrop-blur-xs pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity">
+              Rê chuột để phóng to thớ trầm
+            </div>
           </div>
 
           {/* Thumbnails */}
@@ -84,7 +158,7 @@ export function ProductDetailView({
                   onClick={() => setActiveImageIndex(idx)}
                   className={`relative w-20 h-20 rounded-sm overflow-hidden border-2 transition-all cursor-pointer ${
                     activeImageIndex === idx
-                      ? "border-forest shadow-xs"
+                      ? "border-forest shadow-md ring-2 ring-forest/20"
                       : "border-border-subtle opacity-70 hover:opacity-100"
                   }`}
                   aria-label={`Ảnh ${idx + 1}`}
@@ -129,7 +203,7 @@ export function ProductDetailView({
             </div>
 
             {/* Price Row */}
-            <div className="p-4 bg-white border border-border-subtle rounded-sm flex items-baseline gap-3">
+            <div className="p-4 bg-white border border-[#E8DFD1] rounded-sm flex items-baseline gap-3 shadow-xs">
               <span className="font-serif text-3xl font-bold text-forest">
                 {formatVND(price)}
               </span>
@@ -149,39 +223,92 @@ export function ProductDetailView({
               {product.shortDescription}
             </p>
 
-            {/* Scent Profile Highlights */}
-            <div className="bg-ivory-dark/40 p-4 rounded-sm border border-border-subtle text-xs space-y-1.5">
-              <div className="flex items-center gap-2">
-                <Sparkles className="w-3.5 h-3.5 text-champagne-dark shrink-0" />
-                <span>
-                  <strong>Độ tỏa hương:</strong> {product.scentProfile.intensity}
+            {/* Scent Profile Highlights - Luxury Interactive Visual Card */}
+            <div className="bg-[#FAF8F4] p-4 rounded-sm border border-[#E8DFD1] text-xs space-y-3 shadow-2xs">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Sparkles className="w-4 h-4 text-champagne-dark shrink-0" />
+                  <span className="font-semibold text-charcoal">Hồ Sơ Khứu Giác Tự Nhiên</span>
+                </div>
+                <span className="text-[10px] font-semibold text-forest bg-forest/10 px-2 py-0.5 rounded-xs tracking-wider uppercase">
+                  100% Thuần Mộc
                 </span>
               </div>
-              <div className="flex items-center gap-2">
-                <span className="w-3.5 h-3.5 flex items-center justify-center font-bold text-forest">
-                  •
-                </span>
-                <span>
-                  <strong>Tầng hương chính:</strong> {product.scentProfile.notes.join(", ")}
-                </span>
+
+              {/* Scent Intensity Meter */}
+              <div className="space-y-1">
+                <div className="flex justify-between text-[11px]">
+                  <span className="text-muted">Độ tỏa hương:</span>
+                  <span className="font-semibold text-forest">{product.scentProfile.intensity}</span>
+                </div>
+                <div className="flex gap-1.5 pt-0.5">
+                  {[1, 2, 3, 4, 5].map((lvl) => {
+                    const isFilled =
+                      lvl <=
+                      (product.scentProfile.intensity.toLowerCase().includes("thoang thoảng")
+                        ? 2
+                        : product.scentProfile.intensity.toLowerCase().includes("đậm") ||
+                          product.scentProfile.intensity.toLowerCase().includes("mạnh")
+                        ? 4
+                        : 3);
+                    return (
+                      <div
+                        key={lvl}
+                        className={`h-1.5 flex-1 rounded-full transition-all duration-300 ${
+                          isFilled
+                            ? "bg-gradient-to-r from-champagne to-agarwood"
+                            : "bg-stone-200"
+                        }`}
+                      />
+                    );
+                  })}
+                </div>
               </div>
-              <div className="flex items-center gap-2">
-                <span className="w-3.5 h-3.5 flex items-center justify-center font-bold text-forest">
-                  •
-                </span>
-                <span>
-                  <strong>Độ lưu hương:</strong> {product.scentProfile.longevity}
+
+              {/* Aromatic Notes Chips */}
+              <div className="space-y-1.5 pt-1">
+                <span className="text-muted text-[11px] block">Tầng hương chính:</span>
+                <div className="flex flex-wrap gap-1.5">
+                  {product.scentProfile.notes.map((note, idx) => (
+                    <span
+                      key={idx}
+                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] bg-white border border-[#E3DCCF] text-charcoal shadow-2xs hover:border-champagne hover:bg-champagne/10 transition-colors"
+                    >
+                      <span className="w-1.5 h-1.5 rounded-full bg-champagne-dark" />
+                      {note}
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              {/* Longevity Indicator */}
+              <div className="flex items-center justify-between pt-1 border-t border-[#EFE7DC] text-[11px]">
+                <span className="text-muted">Độ lưu hương:</span>
+                <span className="font-medium text-forest-dark flex items-center gap-1">
+                  <Clock className="w-3.5 h-3.5 text-champagne-dark" />
+                  {product.scentProfile.longevity}
                 </span>
               </div>
             </div>
 
-            {/* Variant Selector */}
+            {/* Variant Selector & Wrist Size Guide Modal Trigger */}
             {product.variants.length > 1 && (
-              <div className="space-y-2">
-                <label className="block text-xs uppercase font-semibold text-charcoal tracking-wider">
-                  Quy cách / Kích cỡ tuyển chọn:
-                </label>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <div className="space-y-2.5 pt-2">
+                <div className="flex items-center justify-between">
+                  <label className="block text-xs uppercase font-semibold text-charcoal tracking-wider">
+                    Quy cách / Kích cỡ tuyển chọn:
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => setIsSizeGuideOpen(true)}
+                    className="inline-flex items-center gap-1 text-[11px] font-semibold text-champagne-dark hover:text-forest transition-colors cursor-pointer underline"
+                  >
+                    <Ruler className="w-3.5 h-3.5" />
+                    <span>Hướng dẫn đo chu vi cổ tay</span>
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                   {product.variants.map((v) => {
                     const isSelected = selectedVariant.id === v.id;
                     return (
@@ -194,17 +321,17 @@ export function ProductDetailView({
                         }}
                         className={`p-3 rounded-xs border text-xs text-left transition-all cursor-pointer ${
                           isSelected
-                            ? "border-forest bg-forest/5 font-semibold text-forest shadow-xs"
-                            : "border-border-subtle bg-white text-charcoal hover:border-stone-400"
+                            ? "border-forest bg-forest/5 font-semibold text-forest shadow-xs ring-1 ring-forest/30"
+                            : "border-border-subtle bg-white text-charcoal hover:border-champagne"
                         }`}
                       >
                         <div className="flex items-center justify-between">
-                          <span className="flex items-center gap-1.5">
-                            {isSelected && <Check className="w-3 h-3 text-forest" />}
+                          <span className="flex items-center gap-1.5 font-bold">
+                            {isSelected && <Check className="w-3.5 h-3.5 text-forest" />}
                             {v.name}
                           </span>
                         </div>
-                        <span className="block mt-1 text-stone-600 font-medium">
+                        <span className="block mt-1 text-stone-600 font-semibold">
                           {formatVND(v.price)}
                         </span>
                       </button>
@@ -244,21 +371,21 @@ export function ProductDetailView({
                   </button>
                 </div>
 
-                <span className="text-xs text-muted">
-                  (Còn {maxQty} sản phẩm sẵn có)
+                <span className="text-xs text-muted font-light">
+                  (Còn {maxQty} tác phẩm sẵn có)
                 </span>
               </div>
 
               <div className="flex flex-col sm:flex-row gap-3 pt-2">
                 <Button
                   onClick={handleAddToCart}
-                  variant="primary"
+                  variant="outline"
                   size="lg"
                   className="flex-1"
                   disabled={selectedVariant.inventoryStatus === "out_of_stock"}
                   leftIcon={
                     isAdded ? (
-                      <Check className="w-5 h-5 text-emerald-300" />
+                      <Check className="w-5 h-5 text-emerald-600 animate-in zoom-in" />
                     ) : (
                       <ShoppingBag className="w-5 h-5" />
                     )
@@ -266,12 +393,22 @@ export function ProductDetailView({
                 >
                   {isAdded ? "Đã Thêm Vào Giỏ!" : "Thêm Vào Giỏ Hàng"}
                 </Button>
+                <Button
+                  onClick={handleBuyNow}
+                  variant="primary"
+                  size="lg"
+                  className="flex-1 shadow-lg shadow-forest/20 font-serif font-semibold"
+                  disabled={selectedVariant.inventoryStatus === "out_of_stock"}
+                  rightIcon={<ArrowRight className="w-4 h-4" />}
+                >
+                  Mua Ngay (Thanh Toán)
+                </Button>
               </div>
             </div>
           </div>
 
           {/* Genuine Guarantees */}
-          <div className="pt-4 border-t border-border-subtle grid grid-cols-2 gap-3 text-xs text-charcoal">
+          <div className="pt-4 border-t border-[#E8DFD1] grid grid-cols-2 gap-3 text-xs text-charcoal">
             <div className="flex items-center gap-2">
               <Truck className="w-4 h-4 text-forest shrink-0" />
               <span>Miễn phí giao hàng từ 1 triệu</span>
@@ -292,54 +429,49 @@ export function ProductDetailView({
         </div>
       </div>
 
-      {/* Tabs: Description, Specs, Reviews */}
-      <div className="bg-white border border-border-subtle rounded-sm overflow-hidden">
-        <div className="flex border-b border-border-subtle bg-ivory">
-          <button
-            type="button"
-            onClick={() => setActiveTab("desc")}
-            className={`px-6 py-4 text-xs font-semibold uppercase tracking-wider transition-colors cursor-pointer border-b-2 ${
-              activeTab === "desc"
-                ? "border-forest text-forest bg-white"
-                : "border-transparent text-stone-500 hover:text-charcoal"
-            }`}
-          >
-            Mô Tả Chi Tiết
-          </button>
-          <button
-            type="button"
-            onClick={() => setActiveTab("specs")}
-            className={`px-6 py-4 text-xs font-semibold uppercase tracking-wider transition-colors cursor-pointer border-b-2 ${
-              activeTab === "specs"
-                ? "border-forest text-forest bg-white"
-                : "border-transparent text-stone-500 hover:text-charcoal"
-            }`}
-          >
-            Thông Số & Xuất Xứ
-          </button>
-          <button
-            type="button"
-            onClick={() => setActiveTab("reviews")}
-            className={`px-6 py-4 text-xs font-semibold uppercase tracking-wider transition-colors cursor-pointer border-b-2 ${
-              activeTab === "reviews"
-                ? "border-forest text-forest bg-white"
-                : "border-transparent text-stone-500 hover:text-charcoal"
-            }`}
-          >
-            Đánh Giá Thực Tế ({reviews.length})
-          </button>
+      {/* Tabs with Sliding Underline: Description, Specs, Reviews */}
+      <div className="bg-white border border-[#E8DFD1] rounded-sm overflow-hidden shadow-xs">
+        <div className="flex border-b border-[#E8DFD1] bg-[#FAF8F4]">
+          {[
+            { id: "desc", label: "Mô Tả Chi Tiết" },
+            { id: "specs", label: "Thông Số & Xuất Xứ" },
+            { id: "reviews", label: `Đánh Giá Thực Tế (${reviews.length})` },
+          ].map((tab) => {
+            const isActive = activeTab === tab.id;
+            return (
+              <button
+                key={tab.id}
+                type="button"
+                onClick={() => setActiveTab(tab.id as typeof activeTab)}
+                className={`relative px-6 py-4 text-xs font-semibold uppercase tracking-wider transition-colors cursor-pointer ${
+                  isActive
+                    ? "text-forest bg-white font-bold"
+                    : "text-stone-500 hover:text-charcoal"
+                }`}
+              >
+                {tab.label}
+                {isActive && (
+                  <motion.span
+                    layoutId="productDetailTab"
+                    className="absolute bottom-0 inset-x-0 h-0.5 bg-forest"
+                    transition={{ type: "spring", stiffness: 350, damping: 30 }}
+                  />
+                )}
+              </button>
+            );
+          })}
         </div>
 
         <div className="p-6 sm:p-10">
           {activeTab === "desc" && (
-            <div className="max-w-3xl space-y-4 text-sm text-charcoal/90 leading-relaxed font-light whitespace-pre-line">
+            <div className="max-w-3xl space-y-4 text-sm text-stone-700 leading-relaxed font-light whitespace-pre-line">
               {product.description}
             </div>
           )}
 
           {activeTab === "specs" && (
             <div className="max-w-2xl">
-              <dl className="divide-y divide-border-subtle text-xs sm:text-sm">
+              <dl className="divide-y divide-[#E8DFD1]/70 text-xs sm:text-sm">
                 <div className="py-3 flex justify-between">
                   <dt className="text-muted font-medium">Xuất xứ phôi trầm</dt>
                   <dd className="font-semibold text-charcoal text-right">{product.origin}</dd>
@@ -395,7 +527,7 @@ export function ProductDetailView({
                       <StarRating rating={rev.rating} showScore={false} size="sm" />
 
                       <p className="font-semibold text-charcoal">{rev.title}</p>
-                      <p className="text-muted leading-relaxed">{rev.content}</p>
+                      <p className="text-stone-600 leading-relaxed font-light">{rev.content}</p>
                       {rev.variantPurchased && (
                         <p className="text-[11px] text-stone-500 italic">
                           Quy cách đã chọn: {rev.variantPurchased}
@@ -423,6 +555,170 @@ export function ProductDetailView({
           <ProductGrid products={relatedProducts} columns={3} />
         </div>
       )}
+
+      {/* STICKY BOTTOM ADD-TO-CART BAR (Appears on scroll past 450px) */}
+      <AnimatePresence>
+        {showStickyBar && (
+          <motion.div
+            initial={{ y: 80, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: 80, opacity: 0 }}
+            transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+            className="fixed bottom-0 inset-x-0 z-40 bg-white/95 backdrop-blur-md border-t border-[#E8DFD1] shadow-2xl py-3 px-4 sm:px-6"
+          >
+            <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <div className="relative w-12 h-12 rounded overflow-hidden bg-[#FAF8F4] border border-[#E8DFD1] shrink-0">
+                  <Image
+                    src={product.images[0]}
+                    alt={product.name}
+                    fill
+                    sizes="48px"
+                    className="object-cover"
+                  />
+                </div>
+                <div>
+                  <h4 className="font-serif text-sm font-bold text-charcoal line-clamp-1">
+                    {product.name}
+                  </h4>
+                  <div className="flex items-center gap-2">
+                    <span className="font-sans text-sm font-bold text-forest">
+                      {formatVND(selectedVariant.price)}
+                    </span>
+                    <span className="text-[11px] text-muted hidden sm:inline">
+                      • {selectedVariant.name}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2 sm:gap-3">
+                <Button
+                  onClick={handleAddToCart}
+                  variant="outline"
+                  size="sm"
+                  disabled={selectedVariant.inventoryStatus === "out_of_stock"}
+                  leftIcon={
+                    isAdded ? (
+                      <Check className="w-4 h-4 text-emerald-600" />
+                    ) : (
+                      <ShoppingBag className="w-4 h-4" />
+                    )
+                  }
+                >
+                  {isAdded ? "Đã Thêm!" : "Thêm Giỏ"}
+                </Button>
+                <Button
+                  onClick={handleBuyNow}
+                  variant="primary"
+                  size="sm"
+                  disabled={selectedVariant.inventoryStatus === "out_of_stock"}
+                  className="shadow-md font-serif font-semibold"
+                  rightIcon={<ArrowRight className="w-3.5 h-3.5" />}
+                >
+                  Mua Ngay
+                </Button>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* MODAL: Hướng Dẫn Đo Chu Vi Cổ Tay */}
+      <AnimatePresence>
+        {isSizeGuideOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsSizeGuideOpen(false)}
+              className="absolute inset-0 bg-black/60 backdrop-blur-xs"
+            />
+
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 15 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 15 }}
+              transition={{ duration: 0.3 }}
+              className="relative w-full max-w-lg bg-white rounded-sm border border-[#E8DFD1] p-6 sm:p-8 shadow-2xl z-10 space-y-6"
+            >
+              <div className="flex items-center justify-between pb-3 border-b border-border-subtle">
+                <div className="flex items-center gap-2">
+                  <Ruler className="w-5 h-5 text-forest" />
+                  <h3 className="font-serif text-lg font-bold text-charcoal">
+                    Hướng Dẫn Đo Chu Vi Cổ Tay & Chọn Size Hạt
+                  </h3>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setIsSizeGuideOpen(false)}
+                  className="p-1 rounded text-stone-400 hover:text-charcoal cursor-pointer"
+                  aria-label="Đóng bảng hướng dẫn"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Step 1: Measuring instruction */}
+              <div className="space-y-2">
+                <h4 className="text-xs font-bold uppercase tracking-wider text-forest">
+                  1. Cách đo chu vi cổ tay bằng thước dây / mảnh giấy
+                </h4>
+                <p className="text-xs text-stone-600 leading-relaxed font-light">
+                  Dùng một sợi dây mềm hoặc mảnh giấy quấn sát quanh vị trí cổ tay mà bạn muốn đeo vòng (không quấn quá chặt hoặc quá lỏng). Đánh dấu điểm giao nhau và trải phẳng trên thước kẻ để lấy số đo chính xác (đơn vị: cm).
+                </p>
+              </div>
+
+              {/* Step 2: Size table */}
+              <div className="space-y-2">
+                <h4 className="text-xs font-bold uppercase tracking-wider text-forest">
+                  2. Bảng quy chuẩn kích cỡ hạt VĨNH TRẦM
+                </h4>
+                <div className="border border-border-subtle rounded divide-y divide-border-subtle text-xs">
+                  <div className="p-3 bg-[#FAF8F4] flex justify-between font-semibold text-charcoal">
+                    <span>Kích thước hạt</span>
+                    <span>Chu vi cổ tay phù hợp</span>
+                    <span>Đối tượng khuyên dùng</span>
+                  </div>
+                  <div className="p-3 flex justify-between text-stone-600 font-light">
+                    <strong className="text-charcoal font-semibold">Hạt 6mm (108 hạt)</strong>
+                    <span>14.0 - 15.5 cm</span>
+                    <span>Cổ tay nữ / thanh mảnh</span>
+                  </div>
+                  <div className="p-3 flex justify-between text-stone-600 font-light">
+                    <strong className="text-charcoal font-semibold">Hạt 8mm (108 hạt / đơn)</strong>
+                    <span>16.0 - 17.5 cm</span>
+                    <span>Cổ tay nam / nữ đầy đặn</span>
+                  </div>
+                  <div className="p-3 flex justify-between text-stone-600 font-light">
+                    <strong className="text-charcoal font-semibold">Hạt 10mm - 12mm</strong>
+                    <span>17.5 - 19.5 cm</span>
+                    <span>Cổ tay nam lớn / bề thế</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-[#FAF8F4] p-3.5 rounded border border-[#E8DFD1] text-xs text-stone-600 font-light flex items-start gap-2">
+                <CheckCircle2 className="w-4 h-4 text-forest shrink-0 mt-0.5" />
+                <span>
+                  <strong>Lưu ý:</strong> VĨNH TRẦM hỗ trợ thu bớt hoặc thêm hạt miễn phí kèm chỉ dù dự phòng trong mỗi hộp sản phẩm để Quý khách tùy chỉnh vừa vặn nhất.
+                </span>
+              </div>
+
+              <div className="pt-2 text-right">
+                <button
+                  type="button"
+                  onClick={() => setIsSizeGuideOpen(false)}
+                  className="px-5 py-2 bg-forest text-ivory text-xs font-semibold rounded-xs hover:bg-forest-dark transition-colors cursor-pointer"
+                >
+                  Đã hiểu, quay lại đặt hàng
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

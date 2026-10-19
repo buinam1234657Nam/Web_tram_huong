@@ -14,17 +14,17 @@ export function FadeIn({
   children,
   className = "",
   delay = 0,
-  duration = 0.7,
+  duration = 0.5,
 }: MotionProps) {
   const shouldReduceMotion = useReducedMotion();
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: shouldReduceMotion ? 0 : 28 }}
+      initial={{ opacity: 0, y: shouldReduceMotion ? 0 : 20 }}
       whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, amount: 0.15 }}
+      viewport={{ once: true, amount: 0.05 }}
       transition={{
-        duration: shouldReduceMotion ? 0.3 : duration,
+        duration: shouldReduceMotion ? 0.2 : duration,
         delay,
         ease: [0.16, 1, 0.3, 1],
       }}
@@ -44,11 +44,11 @@ export function SlideInLeft({
 
   return (
     <motion.div
-      initial={{ opacity: 0, x: shouldReduceMotion ? 0 : -35 }}
+      initial={{ opacity: 0, x: shouldReduceMotion ? 0 : -25 }}
       whileInView={{ opacity: 1, x: 0 }}
-      viewport={{ once: true, amount: 0.15 }}
+      viewport={{ once: true, amount: 0.05 }}
       transition={{
-        duration: shouldReduceMotion ? 0.3 : 0.75,
+        duration: shouldReduceMotion ? 0.2 : 0.55,
         delay,
         ease: [0.16, 1, 0.3, 1],
       }}
@@ -68,11 +68,11 @@ export function SlideInRight({
 
   return (
     <motion.div
-      initial={{ opacity: 0, x: shouldReduceMotion ? 0 : 35 }}
+      initial={{ opacity: 0, x: shouldReduceMotion ? 0 : 25 }}
       whileInView={{ opacity: 1, x: 0 }}
-      viewport={{ once: true, amount: 0.15 }}
+      viewport={{ once: true, amount: 0.05 }}
       transition={{
-        duration: shouldReduceMotion ? 0.3 : 0.75,
+        duration: shouldReduceMotion ? 0.2 : 0.55,
         delay,
         ease: [0.16, 1, 0.3, 1],
       }}
@@ -86,7 +86,7 @@ export function SlideInRight({
 export function FadeInStagger({
   children,
   className = "",
-  staggerDelay = 0.1,
+  staggerDelay = 0.08,
 }: {
   children: React.ReactNode;
   className?: string;
@@ -96,7 +96,7 @@ export function FadeInStagger({
     <motion.div
       initial="hidden"
       whileInView="visible"
-      viewport={{ once: true, amount: 0.1 }}
+      viewport={{ once: true, amount: 0.05 }}
       variants={{
         hidden: {},
         visible: {
@@ -124,15 +124,14 @@ export function FadeInStaggerItem({
   return (
     <motion.div
       variants={{
-        hidden: { opacity: 0, y: shouldReduceMotion ? 0 : 25, scale: shouldReduceMotion ? 1 : 0.98 },
+        hidden: { opacity: 0, y: shouldReduceMotion ? 0 : 18 },
         visible: {
           opacity: 1,
           y: 0,
-          scale: 1,
-          transition: { duration: 0.6, ease: [0.16, 1, 0.3, 1] },
+          transition: { duration: 0.45, ease: [0.16, 1, 0.3, 1] },
         },
       }}
-      className={className}
+      className={`h-full flex flex-col ${className}`}
     >
       {children}
     </motion.div>

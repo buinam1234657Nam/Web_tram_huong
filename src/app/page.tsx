@@ -18,9 +18,12 @@ import { Button } from "@/components/ui/Button";
 import { StarRating } from "@/components/ui/StarRating";
 import { ProductCard } from "@/components/product/ProductCard";
 import { CategoryCarousel } from "@/components/home/CategoryCarousel";
+import { TrustPillars } from "@/components/home/TrustPillars";
 import { GuidedShopping } from "@/components/home/GuidedShopping";
 import { AtmosphericSmoke } from "@/components/home/AtmosphericSmoke";
 import { CelebrityCommunity } from "@/components/home/CelebrityCommunity";
+import { ArtisanParallax } from "@/components/home/ArtisanParallax";
+import { NumberCounter } from "@/components/motion/NumberCounter";
 import {
   FadeIn,
   FadeInStagger,
@@ -90,24 +93,21 @@ export default async function HomePage() {
             <FadeIn delay={0.55}>
               <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3.5 pt-2">
                 <Button
+                  href="/san-pham"
                   variant="champagne"
                   size="lg"
                   className="shadow-lg shadow-champagne/20"
                   rightIcon={<ArrowRight className="w-4 h-4" />}
                 >
-                  <Link href="/san-pham" className="w-full text-center">
-                    Khám Phá Bộ Sưu Tập
-                  </Link>
+                  Khám Phá Bộ Sưu Tập
                 </Button>
 
                 <Button
-                  variant="outline"
+                  href="/ve-chung-toi"
+                  variant="outline-light"
                   size="lg"
-                  className="border-ivory/50 text-ivory hover:bg-ivory hover:text-forest"
                 >
-                  <Link href="/ve-chung-toi" className="w-full text-center">
-                    Câu Chuyện Thương Hiệu
-                  </Link>
+                  Câu Chuyện Thương Hiệu
                 </Button>
               </div>
             </FadeIn>
@@ -116,7 +116,9 @@ export default async function HomePage() {
             <FadeIn delay={0.7}>
               <div className="pt-6 border-t border-ivory/20 grid grid-cols-3 gap-6 text-xs text-ivory/80">
                 <div>
-                  <strong className="block text-champagne text-2xl sm:text-3xl font-serif font-bold">100%</strong>
+                  <strong className="block text-champagne text-2xl sm:text-3xl font-serif font-bold">
+                    <NumberCounter value={100} suffix="%" />
+                  </strong>
                   <span className="font-medium">Trầm tự nhiên</span>
                 </div>
                 <div>
@@ -150,42 +152,7 @@ export default async function HomePage() {
           ============================================================ */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <FadeIn delay={0.1}>
-          <div className="bg-white border border-border-subtle rounded-sm p-6 sm:p-8 shadow-sm">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8 divide-y sm:divide-y-0 sm:divide-x divide-border-subtle/70">
-              {brandConfig.trustPillars.map((pillar, idx) => {
-                const icons = [
-                  <ShieldCheck key="1" className="w-6 h-6 text-forest" />,
-                  <Sparkles key="2" className="w-6 h-6 text-agarwood" />,
-                  <Award key="3" className="w-6 h-6 text-champagne-dark" />,
-                  <Truck key="4" className="w-6 h-6 text-forest" />,
-                ];
-
-                return (
-                  <div
-                    key={pillar.id}
-                    className={`flex items-start gap-4 group transition-transform duration-300 hover:translate-y-[-2px] ${
-                      idx > 0 ? "pt-5 sm:pt-0 sm:pl-6 lg:pl-8" : ""
-                    }`}
-                  >
-                    <div className="p-3 rounded-full bg-ivory shrink-0 border border-border-subtle group-hover:border-champagne group-hover:scale-110 transition-all duration-300">
-                      {icons[idx]}
-                    </div>
-                    <div>
-                      <h3 className="font-serif text-base sm:text-lg font-bold text-charcoal">
-                        {pillar.title}
-                      </h3>
-                      <p className="text-xs font-medium text-agarwood-dark mt-0.5 mb-1.5">
-                        {pillar.subtitle}
-                      </p>
-                      <p className="text-sm text-stone-600 leading-relaxed font-normal">
-                        {pillar.description}
-                      </p>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
+          <TrustPillars />
         </FadeIn>
       </section>
 
@@ -224,10 +191,10 @@ export default async function HomePage() {
 
         <FadeInStagger
           staggerDelay={0.08}
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"
         >
           {bestsellers.map((product, idx) => (
-            <FadeInStaggerItem key={product.id}>
+            <FadeInStaggerItem key={product.id} className="h-full">
               <ProductCard product={product} priority={idx < 2} />
             </FadeInStaggerItem>
           ))}
@@ -239,17 +206,8 @@ export default async function HomePage() {
           ============================================================ */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="bg-forest-dark text-ivory rounded-sm overflow-hidden border border-forest grid grid-cols-1 lg:grid-cols-2 shadow-xl">
-          {/* Left Image */}
-          <SlideInLeft className="relative min-h-[380px] lg:min-h-[520px] overflow-hidden group">
-            <Image
-              src="/images/artisan-story.jpg"
-              alt="Nghệ nhân điêu khắc trầm hương thủ công VĨNH TRẦM"
-              fill
-              sizes="(max-width: 1024px) 100vw, 50vw"
-              className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-forest-dark/80 via-transparent to-transparent lg:hidden" />
-          </SlideInLeft>
+          {/* Left Image with Parallax Physics */}
+          <ArtisanParallax />
 
           {/* Right Narrative */}
           <SlideInRight className="p-8 sm:p-12 lg:p-16 flex flex-col justify-center space-y-6">
@@ -281,8 +239,8 @@ export default async function HomePage() {
             </ul>
 
             <div className="pt-2">
-              <Button variant="champagne" size="md">
-                <Link href="/ve-chung-toi">Tìm hiểu về xưởng chế tác</Link>
+              <Button href="/ve-chung-toi" variant="champagne" size="md">
+                Tìm hiểu về xưởng chế tác
               </Button>
             </div>
           </SlideInRight>

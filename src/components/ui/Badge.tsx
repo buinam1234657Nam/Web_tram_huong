@@ -27,25 +27,37 @@ export function Badge({
   );
 }
 
-export function StockBadge({ status }: { status: InventoryStatus }) {
+export function StockBadge({
+  status,
+  className = "",
+}: {
+  status: InventoryStatus;
+  className?: string;
+}) {
   switch (status) {
     case "in_stock":
       return (
-        <span className="inline-flex items-center gap-1.5 text-xs font-medium text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
-          <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse" />
+        <span
+          className={`inline-flex items-center gap-1.5 text-[11px] font-medium text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200 whitespace-nowrap shrink-0 ${className}`}
+        >
+          <span className="w-1.5 h-1.5 rounded-full bg-emerald-600" />
           Còn hàng
         </span>
       );
     case "low_stock":
       return (
-        <span className="inline-flex items-center gap-1.5 text-xs font-medium text-amber-800 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200">
+        <span
+          className={`inline-flex items-center gap-1.5 text-[11px] font-medium text-amber-800 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200 whitespace-nowrap shrink-0 ${className}`}
+        >
           <span className="w-1.5 h-1.5 rounded-full bg-amber-600" />
           Số lượng có hạn
         </span>
       );
     case "out_of_stock":
       return (
-        <span className="inline-flex items-center gap-1.5 text-xs font-medium text-stone-600 bg-stone-100 px-2 py-0.5 rounded-full border border-stone-200">
+        <span
+          className={`inline-flex items-center gap-1.5 text-[11px] font-medium text-stone-600 bg-stone-100 px-2 py-0.5 rounded-full border border-stone-200 whitespace-nowrap shrink-0 ${className}`}
+        >
           Tạm hết hàng
         </span>
       );

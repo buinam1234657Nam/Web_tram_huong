@@ -62,8 +62,8 @@ export function CartPageView() {
           Quý khách chưa thêm sản phẩm nào vào giỏ hàng. Hãy khám phá những tác phẩm trầm hương tự nhiên thượng phẩm của VĨNH TRẦM.
         </p>
         <div className="pt-2">
-          <Button variant="primary" size="md">
-            <Link href="/san-pham">Khám phá bộ sưu tập</Link>
+          <Button href="/san-pham" variant="primary" size="md">
+            Khám phá bộ sưu tập
           </Button>
         </div>
       </div>
@@ -201,7 +201,7 @@ export function CartPageView() {
             value={orderNote}
             onChange={(e) => setOrderNote(e.target.value)}
             placeholder="Ví dụ: Vui lòng đo đúng chu vi cổ tay 16cm, đóng gói hộp quà biếu giúp tôi..."
-            className="w-full text-xs p-3 rounded bg-ivory border border-border-subtle text-charcoal focus:outline-none focus:ring-1 focus:ring-forest"
+            className="w-full text-xs p-3 rounded-sm bg-white border border-stone-300 hover:border-stone-400 text-charcoal placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-forest/20 focus:border-forest transition-all shadow-2xs"
           />
         </div>
       </div>
@@ -242,14 +242,13 @@ export function CartPageView() {
           </p>
 
           <Button
+            href="/thanh-toan"
             variant="primary"
             size="lg"
-            className="w-full"
+            className="w-full font-serif shadow-md text-base"
             rightIcon={<ArrowRight className="w-4 h-4" />}
           >
-            <Link href="/thanh-toan" className="w-full text-center">
-              Tiến Hành Đặt Hàng
-            </Link>
+            Tiến Hành Đặt Hàng
           </Button>
 
           <div className="pt-2 text-center">

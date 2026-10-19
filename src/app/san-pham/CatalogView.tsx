@@ -81,6 +81,14 @@ export function CatalogView({
     priceMax < 12000000 ||
     inStockOnly;
 
+  const categoryCounts = useMemo(() => {
+    const counts: Record<string, number> = {};
+    initialProducts.forEach((p) => {
+      counts[p.categorySlug] = (counts[p.categorySlug] || 0) + 1;
+    });
+    return counts;
+  }, [initialProducts]);
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
       {/* Mobile Filter Toggle */}
@@ -99,7 +107,7 @@ export function CatalogView({
       </div>
 
       {/* Desktop Filter Sidebar */}
-      <aside className="hidden lg:block space-y-6 bg-white p-6 rounded-sm border border-border-subtle h-fit sticky top-24">
+      <aside className="hidden lg:block space-y-6 bg-white p-6 rounded-sm border border-border-subtle h-fit sticky top-28">
         <div className="flex items-center justify-between pb-3 border-b border-border-subtle">
           <div className="flex items-center gap-2">
             <SlidersHorizontal className="w-4 h-4 text-forest" />
@@ -144,7 +152,7 @@ export function CatalogView({
                 }`}
               >
                 <span>{c.name}</span>
-                <span className="text-[11px] opacity-80">{c.productCount}</span>
+                <span className="text-[11px] opacity-80">{categoryCounts[c.slug] || 0}</span>
               </button>
             ))}
           </div>
@@ -158,7 +166,7 @@ export function CatalogView({
           <select
             value={selectedPurpose}
             onChange={(e) => setSelectedPurpose(e.target.value)}
-            className="w-full text-xs p-2.5 rounded bg-ivory border border-border-subtle text-charcoal focus:outline-none focus:ring-1 focus:ring-forest cursor-pointer"
+            className="w-full text-xs p-2.5 rounded-sm bg-white border border-stone-300 hover:border-stone-400 text-charcoal focus:outline-none focus:ring-2 focus:ring-forest/20 focus:border-forest cursor-pointer shadow-2xs"
           >
             <option value="all">Tất cả mục đích</option>
             <option value="daily_wear">Đeo hộ thân hàng ngày</option>
@@ -222,7 +230,7 @@ export function CatalogView({
               id="sort-select"
               value={selectedSort}
               onChange={(e) => setSelectedSort(e.target.value)}
-              className="text-xs p-2 rounded bg-ivory border border-border-subtle text-charcoal focus:outline-none focus:ring-1 focus:ring-forest cursor-pointer"
+              className="text-xs p-2 rounded-sm bg-white border border-stone-300 hover:border-stone-400 text-charcoal focus:outline-none focus:ring-2 focus:ring-forest/20 focus:border-forest cursor-pointer shadow-2xs"
             >
               <option value="bestseller">Bán chạy nhất</option>
               <option value="price_asc">Giá: Thấp đến Cao</option>
@@ -350,7 +358,8 @@ export function CatalogView({
                           : "bg-ivory border-border-subtle"
                       }`}
                     >
-                      {c.name}
+                      <span>{c.name}</span>
+                      <span className="text-[10px] opacity-75">({categoryCounts[c.slug] || 0})</span>
                     </button>
                   ))}
                 </div>

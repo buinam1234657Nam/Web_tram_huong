@@ -7,6 +7,8 @@ import { brandConfig } from "@/lib/config/brand";
 import { Breadcrumbs } from "@/components/ui/Breadcrumbs";
 import { BreadcrumbJsonLd } from "@/components/seo/JsonLd";
 import { Button } from "@/components/ui/Button";
+import { ArtisanCollage } from "@/components/about/ArtisanCollage";
+import { CraftProcessSteps } from "@/components/about/CraftProcessSteps";
 
 export const metadata: Metadata = {
   title: "Câu Chuyện Thương Hiệu & Triết Lý Chế Tác",
@@ -26,29 +28,6 @@ export const metadata: Metadata = {
 export default function AboutUsPage() {
   const breadcrumbs = [
     { label: "Về chúng tôi", href: "/ve-chung-toi" },
-  ];
-
-  const steps = [
-    {
-      step: "01",
-      title: "Tuyển Chọn Phôi Trầm Tự Nhiên",
-      desc: "Trực tiếp tìm kiếm và tuyển chọn những gốc dó bầu tích tụ nhựa thơm từ 15-20 năm tại các vùng rừng Khánh Hòa & Quảng Nam.",
-    },
-    {
-      step: "02",
-      title: "Xỉa Giác Gỗ Thủ Công",
-      desc: "Nghệ nhân dùng dao đục chuyên dụng tỉ mẩn bóc tách từng lớp giác gỗ trắng không chứa dầu, giữ lại phần thớ trầm đậm đặc nhất.",
-    },
-    {
-      step: "03",
-      title: "Tiện Hạt & Mài Mộc Thuần Túy",
-      desc: "Tiện từng hạt chuỗi bằng lưỡi dao mộc, mài bóng cơ học qua lớp vải thô tự nhiên, tuyệt đối không phun sáp hay phủ dầu hóa chất.",
-    },
-    {
-      step: "04",
-      title: "Ủ Hương & Đánh Giá Khứu Giác",
-      desc: "Ủ trong hũ gốm kín khí để tinh dầu trầm tự thẩm thấu, sau đó được kiểm tra khứu giác tỉ mỉ trước khi đóng gói gửi tới tay Quý khách.",
-    },
   ];
 
   return (
@@ -72,17 +51,9 @@ export default function AboutUsPage() {
         </p>
       </div>
 
-      {/* Split Story 1 */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
-        <div className="relative aspect-4/3 rounded-sm overflow-hidden bg-ivory border border-border-subtle shadow-xs">
-          <Image
-            src="/images/artisan-story.jpg"
-            alt="Nghệ nhân VĨNH TRẦM"
-            fill
-            sizes="(max-width: 1024px) 100vw, 50vw"
-            className="object-cover"
-          />
-        </div>
+      {/* Split Story 1 with Offset Gold Border & Grain Collage */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-14 items-center">
+        <ArtisanCollage />
 
         <div className="space-y-4">
           <span className="text-xs uppercase font-semibold text-agarwood tracking-wider">
@@ -107,8 +78,8 @@ export default function AboutUsPage() {
         </div>
       </div>
 
-      {/* 4-Step Craft Process */}
-      <div className="bg-white border border-border-subtle rounded-sm p-8 sm:p-12 space-y-8">
+      {/* 4-Step Craft Process with Big Numbers & SVG Line Draw */}
+      <div className="bg-white border border-border-subtle rounded-sm p-6 sm:p-12 space-y-8">
         <div className="text-center max-w-xl mx-auto space-y-2">
           <span className="text-xs uppercase font-semibold text-agarwood-dark tracking-widest block">
             Quy Chuẩn Nghệ Nhân
@@ -116,26 +87,12 @@ export default function AboutUsPage() {
           <h2 className="font-serif text-2xl sm:text-3xl font-bold text-charcoal">
             Quy Trình 4 Bước Tạo Nên Tác Phẩm VĨNH TRẦM
           </h2>
+          <p className="text-xs text-muted font-light">
+            Từ khối gỗ thô mộc nơi rừng già đến chuỗi bảo vật ngát hương trên cổ tay Quý khách
+          </p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {steps.map((st) => (
-            <div
-              key={st.step}
-              className="p-5 rounded bg-ivory/60 border border-border-subtle space-y-2"
-            >
-              <span className="font-serif text-2xl font-bold text-champagne-dark block">
-                {st.step}
-              </span>
-              <h3 className="font-serif text-sm font-semibold text-charcoal">
-                {st.title}
-              </h3>
-              <p className="text-xs text-muted leading-relaxed font-light">
-                {st.desc}
-              </p>
-            </div>
-          ))}
-        </div>
+        <CraftProcessSteps />
       </div>
 
       {/* Sourcing & Workshop Details */}
@@ -163,8 +120,8 @@ export default function AboutUsPage() {
           </div>
 
           <div className="pt-4">
-            <Button variant="champagne" size="md">
-              <Link href="/san-pham">Khám phá sản phẩm</Link>
+            <Button href="/san-pham" variant="champagne" size="md">
+              Khám phá sản phẩm
             </Button>
           </div>
         </div>
@@ -172,7 +129,7 @@ export default function AboutUsPage() {
         <div className="relative aspect-4/3 rounded overflow-hidden border border-forest-light">
           <Image
             src="/images/hero-agarwood.jpg"
-            alt="Trầm hương Khánh Hòa"
+            alt="Khối trầm hương tự nhiên Khánh Hòa tích tụ tinh hoa rừng già Việt Nam"
             fill
             sizes="(max-width: 1024px) 100vw, 50vw"
             className="object-cover"

@@ -6,22 +6,18 @@ import { brandConfig } from "@/lib/config/brand";
 import { Breadcrumbs } from "@/components/ui/Breadcrumbs";
 import { BreadcrumbJsonLd } from "@/components/seo/JsonLd";
 
+import { PolicyDetailView, PolicyData } from "./PolicyDetailView";
+
 interface PolicyPageProps {
   params: Promise<{ slug: string }>;
 }
 
-interface PolicyItem {
-  slug: string;
-  title: string;
-  icon: React.ReactNode;
-  content: string;
-}
-
-const policiesData: Record<string, PolicyItem> = {
+const policiesData: Record<string, PolicyData> = {
   "chinh-sach-bao-hanh": {
     slug: "chinh-sach-bao-hanh",
     title: "Chính Sách Bảo Hành Dây & Bảo Dưỡng Hạt Trọn Đời",
-    icon: <ShieldCheck className="w-8 h-8 text-forest" />,
+    shortTitle: "Bảo hành & Bảo dưỡng trọn đời",
+    iconType: "shield",
     content: `VĨNH TRẦM cam kết đồng hành cùng Quý khách trong suốt quá trình sở hữu và thưởng thức tác phẩm trầm hương.
 
 ### 1. Phạm vi bảo hành miễn phí trọn đời
@@ -38,7 +34,8 @@ const policiesData: Record<string, PolicyItem> = {
   "chinh-sach-doi-tra": {
     slug: "chinh-sach-doi-tra",
     title: "Chính Sách Đổi Trả Sản Phẩm Trong 7 Ngày",
-    icon: <RotateCcw className="w-8 h-8 text-agarwood" />,
+    shortTitle: "Đổi trả linh hoạt trong 7 ngày",
+    iconType: "rotate",
     content: `Để Quý khách hoàn toàn an tâm khi lựa chọn tác phẩm trầm hương trực tuyến, VĨNH TRẦM áp dụng chính sách đổi trả linh hoạt trong vòng 7 ngày kể từ ngày nhận hàng.
 
 ### 1. Điều kiện áp dụng đổi trả
@@ -54,7 +51,8 @@ const policiesData: Record<string, PolicyItem> = {
   "chinh-sach-giao-hang": {
     slug: "chinh-sach-giao-hang",
     title: "Chính Sách Vận Chuyển & Đồng Kiểm Tận Nơi",
-    icon: <Truck className="w-8 h-8 text-forest" />,
+    shortTitle: "Vận chuyển & Đồng kiểm tận nơi",
+    iconType: "truck",
     content: `VĨNH TRẦM hợp tác cùng các đơn vị vận chuyển uy tín hàng đầu (Viettel Post, GHTK) để chuyển phát bảo đảm từng kiện hàng trầm quý đến tận tay Quý khách.
 
 ### 1. Biểu phí giao hàng
@@ -69,7 +67,8 @@ const policiesData: Record<string, PolicyItem> = {
   "chinh-sach-bao-mat": {
     slug: "chinh-sach-bao-mat",
     title: "Chính Sách Bảo Mật Thông Tin Khách Hàng",
-    icon: <Lock className="w-8 h-8 text-champagne-dark" />,
+    shortTitle: "Bảo mật thông tin khách hàng",
+    iconType: "lock",
     content: `VĨNH TRẦM tôn trọng và cam kết bảo vệ thông tin riêng tư của Quý khách theo chuẩn mực bảo mật cao nhất.
 
 ### 1. Mục đích thu thập thông tin
@@ -99,7 +98,7 @@ export async function generateMetadata({
   }
 
   return {
-    title: `${policy.title} | VĨNH TRẦM`,
+    title: policy.title,
     description: `Chi tiết về ${policy.title.toLowerCase()} tại thương hiệu trầm hương tự nhiên VĨNH TRẦM.`,
     alternates: {
       canonical: `/chinh-sach/${policy.slug}`,
@@ -120,50 +119,14 @@ export default async function PolicyPage({ params }: PolicyPageProps) {
     { label: policy.title, href: `/chinh-sach/${policy.slug}` },
   ];
 
+  const allPolicies = Object.values(policiesData);
+
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 space-y-8">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 space-y-6">
       <BreadcrumbJsonLd items={breadcrumbs} />
       <Breadcrumbs items={breadcrumbs} />
 
-      <div className="bg-white border border-border-subtle rounded-sm p-6 sm:p-10 space-y-6">
-        <div className="flex items-center gap-4 pb-4 border-b border-border-subtle">
-          <div className="p-3 rounded-full bg-ivory border border-border-subtle">
-            {policy.icon}
-          </div>
-          <div>
-            <span className="text-xs uppercase font-semibold text-agarwood tracking-wider">
-              Quy Định & Quyền Lợi Khách Hàng
-            </span>
-            <h1 className="font-serif text-2xl sm:text-3xl font-bold text-charcoal">
-              {policy.title}
-            </h1>
-          </div>
-        </div>
-
-        {/* Content */}
-        <div className="prose prose-stone max-w-none text-charcoal/90 leading-relaxed font-light text-sm sm:text-base whitespace-pre-line space-y-4">
-          {policy.content}
-        </div>
-
-        {/* Support Direct Box */}
-        <div className="pt-6 border-t border-border-subtle bg-ivory/50 -mx-6 -mb-6 p-6 sm:-mx-10 sm:-mb-10 sm:p-8 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div>
-            <h4 className="font-serif text-sm font-semibold text-charcoal mb-0.5">
-              Cần hỗ trợ thêm về chính sách?
-            </h4>
-            <p className="text-xs text-muted">
-              Đội ngũ tư vấn viên luôn sẵn sàng giải đáp mọi thắc mắc của Quý khách.
-            </p>
-          </div>
-          <a
-            href={`tel:${brandConfig.contact.hotline}`}
-            className="inline-flex items-center gap-2 px-4 py-2.5 bg-forest text-ivory rounded text-xs font-semibold hover:bg-forest-dark transition-colors"
-          >
-            <PhoneCall className="w-3.5 h-3.5" />
-            <span>Hotline: {brandConfig.contact.phoneFormatted}</span>
-          </a>
-        </div>
-      </div>
+      <PolicyDetailView currentSlug={slug} policies={allPolicies} />
     </div>
   );
 }

@@ -6,6 +6,7 @@ import Link from "next/link";
 import { ChevronLeft, ChevronRight, Sparkles, ArrowRight, Quote } from "lucide-react";
 import { motion } from "motion/react";
 import { FadeIn } from "@/components/motion/MotionPrimitives";
+import { NumberCounter } from "@/components/motion/NumberCounter";
 
 interface CelebrityItem {
   id: string;
@@ -122,7 +123,7 @@ export function CelebrityCommunity() {
               Cộng Đồng Tinh Hoa VĨNH TRẦM
             </h2>
             <p className="text-sm text-stone-600 mt-2 max-w-2xl font-normal leading-relaxed">
-              Hơn 50.000+ quý khách hàng tinh hoa, văn nghệ sĩ và tri thức lựa chọn trầm hương tự nhiên VĨNH TRẦM làm vật phẩm hộ thân, thiền định và an định tâm hồn.
+              Hơn <strong className="text-forest font-bold"><NumberCounter value={50000} suffix="+" /></strong> quý khách hàng tinh hoa, văn nghệ sĩ và tri thức lựa chọn trầm hương tự nhiên VĨNH TRẦM làm vật phẩm hộ thân, thiền định và an định tâm hồn.
             </p>
           </div>
 

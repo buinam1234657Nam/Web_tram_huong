@@ -23,8 +23,8 @@ export function OrderSuccessView() {
         <p className="text-xs text-muted leading-relaxed">
           Quý khách chưa có đơn hàng nào vừa hoàn tất hoặc liên kết đã hết hiệu lực.
         </p>
-        <Button variant="primary" size="md">
-          <Link href="/san-pham">Quay lại mua sắm</Link>
+        <Button href="/san-pham" variant="primary" size="md">
+          Quay lại mua sắm
         </Button>
       </div>
     );
@@ -118,11 +118,14 @@ export function OrderSuccessView() {
         </div>
 
         <div className="flex gap-3 w-full sm:w-auto">
-          <Button variant="primary" size="md" className="w-full sm:w-auto">
-            <Link href="/san-pham" className="flex items-center gap-1.5">
-              <span>Tiếp tục khám phá</span>
-              <ArrowRight className="w-4 h-4" />
-            </Link>
+          <Button
+            href="/san-pham"
+            variant="primary"
+            size="md"
+            className="w-full sm:w-auto"
+            rightIcon={<ArrowRight className="w-4 h-4" />}
+          >
+            Tiếp tục khám phá
           </Button>
         </div>
       </div>

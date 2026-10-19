@@ -27,8 +27,11 @@ export async function generateMetadata({
     };
   }
 
+  const pageTitle =
+    product.seo.title.replace(/\s*\|\s*VĨNH TRẦM.*$/i, "").trim() || product.name;
+
   return {
-    title: product.seo.title,
+    title: pageTitle,
     description: product.seo.description,
     keywords: product.seo.keywords,
     alternates: {

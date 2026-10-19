@@ -15,6 +15,7 @@ import { useCartStore } from "@/features/cart/useCartStore";
 import { useIsMounted } from "@/hooks/useIsMounted";
 import { mockCategories } from "@/data/mock/categories";
 import { SearchOverlay } from "./SearchOverlay";
+import { motion, AnimatePresence, useScroll } from "motion/react";
 
 export function Header() {
   const pathname = usePathname();
@@ -23,12 +24,23 @@ export function Header() {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isCategoryHovered, setIsCategoryHovered] = useState(false);
 
+  const { scrollYProgress } = useScroll();
   const { getTotalItems, openCart } = useCartStore();
   const mounted = useIsMounted();
 
   useEffect(() => {
+    let ticking = false;
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 20);
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          setIsScrolled((prev) => {
+            const next = window.scrollY > 20;
+            return prev !== next ? next : prev;
+          });
+          ticking = false;
+        });
+        ticking = true;
+      }
     };
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
@@ -39,10 +51,10 @@ export function Header() {
   return (
     <>
       <header
-        className={`sticky top-0 z-40 w-full transition-all duration-300 ${
+        className={`sticky top-0 z-40 w-full transition-[padding,background-color,box-shadow] duration-200 ${
           isScrolled
-            ? "bg-ivory/95 backdrop-blur-md shadow-xs border-b border-border-subtle py-3"
-            : "bg-ivory border-b border-border-subtle/60 py-4"
+            ? "bg-[#F6F2E9]/98 backdrop-blur-xs shadow-xs border-b border-border-subtle py-3"
+            : "bg-[#F6F2E9] border-b border-border-subtle/60 py-4"
         }`}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -117,34 +129,42 @@ export function Header() {
                 </Link>
 
                 {/* Dropdown Menu */}
-                {isCategoryHovered && (
-                  <div className="absolute top-full left-0 w-[480px] bg-white border border-border-subtle shadow-xl rounded-sm p-4 grid grid-cols-2 gap-3 pt-3">
-                    {mockCategories.map((cat) => (
-                      <Link
-                        key={cat.id}
-                        href={`/danh-muc/${cat.slug}`}
-                        className="p-2 rounded hover:bg-ivory transition-colors group/item"
-                      >
-                        <p className="font-medium text-xs text-charcoal group-hover/item:text-forest">
-                          {cat.name}
-                        </p>
-                        <p className="text-[11px] text-muted line-clamp-1 mt-0.5">
-                          {cat.vietnameseName}
-                        </p>
-                      </Link>
-                    ))}
-                    <div className="col-span-2 pt-2 border-t border-border-subtle flex justify-between items-center text-xs">
-                      <span className="text-muted">Bộ sưu tập độc quyền</span>
-                      <Link
-                        href="/san-pham"
-                        className="text-forest font-semibold hover:underline flex items-center gap-1"
-                      >
-                        Xem tất cả sản phẩm
-                        <Sparkles className="w-3 h-3 text-champagne" />
-                      </Link>
-                    </div>
-                  </div>
-                )}
+                <AnimatePresence>
+                  {isCategoryHovered && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 8, scale: 0.98 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: 4, scale: 0.98 }}
+                      transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+                      className="absolute top-full left-0 w-[490px] bg-white/98 backdrop-blur-md border border-border-subtle shadow-2xl rounded-sm p-4 grid grid-cols-2 gap-3 pt-3 z-50"
+                    >
+                      {mockCategories.map((cat) => (
+                        <Link
+                          key={cat.id}
+                          href={`/danh-muc/${cat.slug}`}
+                          className="p-2.5 rounded hover:bg-ivory transition-colors group/item"
+                        >
+                          <p className="font-medium text-xs text-charcoal group-hover/item:text-forest transition-colors">
+                            {cat.name}
+                          </p>
+                          <p className="text-[11px] text-muted line-clamp-1 mt-0.5">
+                            {cat.vietnameseName}
+                          </p>
+                        </Link>
+                      ))}
+                      <div className="col-span-2 pt-2 border-t border-border-subtle flex justify-between items-center text-xs">
+                        <span className="text-muted text-[11px]">Bộ sưu tập mộc độc bản</span>
+                        <Link
+                          href="/san-pham"
+                          className="text-forest font-semibold hover:underline flex items-center gap-1 text-xs"
+                        >
+                          Xem tất cả sản phẩm
+                          <Sparkles className="w-3 h-3 text-champagne" />
+                        </Link>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
 
               <Link
@@ -201,75 +221,105 @@ export function Header() {
                 aria-label={`Giỏ hàng có ${totalItems} sản phẩm`}
               >
                 <ShoppingBag className="w-6 h-6" />
-                {totalItems > 0 && (
-                  <span className="absolute top-1 right-0.5 bg-agarwood text-white text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center border-2 border-ivory animate-in zoom-in-75">
-                    {totalItems}
-                  </span>
-                )}
+                <AnimatePresence>
+                  {totalItems > 0 && (
+                    <motion.span
+                      key={totalItems}
+                      initial={{ scale: 0.5, opacity: 0 }}
+                      animate={{ scale: [1, 1.35, 1], opacity: 1 }}
+                      exit={{ scale: 0, opacity: 0 }}
+                      transition={{ duration: 0.28, ease: "easeOut" }}
+                      className="absolute top-1 right-0.5 bg-agarwood text-white text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center border-2 border-ivory shadow-xs"
+                    >
+                      {totalItems}
+                    </motion.span>
+                  )}
+                </AnimatePresence>
               </button>
             </div>
           </div>
         </div>
 
-        {/* Mobile Navigation Drawer */}
-        {isMobileMenuOpen && (
-          <div className="lg:hidden border-t border-border-subtle bg-ivory px-4 pt-4 pb-6 space-y-3">
-            <Link
-              href="/"
-              className="block py-2 text-sm font-medium text-charcoal hover:text-forest"
+        {/* Mobile Navigation Drawer with Smooth AnimatePresence */}
+        <AnimatePresence>
+          {isMobileMenuOpen && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
+              className="overflow-hidden lg:hidden border-t border-border-subtle bg-ivory px-4 pt-4 pb-6 space-y-3"
             >
-              Trang Chủ
-            </Link>
-            <div className="py-2">
-              <p className="text-xs uppercase font-bold text-agarwood tracking-wider mb-2">
-                Danh Mục Sản Phẩm
-              </p>
-              <div className="space-y-1.5 pl-2 border-l border-border-subtle">
-                {mockCategories.map((c) => (
+              <Link
+                href="/"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="block py-2 text-sm font-medium text-charcoal hover:text-forest"
+              >
+                Trang Chủ
+              </Link>
+              <div className="py-2">
+                <p className="text-xs uppercase font-bold text-agarwood tracking-wider mb-2">
+                  Danh Mục Sản Phẩm
+                </p>
+                <div className="space-y-1.5 pl-2 border-l border-border-subtle">
+                  {mockCategories.map((c) => (
+                    <Link
+                      key={c.id}
+                      href={`/danh-muc/${c.slug}`}
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className="block text-sm text-charcoal hover:text-forest py-1"
+                    >
+                      {c.name}
+                    </Link>
+                  ))}
                   <Link
-                    key={c.id}
-                    href={`/danh-muc/${c.slug}`}
-                    className="block text-sm text-charcoal hover:text-forest py-1"
+                    href="/san-pham"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="block text-sm font-semibold text-forest py-1"
                   >
-                    {c.name}
+                    Tất cả sản phẩm →
                   </Link>
-                ))}
+                </div>
+              </div>
+              <Link
+                href="/ve-chung-toi"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="block py-2 text-sm font-medium text-charcoal hover:text-forest"
+              >
+                Về Chúng Tôi
+              </Link>
+              <Link
+                href="/bai-viet"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="block py-2 text-sm font-medium text-charcoal hover:text-forest"
+              >
+                Kiến Thức Trầm Hương
+              </Link>
+              <Link
+                href="/chinh-sach/chinh-sach-bao-hanh"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="block py-2 text-sm font-medium text-charcoal hover:text-forest"
+              >
+                Chính Sách & Bảo Hành
+              </Link>
+              <div className="pt-2 border-t border-border-subtle flex gap-2">
                 <Link
-                  href="/san-pham"
-                  className="block text-sm font-semibold text-forest py-1"
+                  href="/gio-hang"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="w-full py-2.5 text-center text-xs font-semibold bg-forest hover:bg-forest-dark text-ivory rounded transition-colors shadow-sm"
                 >
-                  Tất cả sản phẩm →
+                  Xem Giỏ Hàng ({totalItems})
                 </Link>
               </div>
-            </div>
-            <Link
-              href="/ve-chung-toi"
-              className="block py-2 text-sm font-medium text-charcoal hover:text-forest"
-            >
-              Về Chúng Tôi
-            </Link>
-            <Link
-              href="/bai-viet"
-              className="block py-2 text-sm font-medium text-charcoal hover:text-forest"
-            >
-              Kiến Thức Trầm Hương
-            </Link>
-            <Link
-              href="/chinh-sach/chinh-sach-bao-hanh"
-              className="block py-2 text-sm font-medium text-charcoal hover:text-forest"
-            >
-              Chính Sách & Bảo Hành
-            </Link>
-            <div className="pt-2 border-t border-border-subtle flex gap-2">
-              <Link
-                href="/gio-hang"
-                className="w-full py-2 text-center text-xs font-semibold bg-forest text-ivory rounded"
-              >
-                Xem Giỏ Hàng ({totalItems})
-              </Link>
-            </div>
-          </div>
-        )}
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Luxury Gold Scroll Reading Progress Bar */}
+        <motion.div
+          style={{ scaleX: scrollYProgress }}
+          className="absolute bottom-0 inset-x-0 h-[2px] bg-gradient-to-r from-champagne via-champagne-light to-champagne origin-left pointer-events-none"
+        />
       </header>
 
       {/* Global Search Overlay */}

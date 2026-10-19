@@ -31,7 +31,7 @@ export async function generateMetadata({
   }
 
   return {
-    title: `${article.title} | VĨNH TRẦM`,
+    title: article.title,
     description: article.excerpt,
     alternates: {
       canonical: `/bai-viet/${article.slug}`,
@@ -141,8 +141,8 @@ export default async function ArticleDetailPage({ params }: ArticleDetailPagePro
             Mỗi tác phẩm VĨNH TRẦM đều được bảo hành dây và hạt trọn đời. Đặt hàng để nhận kiện hàng đồng kiểm tận nơi.
           </p>
         </div>
-        <Button variant="champagne" size="md">
-          <Link href="/san-pham">Xem Bộ Sưu Tập</Link>
+        <Button href="/san-pham" variant="champagne" size="md">
+          Xem Bộ Sưu Tập
         </Button>
       </div>
 

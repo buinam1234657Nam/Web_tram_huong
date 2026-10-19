@@ -19,7 +19,6 @@ export function ProductCard({
   priority?: boolean;
 }) {
   const [isQuickViewOpen, setIsQuickViewOpen] = useState(false);
-  const [isHovered, setIsHovered] = useState(false);
   const [justAdded, setJustAdded] = useState(false);
 
   const addItem = useCartStore((state) => state.addItem);
@@ -45,9 +44,7 @@ export function ProductCard({
   return (
     <>
       <article
-        className="group relative bg-white border border-[#E3DCCF] rounded-xs overflow-hidden flex flex-col justify-between transition-all duration-400 ease-out hover:-translate-y-1 hover:shadow-2xl hover:border-[#C5A46D]/60"
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
+        className="group relative bg-white border border-[#E3DCCF] rounded-xs overflow-hidden flex flex-col justify-between h-full transition-[transform,box-shadow,border-color] duration-300 ease-out hover:-translate-y-1 hover:shadow-xl hover:border-[#C5A46D]/60 will-change-transform"
       >
         {/* Top Badges */}
         <div className="absolute top-2.5 left-2.5 z-10 flex flex-col gap-1 items-start">
@@ -57,23 +54,34 @@ export function ProductCard({
             </span>
           )}
           {discount && (
-            <span className="text-[10px] font-bold bg-[#966B45] text-white px-2 py-0.5 rounded-xs shadow-md animate-shimmer">
+            <span className="text-[10px] font-bold bg-[#966B45] text-white px-2 py-0.5 rounded-xs shadow-md">
               -{discount}%
             </span>
           )}
         </div>
 
         {/* Image Container with 1:1 Aspect Ratio, Warm Ivory Background */}
-        <div className="relative aspect-square w-full bg-[#FAF8F4] overflow-hidden cursor-pointer">
-          <Link href={`/san-pham/${product.slug}`} className="block w-full h-full">
+        <div className="relative aspect-square w-full bg-[#FAF8F4] overflow-hidden cursor-pointer shrink-0">
+          <Link href={`/san-pham/${product.slug}`} className="block w-full h-full relative">
             <Image
-              src={isHovered && hoverImage !== primaryImage ? hoverImage : primaryImage}
+              src={primaryImage}
               alt={product.name}
               fill
               sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 300px"
               priority={priority}
-              className="object-cover transition-transform duration-500 ease-out group-hover:scale-105"
+              className={`object-cover transition-all duration-500 ease-out group-hover:scale-105 ${
+                hoverImage !== primaryImage ? "group-hover:opacity-0" : ""
+              }`}
             />
+            {hoverImage !== primaryImage && (
+              <Image
+                src={hoverImage}
+                alt={`${product.name} - góc chụp khác`}
+                fill
+                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 300px"
+                className="object-cover transition-all duration-500 ease-out opacity-0 group-hover:opacity-100 group-hover:scale-105"
+              />
+            )}
           </Link>
 
           {/* Quick Action Overlay Buttons */}
@@ -111,16 +119,19 @@ export function ProductCard({
         {/* Content */}
         <div className="p-4 sm:p-5 flex-1 flex flex-col justify-between bg-white">
           <div>
-            <div className="flex items-center justify-between text-[11px] text-muted mb-1.5">
-              <span className="font-medium tracking-wide uppercase text-[10px] text-agarwood-dark">{product.categoryName}</span>
-              <StockBadge status={product.inventoryStatus} />
+            <div className="flex items-center text-[11px] text-muted mb-1.5 h-5">
+              <span className="font-medium tracking-wide uppercase text-[10px] text-agarwood-dark truncate">
+                {product.categoryName}
+              </span>
             </div>
 
-            <h3 className="font-serif text-[17px] sm:text-lg font-bold text-charcoal group-hover:text-forest transition-colors line-clamp-2 min-h-[46px] leading-snug tracking-tight">
-              <Link href={`/san-pham/${product.slug}`}>{product.name}</Link>
-            </h3>
+            <div className="h-[52px] flex items-start">
+              <h3 className="font-serif text-[17px] sm:text-lg font-bold text-charcoal group-hover:text-forest transition-colors line-clamp-2 leading-snug tracking-tight">
+                <Link href={`/san-pham/${product.slug}`}>{product.name}</Link>
+              </h3>
+            </div>
 
-            <div className="mt-1.5 mb-2.5">
+            <div className="mt-2 mb-3 h-4 flex items-center">
               <StarRating
                 rating={product.ratingAverage}
                 count={product.ratingCount}
@@ -129,8 +140,8 @@ export function ProductCard({
             </div>
           </div>
 
-          <div className="pt-2.5 border-t border-border-subtle/50 flex flex-wrap items-center justify-between gap-1.5">
-            <div className="flex items-baseline gap-1.5 flex-wrap">
+          <div className="pt-3 border-t border-border-subtle/50 flex flex-col justify-end space-y-1.5">
+            <div className="flex items-baseline gap-2 flex-wrap">
               <span className="font-sans text-base sm:text-lg font-bold text-forest tracking-tight">
                 {formatVND(price)}
               </span>
@@ -141,11 +152,20 @@ export function ProductCard({
               )}
             </div>
 
-            {product.variants.length > 1 && (
-              <span className="text-[10px] text-muted font-medium bg-ivory px-2 py-0.5 rounded-xs border border-border-subtle shrink-0">
-                {product.variants.length} quy cách
-              </span>
-            )}
+            {/* Bottom Row: Specifications (left) and StockBadge (right - filling the empty space) */}
+            <div className="h-6 flex items-center justify-between gap-2 mt-0.5">
+              {product.variants.length > 1 ? (
+                <span className="text-[10px] text-stone-600 font-medium bg-[#FAF8F4] px-2 py-0.5 rounded-xs border border-border-subtle inline-block shrink-0">
+                  {product.variants.length} quy cách
+                </span>
+              ) : (
+                <span className="text-[10px] text-stone-400 font-normal shrink-0">
+                  Quy cách tiêu chuẩn
+                </span>
+              )}
+
+              <StockBadge status={product.inventoryStatus} />
+            </div>
           </div>
         </div>
       </article>

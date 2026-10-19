@@ -29,7 +29,7 @@ export async function generateMetadata({
   }
 
   return {
-    title: `${category.name} - Trầm Hương Tự Nhiên Thượng Phẩm`,
+    title: category.name,
     description: category.description,
     alternates: {
       canonical: `/danh-muc/${category.slug}`,

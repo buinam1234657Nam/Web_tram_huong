@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import {
   MapPin,
   Clock,
@@ -15,6 +16,8 @@ import { mockCategories } from "@/data/mock/categories";
 import { Button } from "@/components/ui/Button";
 
 export function Footer() {
+  const pathname = usePathname();
+  const isCheckoutPage = pathname === "/thanh-toan";
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [message, setMessage] = useState("");
@@ -51,60 +54,62 @@ export function Footer() {
   return (
     <footer className="bg-forest-dark text-ivory/80 pt-16 pb-12 border-t border-forest">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Newsletter Section */}
-        <div className="bg-forest rounded-sm p-6 sm:p-10 mb-16 border border-champagne/20">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
-            <div>
-              <span className="text-xs uppercase tracking-widest text-champagne font-semibold block mb-1">
-                Bản Tin Thưởng Trầm
-              </span>
-              <h3 className="font-serif text-2xl sm:text-3xl font-semibold text-ivory mb-2">
-                Đăng Ký Nhận Kiến Thức & Ưu Đãi Độc Quyền
-              </h3>
-              <p className="text-xs sm:text-sm text-ivory/70 max-w-lg">
-                Nhận cẩm nang nhận biết trầm hương thật giả, phương pháp xông phòng an định và thông tin về các mẻ trầm quý tự nhiên mới về.
-              </p>
-            </div>
-
-            <form onSubmit={handleSubscribe} className="space-y-2">
-              <div className="flex flex-col sm:flex-row gap-2">
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="Nhập địa chỉ email của Quý khách..."
-                  required
-                  className="flex-1 bg-ivory text-charcoal px-4 py-3 rounded-sm text-sm focus:outline-none focus:ring-2 focus:ring-champagne placeholder-stone-500"
-                />
-                <Button
-                  type="submit"
-                  variant="champagne"
-                  size="md"
-                  isLoading={status === "loading"}
-                  rightIcon={<ArrowRight className="w-4 h-4" />}
-                >
-                  Đăng Ký
-                </Button>
+        {/* Newsletter Section - Hidden on Checkout */}
+        {!isCheckoutPage && (
+          <div className="bg-forest rounded-sm p-6 sm:p-10 mb-16 border border-champagne/20">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+              <div>
+                <span className="text-xs uppercase tracking-widest text-champagne font-semibold block mb-1">
+                  Bản Tin Thưởng Trầm
+                </span>
+                <h3 className="font-serif text-2xl sm:text-3xl font-semibold text-ivory mb-2">
+                  Đăng Ký Nhận Kiến Thức & Ưu Đãi Độc Quyền
+                </h3>
+                <p className="text-xs sm:text-sm text-ivory/70 max-w-lg">
+                  Nhận cẩm nang nhận biết trầm hương thật giả, phương pháp xông phòng an định và thông tin về các mẻ trầm quý tự nhiên mới về.
+                </p>
               </div>
 
-              {status === "success" && (
-                <div className="flex items-center gap-1.5 text-xs text-emerald-400">
-                  <CheckCircle2 className="w-3.5 h-3.5" />
-                  <span>{message}</span>
+              <form onSubmit={handleSubscribe} className="space-y-2">
+                <div className="flex flex-col sm:flex-row gap-2">
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="Nhập địa chỉ email của Quý khách..."
+                    required
+                    className="flex-1 bg-ivory text-charcoal px-4 py-3 rounded-sm text-sm focus:outline-none focus:ring-2 focus:ring-champagne placeholder-stone-500"
+                  />
+                  <Button
+                    type="submit"
+                    variant="champagne"
+                    size="md"
+                    isLoading={status === "loading"}
+                    rightIcon={<ArrowRight className="w-4 h-4" />}
+                  >
+                    Đăng Ký
+                  </Button>
                 </div>
-              )}
-              {status === "error" && (
-                <div className="flex items-center gap-1.5 text-xs text-rose-400">
-                  <AlertCircle className="w-3.5 h-3.5" />
-                  <span>{message}</span>
-                </div>
-              )}
-              <p className="text-[11px] text-ivory/50">
-                VĨNH TRẦM cam kết bảo mật thông tin và không gửi thư rác.
-              </p>
-            </form>
+
+                {status === "success" && (
+                  <div className="flex items-center gap-1.5 text-xs text-emerald-400">
+                    <CheckCircle2 className="w-3.5 h-3.5" />
+                    <span>{message}</span>
+                  </div>
+                )}
+                {status === "error" && (
+                  <div className="flex items-center gap-1.5 text-xs text-rose-400">
+                    <AlertCircle className="w-3.5 h-3.5" />
+                    <span>{message}</span>
+                  </div>
+                )}
+                <p className="text-[11px] text-ivory/50">
+                  VĨNH TRẦM cam kết bảo mật thông tin và không gửi thư rác.
+                </p>
+              </form>
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Main Footer Links */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10 pb-12 border-b border-forest-light/60">

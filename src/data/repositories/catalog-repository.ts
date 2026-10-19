@@ -88,7 +88,11 @@ export class MockCatalogRepository implements ICatalogRepository {
 
   async getBestsellers(limit = 4): Promise<Product[]> {
     const bestsellers = mockProducts.filter((p) => p.bestseller);
-    return bestsellers.slice(0, limit);
+    if (bestsellers.length >= limit) {
+      return bestsellers.slice(0, limit);
+    }
+    const remaining = mockProducts.filter((p) => !p.bestseller);
+    return [...bestsellers, ...remaining].slice(0, limit);
   }
 
   async getFeaturedProducts(limit = 6): Promise<Product[]> {

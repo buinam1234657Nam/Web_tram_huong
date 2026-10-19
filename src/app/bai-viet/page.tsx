@@ -7,6 +7,8 @@ import { catalogRepository } from "@/data/repositories/catalog-repository";
 import { Breadcrumbs } from "@/components/ui/Breadcrumbs";
 import { BreadcrumbJsonLd } from "@/components/seo/JsonLd";
 
+import { ArticlesView } from "./ArticlesView";
+
 export const metadata: Metadata = {
   title: "Cẩm Nang Tri Thức & Nghệ Thuật Thưởng Trầm Hương",
   description:
@@ -45,59 +47,7 @@ export default async function ArticlesPage() {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        {articles.map((article) => (
-          <article
-            key={article.id}
-            className="bg-white border border-border-subtle rounded-sm overflow-hidden flex flex-col justify-between group hover:shadow-md transition-shadow"
-          >
-            <div className="relative aspect-16/10 w-full bg-ivory overflow-hidden">
-              <Image
-                src={article.coverImage}
-                alt={article.title}
-                fill
-                sizes="(max-width: 768px) 100vw, 33vw"
-                className="object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
-              />
-              <span className="absolute top-2.5 left-2.5 text-[11px] font-semibold bg-forest text-ivory px-2.5 py-0.5 rounded-xs">
-                {article.category}
-              </span>
-            </div>
-
-            <div className="p-6 flex-1 flex flex-col justify-between space-y-4">
-              <div>
-                <div className="flex items-center gap-3 text-[11px] text-muted mb-2">
-                  <span className="flex items-center gap-1">
-                    <Clock className="w-3.5 h-3.5" />
-                    {article.readingTimeMinutes} phút đọc
-                  </span>
-                  <span>•</span>
-                  <span>{article.publishedAt}</span>
-                </div>
-
-                <h2 className="font-serif text-lg font-bold text-charcoal group-hover:text-forest transition-colors line-clamp-2 mb-2">
-                  <Link href={`/bai-viet/${article.slug}`}>{article.title}</Link>
-                </h2>
-
-                <p className="text-xs text-muted leading-relaxed line-clamp-3">
-                  {article.excerpt}
-                </p>
-              </div>
-
-              <div className="pt-4 border-t border-border-subtle/60 flex items-center justify-between text-xs">
-                <span className="font-medium text-charcoal">{article.author.name}</span>
-                <Link
-                  href={`/bai-viet/${article.slug}`}
-                  className="font-semibold text-agarwood-dark group-hover:text-forest transition-colors flex items-center gap-1"
-                >
-                  Đọc bài viết
-                  <ArrowRight className="w-3.5 h-3.5" />
-                </Link>
-              </div>
-            </div>
-          </article>
-        ))}
-      </div>
+      <ArticlesView initialArticles={articles} />
     </div>
   );
 }

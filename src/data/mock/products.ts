@@ -140,7 +140,7 @@ Khói nhang mỏng như làn tơ, lan tỏa êm dịu, không gây cay mắt hay
     categoryName: "Nhang Trầm Tự Nhiên",
     images: ["/images/incense-sticks.jpg", "/images/hero-agarwood.jpg"],
     featured: true,
-    bestseller: false,
+    bestseller: true,
     purpose: "meditation",
     scentProfile: {
       intensity: "nhẹ nhàng",
@@ -384,7 +384,7 @@ Từng hạt trầm 14mm nặng chắc, khi thả vào nước sẽ chìm hoàn 
     categoryName: "Vòng Tay & Trang Sức",
     images: ["/images/single-bracelet.jpg", "/images/bracelet-108.jpg"],
     featured: true,
-    bestseller: false,
+    bestseller: true,
     purpose: "fengshui",
     scentProfile: {
       intensity: "đậm sâu",

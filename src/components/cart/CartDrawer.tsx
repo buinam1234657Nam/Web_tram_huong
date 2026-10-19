@@ -1,9 +1,11 @@
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { X, Trash2, Plus, Minus, ShoppingBag, ArrowRight, Truck } from "lucide-react";
+import { X, Trash2, Plus, Minus, ShoppingBag, ArrowRight, Truck, Sparkles } from "lucide-react";
+import { motion, AnimatePresence } from "motion/react";
 import { useCartStore } from "@/features/cart/useCartStore";
 import { useIsMounted } from "@/hooks/useIsMounted";
 import { formatVND } from "@/lib/format/currency";
@@ -11,6 +13,7 @@ import { brandConfig } from "@/lib/config/brand";
 import { Button } from "@/components/ui/Button";
 
 export function CartDrawer() {
+  const router = useRouter();
   const {
     items,
     isOpen,
@@ -22,6 +25,19 @@ export function CartDrawer() {
   } = useCartStore();
 
   const mounted = useIsMounted();
+
+  // Prefetch critical pages as soon as cart drawer is opened
+  useEffect(() => {
+    if (isOpen) {
+      router.prefetch("/gio-hang");
+      router.prefetch("/thanh-toan");
+    }
+  }, [isOpen, router]);
+
+  const handleNavigate = (path: string) => {
+    closeCart();
+    router.push(path);
+  };
 
   if (!mounted) return null;
 
@@ -72,8 +88,9 @@ export function CartDrawer() {
                   Mua thêm <strong className="text-forest font-semibold">{formatVND(remainingForFreeShipping)}</strong> để được <strong>Miễn phí vận chuyển</strong>
                 </span>
               ) : (
-                <span className="text-emerald-700 font-medium">
-                  Đơn hàng của bạn đã đủ điều kiện <strong>Miễn Phí Vận Chuyển Toàn Quốc!</strong>
+                <span className="text-emerald-700 font-medium inline-flex items-center gap-1.5">
+                  <Sparkles className="w-3.5 h-3.5 text-champagne shrink-0" />
+                  <span>Đơn hàng của bạn đã đủ điều kiện <strong>Miễn Phí Vận Chuyển!</strong></span>
                 </span>
               )}
             </div>
@@ -99,79 +116,92 @@ export function CartDrawer() {
                   Khám phá các sản phẩm trầm hương tự nhiên thượng phẩm của VĨNH TRẦM ngay.
                 </p>
                 <Button
-                  onClick={closeCart}
+                  onClick={() => handleNavigate("/san-pham")}
                   variant="primary"
                   size="sm"
                 >
-                  <Link href="/san-pham">Khám phá bộ sưu tập</Link>
+                  Khám phá bộ sưu tập
                 </Button>
               </div>
             ) : (
-              items.map((item) => (
-                <div key={item.id} className="py-4 flex gap-4">
-                  <div className="relative w-20 h-20 rounded-sm overflow-hidden bg-ivory shrink-0 border border-border-subtle">
-                    <Image
-                      src={item.image}
-                      alt={item.name}
-                      fill
-                      sizes="80px"
-                      className="object-cover"
-                    />
-                  </div>
-
-                  <div className="flex-1 min-w-0 flex flex-col justify-between">
-                    <div>
-                      <div className="flex items-start justify-between gap-2">
-                        <Link
-                          href={`/san-pham/${item.slug}`}
-                          onClick={closeCart}
-                          className="text-sm font-medium text-charcoal hover:text-forest line-clamp-1 transition-colors"
-                        >
-                          {item.name}
-                        </Link>
-                        <button
-                          onClick={() => removeItem(item.id)}
-                          className="text-stone-400 hover:text-red-600 transition-colors p-0.5"
-                          title="Xóa khỏi giỏ"
-                          aria-label={`Xóa ${item.name}`}
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </div>
-                      <p className="text-xs text-muted mt-0.5">{item.variantName}</p>
+              <AnimatePresence initial={false}>
+                {items.map((item) => (
+                  <motion.div
+                    key={item.id}
+                    layout
+                    initial={{ opacity: 0, y: 15 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, x: -25, height: 0, paddingTop: 0, paddingBottom: 0 }}
+                    transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
+                    className="py-4 flex gap-4 overflow-hidden"
+                  >
+                    <div className="relative w-20 h-20 rounded-sm overflow-hidden bg-ivory shrink-0 border border-border-subtle">
+                      <Image
+                        src={item.image}
+                        alt={item.name}
+                        fill
+                        sizes="80px"
+                        className="object-cover"
+                      />
                     </div>
 
-                    <div className="flex items-center justify-between mt-3">
-                      <div className="flex items-center border border-border-subtle rounded-sm bg-stone-50">
-                        <button
-                          onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                          className="w-7 h-7 flex items-center justify-center text-stone-600 hover:bg-stone-200 transition-colors"
-                          aria-label="Giảm số lượng"
-                        >
-                          <Minus className="w-3 h-3" />
-                        </button>
-                        <span className="w-8 text-center text-xs font-semibold text-charcoal">
-                          {item.quantity}
-                        </span>
-                        <button
-                          onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                          disabled={item.quantity >= item.maxQuantity}
-                          className="w-7 h-7 flex items-center justify-center text-stone-600 hover:bg-stone-200 transition-colors disabled:opacity-30"
-                          aria-label="Tăng số lượng"
-                        >
-                          <Plus className="w-3 h-3" />
-                        </button>
+                    <div className="flex-1 min-w-0 flex flex-col justify-between">
+                      <div>
+                        <div className="flex items-start justify-between gap-2">
+                          <Link
+                            href={`/san-pham/${item.slug}`}
+                            onClick={(e) => {
+                              e.preventDefault();
+                              handleNavigate(`/san-pham/${item.slug}`);
+                            }}
+                            className="text-sm font-medium text-charcoal hover:text-forest line-clamp-1 transition-colors"
+                          >
+                            {item.name}
+                          </Link>
+                          <button
+                            onClick={() => removeItem(item.id)}
+                            className="text-stone-400 hover:text-red-600 transition-colors p-0.5 cursor-pointer"
+                            title="Xóa khỏi giỏ"
+                            aria-label={`Xóa ${item.name}`}
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                        <p className="text-xs text-muted mt-0.5">{item.variantName}</p>
                       </div>
 
-                      <div className="text-right">
-                        <p className="text-sm font-semibold text-forest">
-                          {formatVND(item.price * item.quantity)}
-                        </p>
+                      <div className="flex items-center justify-between mt-3">
+                        <div className="flex items-center border border-border-subtle rounded-sm bg-stone-50">
+                          <button
+                            onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                            className="w-7 h-7 flex items-center justify-center text-stone-600 hover:bg-stone-200 transition-colors cursor-pointer"
+                            aria-label="Giảm số lượng"
+                          >
+                            <Minus className="w-3 h-3" />
+                          </button>
+                          <span className="w-8 text-center text-xs font-semibold text-charcoal">
+                            {item.quantity}
+                          </span>
+                          <button
+                            onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                            disabled={item.quantity >= item.maxQuantity}
+                            className="w-7 h-7 flex items-center justify-center text-stone-600 hover:bg-stone-200 transition-colors disabled:opacity-30 cursor-pointer"
+                            aria-label="Tăng số lượng"
+                          >
+                            <Plus className="w-3 h-3" />
+                          </button>
+                        </div>
+
+                        <div className="text-right">
+                          <p className="text-sm font-semibold text-forest">
+                            {formatVND(item.price * item.quantity)}
+                          </p>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </div>
-              ))
+                  </motion.div>
+                ))}
+              </AnimatePresence>
             )}
           </div>
 
@@ -188,25 +218,21 @@ export function CartDrawer() {
 
               <div className="grid grid-cols-2 gap-2 pt-1">
                 <Button
+                  onClick={() => handleNavigate("/gio-hang")}
                   variant="outline"
-                  size="md"
-                  className="w-full"
-                  onClick={closeCart}
+                  size="sm"
+                  className="w-full text-xs sm:text-sm font-medium"
                 >
-                  <Link href="/gio-hang" className="w-full text-center">
-                    Xem giỏ hàng
-                  </Link>
+                  Xem giỏ hàng
                 </Button>
                 <Button
+                  onClick={() => handleNavigate("/thanh-toan")}
                   variant="primary"
-                  size="md"
-                  className="w-full"
-                  onClick={closeCart}
+                  size="sm"
+                  className="w-full text-xs sm:text-sm font-medium"
                   rightIcon={<ArrowRight className="w-4 h-4" />}
                 >
-                  <Link href="/thanh-toan" className="w-full text-center">
-                    Thanh toán
-                  </Link>
+                  Thanh toán
                 </Button>
               </div>
             </div>

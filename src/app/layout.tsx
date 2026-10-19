@@ -7,6 +7,7 @@ import { Footer } from "@/components/layout/Footer";
 import { CartDrawer } from "@/components/cart/CartDrawer";
 import { FloatingContactWidget } from "@/components/ui/FloatingContactWidget";
 import { OrganizationJsonLd } from "@/components/seo/JsonLd";
+import { SmoothScroll } from "@/components/motion/SmoothScroll";
 
 const playfair = Playfair_Display({
   variable: "--font-playfair",
@@ -31,7 +32,7 @@ const lora = Lora({
 
 export const metadata: Metadata = {
   title: {
-    template: "%s | VĨNH TRẦM - Trầm Hương Thượng Hạng",
+    template: "%s | VĨNH TRẦM",
     default: "VĨNH TRẦM | Tinh Hoa Trầm Hương Tự Nhiên Đất Việt",
   },
   description:
@@ -69,6 +70,7 @@ export default function RootLayout({
       className={`${playfair.variable} ${inter.variable} ${lora.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-ivory text-charcoal font-sans selection:bg-[#28392F] selection:text-[#F5F5F7]">
+        <SmoothScroll />
         <OrganizationJsonLd />
         <AnnouncementBar />
         <Header />
