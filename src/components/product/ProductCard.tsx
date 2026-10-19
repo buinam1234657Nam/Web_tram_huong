@@ -45,26 +45,26 @@ export function ProductCard({
   return (
     <>
       <article
-        className="group relative bg-white border border-border-subtle rounded-xs overflow-hidden flex flex-col justify-between product-card-hover hover:border-champagne/80 hover:shadow-xl transition-all duration-300"
+        className="group relative bg-white border border-[#E3DCCF] rounded-xs overflow-hidden flex flex-col justify-between transition-all duration-400 ease-out hover:-translate-y-1 hover:shadow-2xl hover:border-[#C5A46D]/60"
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
       >
         {/* Top Badges */}
         <div className="absolute top-2.5 left-2.5 z-10 flex flex-col gap-1 items-start">
           {product.bestseller && (
-            <span className="text-[10px] uppercase font-bold tracking-wider bg-forest text-ivory px-2.5 py-0.5 rounded-xs shadow-md border border-forest-light">
+            <span className="text-[10px] uppercase font-bold tracking-wider bg-[#28392F] text-[#F5F5F7] px-2.5 py-0.5 rounded-xs shadow-md border border-[#374E40]">
               Bán chạy
             </span>
           )}
           {discount && (
-            <span className="text-[10px] font-bold bg-agarwood text-white px-2 py-0.5 rounded-xs shadow-md animate-shimmer">
+            <span className="text-[10px] font-bold bg-[#966B45] text-white px-2 py-0.5 rounded-xs shadow-md animate-shimmer">
               -{discount}%
             </span>
           )}
         </div>
 
-        {/* Image Container with Crossfade on Hover */}
-        <div className="relative aspect-square w-full bg-ivory overflow-hidden cursor-pointer">
+        {/* Image Container with 1:1 Aspect Ratio, Warm Ivory Background */}
+        <div className="relative aspect-square w-full bg-[#FAF8F4] overflow-hidden cursor-pointer">
           <Link href={`/san-pham/${product.slug}`} className="block w-full h-full">
             <Image
               src={isHovered && hoverImage !== primaryImage ? hoverImage : primaryImage}
@@ -72,16 +72,16 @@ export function ProductCard({
               fill
               sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 300px"
               priority={priority}
-              className="object-cover transition-transform duration-700 ease-out group-hover:scale-108"
+              className="object-cover transition-transform duration-500 ease-out group-hover:scale-105"
             />
           </Link>
 
           {/* Quick Action Overlay Buttons */}
-          <div className="absolute inset-x-2.5 bottom-2.5 z-10 flex gap-2 translate-y-3 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300 ease-out">
+          <div className="absolute inset-x-3 bottom-3 z-10 flex gap-2 translate-y-3 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300 ease-out">
             <button
               type="button"
               onClick={() => setIsQuickViewOpen(true)}
-              className="flex-1 py-2 px-3 text-xs font-semibold bg-white/95 text-charcoal hover:bg-forest hover:text-ivory backdrop-blur-xs rounded-xs shadow-lg transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+              className="flex-1 py-2 px-3 text-xs font-semibold bg-[#FAF8F4]/95 text-[#1C2520] hover:bg-[#28392F] hover:text-[#F5F5F7] backdrop-blur-xs rounded-xs shadow-lg transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
               aria-label={`Xem nhanh ${product.name}`}
             >
               <Eye className="w-3.5 h-3.5" />
@@ -95,7 +95,7 @@ export function ProductCard({
               className={`p-2.5 rounded-xs shadow-lg backdrop-blur-xs transition-all duration-200 flex items-center justify-center cursor-pointer ${
                 justAdded
                   ? "bg-emerald-700 text-white scale-105"
-                  : "bg-forest text-ivory hover:bg-forest-dark hover:scale-105"
+                  : "bg-[#28392F] text-[#F5F5F7] hover:bg-[#1A2520] hover:text-[#C5A46D] hover:scale-105"
               }`}
               aria-label={`Thêm ${product.name} vào giỏ hàng`}
             >

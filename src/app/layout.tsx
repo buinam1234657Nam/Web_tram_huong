@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Cormorant_Garamond, Be_Vietnam_Pro, Cinzel } from "next/font/google";
+import { Playfair_Display, Inter, Lora } from "next/font/google";
 import "./globals.css";
 import { AnnouncementBar } from "@/components/layout/AnnouncementBar";
 import { Header } from "@/components/layout/Header";
@@ -7,24 +7,24 @@ import { Footer } from "@/components/layout/Footer";
 import { CartDrawer } from "@/components/cart/CartDrawer";
 import { OrganizationJsonLd } from "@/components/seo/JsonLd";
 
-const cormorant = Cormorant_Garamond({
-  variable: "--font-cormorant",
+const playfair = Playfair_Display({
+  variable: "--font-playfair",
+  subsets: ["vietnamese", "latin"],
+  weight: ["500", "600", "700", "800"],
+  display: "swap",
+});
+
+const inter = Inter({
+  variable: "--font-inter",
   subsets: ["vietnamese", "latin"],
   weight: ["400", "500", "600", "700"],
   display: "swap",
 });
 
-const beVietnam = Be_Vietnam_Pro({
-  variable: "--font-be-vietnam",
+const lora = Lora({
+  variable: "--font-lora",
   subsets: ["vietnamese", "latin"],
-  weight: ["300", "400", "500", "600", "700"],
-  display: "swap",
-});
-
-const cinzel = Cinzel({
-  variable: "--font-cinzel",
-  subsets: ["latin"],
-  weight: ["500", "600", "700", "800"],
+  weight: ["400", "500", "600", "700"],
   display: "swap",
 });
 
@@ -65,9 +65,9 @@ export default function RootLayout({
   return (
     <html
       lang="vi"
-      className={`${cormorant.variable} ${beVietnam.variable} ${cinzel.variable} h-full antialiased`}
+      className={`${playfair.variable} ${inter.variable} ${lora.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col bg-ivory text-charcoal font-sans">
+      <body className="min-h-full flex flex-col bg-ivory text-charcoal font-sans selection:bg-[#28392F] selection:text-[#F5F5F7]">
         <OrganizationJsonLd />
         <AnnouncementBar />
         <Header />

@@ -20,9 +20,9 @@
   --color-border-subtle: #E3DCCF;
   --color-border-dark: #374E40;
 
-  --font-serif: var(--font-cormorant), 'Playfair Display', Georgia, serif;
-  --font-display: var(--font-cinzel), 'Cormorant Garamond', serif;
-  --font-sans: var(--font-be-vietnam), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-serif: var(--font-playfair), 'Playfair Display', Georgia, serif;
+  --font-serif-sub: var(--font-lora), Georgia, serif;
+  --font-sans: var(--font-inter), system-ui, -apple-system, sans-serif;
 }
 
 :root {
@@ -33,7 +33,7 @@
 body {
   background-color: var(--background);
   color: var(--foreground);
-  font-family: var(--font-be-vietnam), -apple-system, BlinkMacSystemFont, sans-serif;
+  font-family: var(--font-inter), system-ui, -apple-system, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
@@ -41,13 +41,15 @@ body {
 
 /* Luxury Display & Serif typography overrides */
 h1, h2, h3, .font-serif {
-  font-family: var(--font-cormorant), 'Playfair Display', Georgia, serif;
-  letter-spacing: -0.015em;
+  font-family: var(--font-playfair), 'Playfair Display', Georgia, serif;
+  letter-spacing: -0.01em;
+  font-weight: 700;
 }
 
 .brand-heading {
-  font-family: var(--font-cinzel), serif;
-  letter-spacing: 0.12em;
+  font-family: var(--font-playfair), serif;
+  letter-spacing: 0.08em;
+  font-weight: 700;
 }
 
 /* Custom Scrollbar for Luxury Aesthetic */

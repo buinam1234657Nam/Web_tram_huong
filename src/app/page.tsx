@@ -20,7 +20,6 @@ import { ProductCard } from "@/components/product/ProductCard";
 import { CategoryCarousel } from "@/components/home/CategoryCarousel";
 import { GuidedShopping } from "@/components/home/GuidedShopping";
 import { AtmosphericSmoke } from "@/components/home/AtmosphericSmoke";
-import { LuxuryTicker } from "@/components/home/LuxuryTicker";
 import {
   FadeIn,
   FadeInStagger,
@@ -40,7 +39,7 @@ export default async function HomePage() {
     ]);
 
   return (
-    <div className="space-y-16 sm:space-y-24 pb-16">
+    <div className="space-y-24 sm:space-y-32 lg:space-y-40 pb-28">
       {/* ============================================================
           SECTION 3: FULL-WIDTH LUXURY HERO WITH ATMOSPHERIC SMOKE
           ============================================================ */}
@@ -143,11 +142,6 @@ export default async function HomePage() {
             </div>
           </div>
         </div>
-
-        {/* Infinite Luxury Marquee Ticker */}
-        <div className="relative z-20 w-full mt-auto">
-          <LuxuryTicker />
-        </div>
       </section>
 
       {/* ============================================================
@@ -182,7 +176,7 @@ export default async function HomePage() {
                       <p className="text-xs font-medium text-agarwood-dark mt-0.5 mb-1.5">
                         {pillar.subtitle}
                       </p>
-                      <p className="text-xs text-muted leading-relaxed font-light">
+                      <p className="text-sm text-stone-600 leading-relaxed font-normal">
                         {pillar.description}
                       </p>
                     </div>
@@ -337,8 +331,8 @@ export default async function HomePage() {
                   <h3 className="font-serif text-base font-bold text-charcoal mt-3 mb-2">
                     &quot;{review.title}&quot;
                   </h3>
-                  <p className="text-xs text-charcoal/80 leading-relaxed italic font-light">
-                    {review.content}
+                  <p className="text-sm sm:text-[15px] text-stone-800 leading-relaxed font-normal">
+                    &quot;{review.content}&quot;
                   </p>
                 </div>
 
@@ -419,11 +413,11 @@ export default async function HomePage() {
                       </span>
                     </div>
 
-                    <h3 className="font-serif text-lg font-bold text-charcoal group-hover:text-forest transition-colors line-clamp-2 mb-2 leading-snug">
+                    <h3 className="font-serif text-lg sm:text-xl font-bold text-charcoal group-hover:text-forest transition-colors line-clamp-2 mb-2 leading-snug">
                       <Link href={`/bai-viet/${art.slug}`}>{art.title}</Link>
                     </h3>
 
-                    <p className="text-xs text-muted leading-relaxed line-clamp-3 font-light">
+                    <p className="text-sm text-stone-600 leading-relaxed line-clamp-3 font-normal">
                       {art.excerpt}
                     </p>
                   </div>
@@ -431,10 +425,10 @@ export default async function HomePage() {
                   <div className="pt-4 mt-4 border-t border-border-subtle/50">
                     <Link
                       href={`/bai-viet/${art.slug}`}
-                      className="text-xs font-semibold text-agarwood-dark group-hover:text-forest transition-colors inline-flex items-center gap-1"
+                      className="text-xs font-semibold text-agarwood-dark group-hover:text-forest transition-colors inline-flex items-center gap-1.5 group/link"
                     >
-                      Đọc tiếp
-                      <ArrowRight className="w-3.5 h-3.5" />
+                      <span>Đọc tiếp</span>
+                      <ArrowRight className="w-3.5 h-3.5 group-hover/link:translate-x-1.5 transition-transform" />
                     </Link>
                   </div>
                 </div>
