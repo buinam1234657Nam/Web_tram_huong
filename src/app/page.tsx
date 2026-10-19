@@ -20,6 +20,7 @@ import { ProductCard } from "@/components/product/ProductCard";
 import { CategoryCarousel } from "@/components/home/CategoryCarousel";
 import { GuidedShopping } from "@/components/home/GuidedShopping";
 import { AtmosphericSmoke } from "@/components/home/AtmosphericSmoke";
+import { CelebrityCommunity } from "@/components/home/CelebrityCommunity";
 import {
   FadeIn,
   FadeInStagger,
@@ -296,6 +297,11 @@ export default async function HomePage() {
           <GuidedShopping products={allProducts} />
         </FadeIn>
       </section>
+
+      {/* ============================================================
+          SECTION 8.5: CỘNG ĐỒNG TINH HOA VĨNH TRẦM (CELEBRITY & ARTISTS)
+          ============================================================ */}
+      <CelebrityCommunity />
 
       {/* ============================================================
           SECTION 9: TRANSPARENT CUSTOMER REVIEWS

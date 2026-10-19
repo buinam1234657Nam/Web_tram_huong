@@ -5,6 +5,7 @@ import { AnnouncementBar } from "@/components/layout/AnnouncementBar";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { CartDrawer } from "@/components/cart/CartDrawer";
+import { FloatingContactWidget } from "@/components/ui/FloatingContactWidget";
 import { OrganizationJsonLd } from "@/components/seo/JsonLd";
 
 const playfair = Playfair_Display({
@@ -74,6 +75,7 @@ export default function RootLayout({
         <main className="flex-1">{children}</main>
         <Footer />
         <CartDrawer />
+        <FloatingContactWidget />
       </body>
     </html>
   );
