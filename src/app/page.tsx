@@ -8,6 +8,17 @@ import { brandConfig } from "@/lib/config/brand";
 import { Button } from "@/components/ui/Button";
 import { ProductCarousel } from "@/components/product/ProductCarousel";
 import { FadeIn } from "@/components/motion/MotionPrimitives";
+import { HeroVideo } from "@/components/home/HeroVideo";
+
+/**
+ * Hero clip: rendered from /images/hero-agarwood.jpg (smoke rising from the
+ * ember, slow push-in, 10s seamless loop). Swap these files for real footage
+ * shot the same way; WebM first (smaller), MP4 for older Safari.
+ */
+const HERO_VIDEO_SOURCES = [
+  { src: "/videos/hero-khoi-tram.webm", type: "video/webm" },
+  { src: "/videos/hero-khoi-tram.mp4", type: "video/mp4" },
+];
 
 export const metadata: Metadata = {
   alternates: { canonical: "/" },
@@ -83,7 +94,7 @@ export default async function HomePage() {
 
   return (
     <div className="space-y-20 sm:space-y-28 pb-24">
-      {/* Hero: full-bleed image, headline block below. CSS-driven so it renders before hydration. */}
+      {/* Hero: full-bleed photo with a short smoke loop over it, headline block below. */}
       <section>
         <Link
           href="/san-pham"
@@ -96,8 +107,9 @@ export default async function HomePage() {
             loading="eager"
             fetchPriority="high"
             sizes="100vw"
-            className="object-cover animate-fade-in"
+            className="object-cover"
           />
+          <HeroVideo sources={HERO_VIDEO_SOURCES} />
         </Link>
         <div className="max-w-6xl mx-auto px-4 sm:px-6 pt-10 sm:pt-12 text-center">
           <p className="text-[15px] font-medium text-charcoal animate-fade-up [animation-delay:200ms]">

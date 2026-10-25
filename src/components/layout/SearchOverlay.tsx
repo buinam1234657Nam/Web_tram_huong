@@ -4,12 +4,13 @@ import React, { useState, useEffect, useRef, useMemo } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { Search, X } from "lucide-react";
+import { ArrowRight, Search, X } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { mockProducts } from "@/data/mock/products";
 import { formatVND } from "@/lib/format/currency";
 import type { Product } from "@/types/product";
 import { MOTION_EASE } from "@/components/motion/MotionPrimitives";
+import { useScrollLock } from "@/hooks/useScrollLock";
 
 const POPULAR_SEARCHES = [
   "Vòng tay 108 hạt",
@@ -19,43 +20,23 @@ const POPULAR_SEARCHES = [
   "Bộ quà tặng",
 ];
 
-const BESTSELLERS = mockProducts.filter((p) => p.bestseller).slice(0, 4);
+const SHORTCUTS = [
+  { href: "/danh-muc/vong-tay-tram-huong", label: "Vòng tay trầm" },
+  { href: "/danh-muc/tram-nu-xong-nha", label: "Trầm nụ xông nhà" },
+  { href: "/danh-muc/nhang-tram-huong", label: "Nhang trầm" },
+  { href: "/danh-muc/bo-qua-tang", label: "Quà biếu" },
+];
 
-function ProductTiles({
-  products,
-  onSelect,
-}: {
-  products: Product[];
-  onSelect: () => void;
-}) {
+const BESTSELLERS = mockProducts.filter((p) => p.bestseller).slice(0, 4);
+const MAX_PREVIEW = 4;
+
+function matches(product: Product, q: string) {
   return (
-    <ul className="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-x-4 gap-y-6">
-      {products.map((product) => (
-        <li key={product.id}>
-          <Link
-            href={`/san-pham/${product.slug}`}
-            onClick={onSelect}
-            className="group block"
-          >
-            <div className="relative aspect-square overflow-hidden rounded-xl bg-ivory">
-              <Image
-                src={product.images[0]}
-                alt={product.name}
-                fill
-                sizes="(max-width: 640px) 50vw, 160px"
-                className="object-cover transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.04]"
-              />
-            </div>
-            <p className="mt-2.5 text-sm font-medium text-charcoal line-clamp-2 group-hover:text-gold-dark transition-colors">
-              {product.name}
-            </p>
-            <p className="mt-0.5 text-sm text-muted">
-              {formatVND(product.price)}
-            </p>
-          </Link>
-        </li>
-      ))}
-    </ul>
+    product.name.toLowerCase().includes(q) ||
+    product.categoryName.toLowerCase().includes(q) ||
+    product.shortDescription.toLowerCase().includes(q) ||
+    product.origin.toLowerCase().includes(q) ||
+    product.seo.keywords.some((k) => k.toLowerCase().includes(q))
   );
 }
 
@@ -85,38 +66,33 @@ export function SearchOverlay({
   useEffect(() => {
     if (!isOpen) return;
     const focusTimer = setTimeout(() => inputRef.current?.focus(), 50);
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") onCloseRef.current();
     };
     document.addEventListener("keydown", onKeyDown);
     return () => {
       clearTimeout(focusTimer);
-      document.body.style.overflow = previousOverflow;
       document.removeEventListener("keydown", onKeyDown);
     };
   }, [isOpen]);
 
+  useScrollLock(isOpen);
+
+  const trimmed = query.trim();
   const results = useMemo(() => {
-    if (!query.trim()) return [];
-    const q = query.toLowerCase().trim();
-    return mockProducts
-      .filter(
-        (p) =>
-          p.name.toLowerCase().includes(q) ||
-          p.categoryName.toLowerCase().includes(q) ||
-          p.shortDescription.toLowerCase().includes(q) ||
-          p.origin.toLowerCase().includes(q) ||
-          p.seo.keywords.some((k) => k.toLowerCase().includes(q)),
-      )
-      .slice(0, 4);
-  }, [query]);
+    const q = trimmed.toLowerCase();
+    return q ? mockProducts.filter((p) => matches(p, q)) : [];
+  }, [trimmed]);
 
   const goToResults = () => {
-    if (!query.trim()) return;
+    if (!trimmed) return;
     handleClose();
-    router.push(`/tim-kiem?q=${encodeURIComponent(query.trim())}`);
+    router.push(`/tim-kiem?q=${encodeURIComponent(trimmed)}`);
+  };
+
+  const pickTerm = (term: string) => {
+    setQuery(term);
+    inputRef.current?.focus();
   };
 
   return (
@@ -132,134 +108,193 @@ export function SearchOverlay({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.3 }}
-            className="absolute inset-0 bg-espresso-dark/30"
+            transition={{ duration: 0.25 }}
+            className="absolute inset-0 bg-espresso-dark/40"
             onClick={handleClose}
           />
 
           <motion.div
-            initial={{ opacity: 0, y: -24 }}
+            initial={{ opacity: 0, y: -12 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -24 }}
-            transition={{ duration: 0.4, ease: MOTION_EASE }}
-            className="relative bg-white max-h-[85vh] overflow-y-auto"
+            exit={{ opacity: 0, y: -12 }}
+            transition={{ duration: 0.3, ease: MOTION_EASE }}
+            // Full screen on phones; a dropdown sheet from sm up.
+            className="relative h-dvh sm:h-auto sm:max-h-[88vh] overflow-y-auto bg-white"
           >
-            <div className="max-w-2xl mx-auto px-4 sm:px-6 pt-5 pb-8">
-              <form
-                role="search"
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  goToResults();
-                }}
-                className="flex items-center gap-2"
-              >
-                <div className="flex-1 flex items-center gap-3 h-12 rounded-full bg-ivory px-4 border border-transparent focus-within:border-border-subtle focus-within:bg-white transition-colors">
-                  <Search
-                    className="w-[18px] h-[18px] text-muted shrink-0"
-                    aria-hidden="true"
-                  />
-                  <label htmlFor="search-overlay-input" className="sr-only">
-                    Từ khóa tìm kiếm
-                  </label>
-                  <input
-                    id="search-overlay-input"
-                    ref={inputRef}
-                    type="text"
-                    enterKeyHint="search"
-                    value={query}
-                    onChange={(e) => setQuery(e.target.value)}
-                    placeholder="Tìm vòng tay, nhang, trầm nụ…"
-                    className="flex-1 min-w-0 bg-transparent text-[15px] text-charcoal placeholder:text-muted-light focus:outline-none"
-                  />
-                  {query && (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setQuery("");
-                        inputRef.current?.focus();
-                      }}
-                      className="text-xs text-muted hover:text-charcoal transition-colors cursor-pointer"
-                    >
-                      Xóa
-                    </button>
-                  )}
-                </div>
+            {/* Search row: same height as the header it covers */}
+            <form
+              role="search"
+              onSubmit={(e) => {
+                e.preventDefault();
+                goToResults();
+              }}
+              className="border-b border-border-subtle"
+            >
+              <div className="max-w-5xl mx-auto px-4 sm:px-6 h-16 sm:h-20 flex items-center gap-3 sm:gap-4">
+                <Search
+                  className="w-5 h-5 sm:w-6 sm:h-6 shrink-0 text-muted"
+                  aria-hidden="true"
+                />
+                <label htmlFor="search-overlay-input" className="sr-only">
+                  Từ khóa tìm kiếm
+                </label>
+                <input
+                  id="search-overlay-input"
+                  ref={inputRef}
+                  type="search"
+                  enterKeyHint="search"
+                  autoComplete="off"
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  placeholder="Tìm trên Vĩnh Trầm"
+                  className="flex-1 min-w-0 bg-transparent text-lg sm:text-2xl text-charcoal placeholder:text-muted-light focus:outline-none [&::-webkit-search-cancel-button]:hidden"
+                />
+                {query && (
+                  <button
+                    type="button"
+                    onClick={() => pickTerm("")}
+                    className="shrink-0 text-sm text-muted hover:text-charcoal transition-colors cursor-pointer"
+                  >
+                    Xóa
+                  </button>
+                )}
                 <button
                   type="button"
                   onClick={handleClose}
-                  className="w-10 h-10 shrink-0 rounded-full flex items-center justify-center text-charcoal hover:bg-ivory transition-colors cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-espresso focus-visible:ring-offset-2"
+                  className="-mr-2 w-10 h-10 shrink-0 rounded-full flex items-center justify-center text-charcoal hover:bg-ivory transition-colors cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-espresso"
                   aria-label="Đóng tìm kiếm"
                 >
                   <X className="w-5 h-5" />
                 </button>
-              </form>
+              </div>
+            </form>
 
-              <div className="mt-7">
-                {!query ? (
-                  <div className="space-y-8">
-                    <div>
-                      <p className="text-xs font-medium uppercase tracking-[0.12em] text-muted">
-                        Tìm kiếm phổ biến
-                      </p>
-                      <ul className="mt-3 flex flex-wrap gap-2">
-                        {POPULAR_SEARCHES.map((term) => (
-                          <li key={term}>
-                            <button
-                              type="button"
-                              onClick={() => setQuery(term)}
-                              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border border-border-subtle text-sm text-charcoal hover:border-gold hover:text-gold-dark transition-colors cursor-pointer"
-                            >
-                              <Search
-                                className="w-3.5 h-3.5 text-muted-light"
-                                aria-hidden="true"
-                              />
-                              {term}
-                            </button>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                    {BESTSELLERS.length > 0 && (
-                      <div>
-                        <p className="text-xs font-medium uppercase tracking-[0.12em] text-muted">
-                          Bán chạy
-                        </p>
-                        <ProductTiles
-                          products={BESTSELLERS}
-                          onSelect={handleClose}
+            <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8 grid grid-cols-1 gap-8 md:grid-cols-[220px_1fr] md:gap-12">
+              {/* Quick links: chips that scroll sideways on mobile, a list on desktop */}
+              <nav aria-label="Gợi ý tìm kiếm" className="min-w-0">
+                <p className="text-xs font-medium text-muted">Tìm nhiều</p>
+                <ul className="mt-3 flex gap-2 overflow-x-auto no-scrollbar -mx-4 px-4 md:mx-0 md:px-0 md:block md:space-y-1">
+                  {POPULAR_SEARCHES.map((term) => (
+                    <li key={term} className="shrink-0">
+                      <button
+                        type="button"
+                        onClick={() => pickTerm(term)}
+                        className="group inline-flex md:flex w-full items-center justify-between gap-2 rounded-full md:rounded-md border border-border-subtle md:border-0 px-3.5 py-1.5 md:px-2 md:-mx-2 md:py-2 text-sm md:text-[15px] text-charcoal hover:bg-ivory transition-colors cursor-pointer"
+                      >
+                        {term}
+                        <ArrowRight
+                          className="hidden md:block w-4 h-4 text-muted opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-200"
+                          aria-hidden="true"
                         />
-                      </div>
-                    )}
-                  </div>
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+
+                <p className="mt-8 text-xs font-medium text-muted hidden md:block">
+                  Lối tắt
+                </p>
+                <ul className="mt-3 space-y-1 hidden md:block">
+                  {SHORTCUTS.map((link) => (
+                    <li key={link.href}>
+                      <Link
+                        href={link.href}
+                        onClick={handleClose}
+                        className="group flex items-center justify-between gap-2 rounded-md px-2 -mx-2 py-2 text-[15px] text-charcoal hover:bg-ivory transition-colors"
+                      >
+                        {link.label}
+                        <ArrowRight
+                          className="w-4 h-4 text-muted opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-200"
+                          aria-hidden="true"
+                        />
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </nav>
+
+              <section aria-live="polite" className="min-w-0">
+                {!trimmed ? (
+                  <>
+                    <p className="text-xs font-medium text-muted">Bán chạy</p>
+                    <ProductTiles
+                      products={BESTSELLERS}
+                      onSelect={handleClose}
+                    />
+                  </>
                 ) : results.length > 0 ? (
-                  <div>
-                    <p className="text-xs font-medium uppercase tracking-[0.12em] text-muted">
-                      Sản phẩm gợi ý ({results.length})
-                    </p>
-                    <ProductTiles products={results} onSelect={handleClose} />
-                    <button
-                      type="button"
-                      onClick={goToResults}
-                      className="mt-8 text-[15px] font-medium text-charcoal underline underline-offset-4 hover:text-gold-dark transition-colors cursor-pointer"
-                    >
-                      Xem tất cả kết quả cho “{query}”
-                    </button>
-                  </div>
+                  <>
+                    <div className="flex items-baseline justify-between gap-4">
+                      <p className="text-xs font-medium text-muted">
+                        {results.length} sản phẩm cho “{trimmed}”
+                      </p>
+                      <button
+                        type="button"
+                        onClick={goToResults}
+                        className="shrink-0 inline-flex items-center gap-1 text-sm font-medium text-charcoal hover:text-gold-dark transition-colors cursor-pointer"
+                      >
+                        Xem tất cả
+                        <ArrowRight className="w-4 h-4" aria-hidden="true" />
+                      </button>
+                    </div>
+                    <ProductTiles
+                      products={results.slice(0, MAX_PREVIEW)}
+                      onSelect={handleClose}
+                    />
+                  </>
                 ) : (
-                  <div className="py-8 text-center">
-                    <p className="text-[15px] text-charcoal">
-                      Không tìm thấy sản phẩm cho “{query}”
+                  <div className="py-10 md:py-16">
+                    <p className="text-lg text-charcoal">
+                      Chưa có sản phẩm nào khớp “{trimmed}”.
                     </p>
-                    <p className="mt-1 text-sm text-muted">
-                      Thử từ khóa khác hoặc xem toàn bộ sản phẩm.
+                    <p className="mt-2 text-[15px] text-muted">
+                      Thử một từ ngắn hơn, ví dụ “vòng”, “nụ” hay “nhang”.
                     </p>
                   </div>
                 )}
-              </div>
+              </section>
             </div>
           </motion.div>
         </div>
       )}
     </AnimatePresence>
+  );
+}
+
+function ProductTiles({
+  products,
+  onSelect,
+}: {
+  products: Product[];
+  onSelect: () => void;
+}) {
+  return (
+    <ul className="mt-3 grid grid-cols-2 sm:grid-cols-4 gap-x-4 gap-y-6">
+      {products.map((product) => (
+        <li key={product.id}>
+          <Link
+            href={`/san-pham/${product.slug}`}
+            onClick={onSelect}
+            className="group block"
+          >
+            <div className="relative aspect-4/5 overflow-hidden rounded-md bg-ivory">
+              <Image
+                src={product.images[0]}
+                alt={product.name}
+                fill
+                sizes="(max-width: 640px) 50vw, 180px"
+                className="object-cover transition-transform duration-500 ease-out group-hover:scale-[1.03]"
+              />
+            </div>
+            <p className="mt-2.5 text-sm font-medium text-charcoal leading-snug line-clamp-2 group-hover:text-gold-dark transition-colors">
+              {product.name}
+            </p>
+            <p className="mt-1 text-sm text-muted">
+              {formatVND(product.price)}
+            </p>
+          </Link>
+        </li>
+      ))}
+    </ul>
   );
 }

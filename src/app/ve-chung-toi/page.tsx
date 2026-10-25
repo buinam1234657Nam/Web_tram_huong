@@ -4,158 +4,271 @@ import Image from "next/image";
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 import { brandConfig } from "@/lib/config/brand";
+import { ABOUT_INTRO, PHILOSOPHY, TEAM, TIMELINE } from "@/data/content/about";
 import { Breadcrumbs } from "@/components/ui/Breadcrumbs";
 import { BreadcrumbJsonLd } from "@/components/seo/JsonLd";
 import { Button } from "@/components/ui/Button";
 import { FadeIn } from "@/components/motion/MotionPrimitives";
-import { CraftProcessSteps } from "@/components/about/CraftProcessSteps";
 
 export const metadata: Metadata = {
-  title: "Câu Chuyện Thương Hiệu & Triết Lý Chế Tác",
+  title: "Về xưởng Vĩnh Trầm",
   description:
-    "Hành trình gìn giữ trầm hương tự nhiên Việt Nam của Vĩnh Trầm: chế tác thủ công từ trầm Khánh Hòa và Tiên Phước, Quảng Nam.",
+    "Xưởng trầm nhỏ ở Vạn Giã, Khánh Hòa: ai chọn phôi, ai tiện hạt, ai ủ hũ, và showroom ở Quận 1 để thử mùi trước khi mua.",
   alternates: {
     canonical: "/ve-chung-toi",
   },
   openGraph: {
-    title: "Về Vĩnh Trầm | Trầm Hương Tự Nhiên Đất Việt",
-    description: "Kết nối thiên nhiên và tâm hồn qua hương trầm nguyên bản.",
+    title: "Về xưởng Vĩnh Trầm",
+    description: "Xưởng trầm nhỏ ở Vạn Giã, Khánh Hòa và showroom ở Quận 1.",
     url: "/ve-chung-toi",
     images: [
       {
-        url: "/images/artisan-story.jpg",
+        url: ABOUT_INTRO.image,
         width: 1376,
         height: 768,
-        alt: "Xưởng chế tác Vĩnh Trầm",
+        alt: ABOUT_INTRO.shot,
       },
     ],
   },
 };
 
+const CONTAINER = "max-w-7xl mx-auto px-4 sm:px-6 lg:px-8";
+
+const mapLink = (address: string) =>
+  `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`;
+
 export default function AboutUsPage() {
   const breadcrumbs = [{ label: "Về chúng tôi", href: "/ve-chung-toi" }];
-  const showroomMapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-    brandConfig.contact.showroomAddress,
-  )}`;
+  const { contact } = brandConfig;
 
   return (
     <div className="pb-24">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
+      <div className={`${CONTAINER} pt-6`}>
         <BreadcrumbJsonLd items={breadcrumbs} />
         <Breadcrumbs items={breadcrumbs} />
+      </div>
 
-        <header className="mt-10 sm:mt-14 max-w-3xl">
-          <p className="text-sm font-medium text-gold-dark">Về Vĩnh Trầm</p>
-          <h1 className="mt-3 text-4xl sm:text-6xl font-semibold text-charcoal leading-[1.12] tracking-tight">
-            Giữ trọn hương trầm tự nhiên của đất Việt
+      {/* Intro: text beside the photo, so the first screen isn't one huge stack */}
+      <header
+        className={`${CONTAINER} mt-8 sm:mt-12 grid grid-cols-1 gap-8 lg:grid-cols-12 lg:items-center lg:gap-14`}
+      >
+        <div className="lg:col-span-5">
+          <p className="text-sm font-medium text-gold-dark">
+            {ABOUT_INTRO.eyebrow}
+          </p>
+          <h1 className="mt-3 text-4xl sm:text-5xl font-semibold text-charcoal leading-[1.12] tracking-tight">
+            {ABOUT_INTRO.title}
           </h1>
-          <p className="mt-6 text-lg text-muted leading-relaxed max-w-2xl">
-            Với chúng tôi, trầm hương không chỉ là món trang sức hay vật phẩm
-            đốt thơm. Đó là một khoảng lặng bình an, nối con người với rừng già.
+          <p className="mt-5 text-[17px] text-muted leading-relaxed">
+            {ABOUT_INTRO.body}
           </p>
-        </header>
-      </div>
-
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-12">
-        <div className="relative aspect-4/3 sm:aspect-16/7 bg-ivory overflow-hidden">
-          <Image
-            src="/images/artisan-story.jpg"
-            alt="Nghệ nhân Vĩnh Trầm xỉa giác gỗ trầm hương tự nhiên"
-            fill
-            preload
-            sizes="(max-width: 1280px) 100vw, 1216px"
-            className="object-cover"
-          />
-        </div>
-      </div>
-
-      {/* Philosophy */}
-      <FadeIn className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-24 sm:mt-32 grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16">
-        <h2 className="lg:col-span-5 text-3xl sm:text-4xl font-semibold text-charcoal leading-[1.15] tracking-tight">
-          Tôn trọng sự thật của gỗ
-        </h2>
-        <div className="lg:col-span-7 space-y-5 text-[17px] text-charcoal/85 leading-[1.75]">
-          <p>
-            Thị trường đầy những sản phẩm trầm nấu dầu áp suất cao, ngâm tẩm
-            hương liệu công nghiệp. Vĩnh Trầm chọn con đường ngược lại: giữ
-            nguyên sự mộc mạc và chân thật của từng thớ gỗ dó bầu.
-          </p>
-          <p>
-            Mỗi vân dầu tự nhiên là dấu vết riêng của thời gian và thời tiết.
-            Chúng tôi không nhuộm màu, không phủ bóng PU, để bạn cảm nhận đúng
-            mùi thơm ngọt dịu và ấm áp vốn có của trầm.
-          </p>
-          <p className="text-charcoal font-medium">
-            Không tẩm hóa chất. Không ép dầu. Không phủ bóng.
-          </p>
-        </div>
-      </FadeIn>
-
-      {/* Craft process */}
-      <section className="bg-ivory mt-24 sm:mt-32 py-20 sm:py-24">
-        <FadeIn className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-3xl sm:text-4xl font-semibold text-charcoal tracking-tight">
-            Từ khúc gỗ đến chuỗi vòng
-          </h2>
-          <p className="mt-3 text-lg text-muted max-w-2xl">
-            Bốn bước thủ công tại xưởng Khánh Hòa.
-          </p>
-          <div className="mt-12">
-            <CraftProcessSteps />
-          </div>
-        </FadeIn>
-      </section>
-
-      {/* Origin & places */}
-      <FadeIn className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-24 sm:mt-32 grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-center">
-        <div className="relative aspect-4/3 bg-ivory overflow-hidden">
-          <Image
-            src="/images/hero-agarwood.jpg"
-            alt="Trầm hương tự nhiên Khánh Hòa"
-            fill
-            sizes="(max-width: 1024px) 100vw, 50vw"
-            className="object-cover"
-          />
-        </div>
-        <div>
-          <h2 className="text-3xl sm:text-4xl font-semibold text-charcoal leading-[1.15] tracking-tight">
-            Trầm Khánh Hòa & Tiên Phước
-          </h2>
-          <p className="mt-5 text-[17px] text-charcoal/85 leading-[1.75]">
-            Khánh Hòa từ lâu được gọi là &quot;xứ trầm biển yến&quot;. Nắng gió
-            khắc nghiệt miền Trung và đất đỏ bazan sườn núi là điều kiện để cây
-            dó bầu tích những thớ trầm nhiều dầu.
-          </p>
-
-          <dl className="mt-8 space-y-5 text-[15px]">
-            <div>
-              <dt className="font-medium text-charcoal">Xưởng chế tác</dt>
-              <dd className="mt-1 text-muted">{brandConfig.contact.address}</dd>
-            </div>
-            <div>
-              <dt className="font-medium text-charcoal">Showroom</dt>
-              <dd className="mt-1 text-muted">
-                {brandConfig.contact.showroomAddress}
-                <br />
-                {brandConfig.contact.workingHours}
-              </dd>
-            </div>
-          </dl>
-
           <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-3">
             <Button href="/san-pham">Xem sản phẩm</Button>
             <Link
-              href={showroomMapUrl}
-              target="_blank"
-              rel="noopener noreferrer"
+              href="#xuong"
               className="inline-flex items-center gap-0.5 text-[15px] text-gold-dark hover:underline underline-offset-4"
             >
-              Chỉ đường tới showroom
-              <ChevronRight className="w-4 h-4" />
+              Ghé xưởng & showroom
+              <ChevronRight className="w-4 h-4" aria-hidden="true" />
             </Link>
           </div>
         </div>
-      </FadeIn>
+        <div className="lg:col-span-7 relative aspect-4/3 overflow-hidden rounded-md bg-ivory">
+          <Image
+            src={ABOUT_INTRO.image}
+            alt={ABOUT_INTRO.shot}
+            fill
+            preload
+            sizes="(max-width: 1024px) 100vw, 60vw"
+            className="object-cover"
+          />
+        </div>
+      </header>
+
+      {/* Philosophy: one readable column, then the three rules as a row */}
+      <section
+        aria-labelledby="philosophy-title"
+        className="mt-20 sm:mt-28 bg-ivory py-16 sm:py-20"
+      >
+        <div className={CONTAINER}>
+          <div className="max-w-3xl">
+            <h2
+              id="philosophy-title"
+              className="text-3xl sm:text-4xl font-semibold text-charcoal leading-[1.15] tracking-tight"
+            >
+              {PHILOSOPHY.title}
+            </h2>
+            <div className="mt-6 space-y-4 text-[17px] text-charcoal/85 leading-[1.75]">
+              {PHILOSOPHY.body.map((paragraph) => (
+                <p key={paragraph}>{paragraph}</p>
+              ))}
+            </div>
+          </div>
+
+          <ul className="mt-12 grid grid-cols-1 gap-8 sm:grid-cols-3 sm:gap-10">
+            {PHILOSOPHY.rules.map((rule) => (
+              <li
+                key={rule.title}
+                className="border-t border-border-dark/20 pt-5"
+              >
+                <h3 className="text-lg font-semibold text-charcoal">
+                  {rule.title}
+                </h3>
+                <p className="mt-2 text-[15px] text-muted leading-relaxed">
+                  {rule.body}
+                </p>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </section>
+
+      {/* Timeline: year · story · photo on one row */}
+      <section
+        aria-labelledby="timeline-title"
+        className={`${CONTAINER} mt-20 sm:mt-28`}
+      >
+        <p className="text-sm font-medium text-gold-dark">
+          Từ rừng dó tới showroom
+        </p>
+        <h2
+          id="timeline-title"
+          className="mt-3 text-3xl sm:text-4xl font-semibold text-charcoal tracking-tight"
+        >
+          Xưởng đã đi qua những năm nào
+        </h2>
+        <FadeIn>
+          <ol className="mt-10 border-t border-border-subtle">
+            {TIMELINE.map((entry) => (
+              <li
+                key={entry.year}
+                className="grid grid-cols-1 gap-4 border-b border-border-subtle py-8 sm:grid-cols-[110px_1fr] lg:grid-cols-[150px_1fr_260px] lg:items-center lg:gap-10"
+              >
+                <p className="text-2xl sm:text-3xl font-semibold text-gold-dark tracking-tight">
+                  {entry.year}
+                </p>
+                <div className="max-w-xl">
+                  <h3 className="text-xl font-semibold text-charcoal">
+                    {entry.title}
+                  </h3>
+                  <p className="mt-2 text-[15px] text-muted leading-relaxed">
+                    {entry.body}
+                  </p>
+                </div>
+                <div className="relative aspect-4/3 overflow-hidden rounded-md bg-ivory sm:col-start-2 lg:col-start-auto">
+                  <Image
+                    src={entry.image}
+                    alt={entry.shot}
+                    fill
+                    sizes="(max-width: 1024px) 100vw, 260px"
+                    className="object-cover"
+                  />
+                </div>
+              </li>
+            ))}
+          </ol>
+        </FadeIn>
+      </section>
+
+      {/* The people */}
+      <section
+        aria-labelledby="team-title"
+        className={`${CONTAINER} mt-20 sm:mt-28`}
+      >
+        <h2
+          id="team-title"
+          className="text-3xl sm:text-4xl font-semibold text-charcoal tracking-tight"
+        >
+          Năm người làm ra mỗi chuỗi vòng
+        </h2>
+        <FadeIn>
+          <ul className="mt-10 grid grid-cols-2 gap-x-4 gap-y-10 sm:grid-cols-3 lg:grid-cols-5">
+            {TEAM.map((person) => (
+              <li key={person.name}>
+                <div className="relative aspect-3/4 overflow-hidden rounded-md bg-ivory">
+                  <Image
+                    src={person.image}
+                    alt={person.shot}
+                    fill
+                    sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
+                    className="object-cover"
+                  />
+                </div>
+                <h3 className="mt-3 text-[15px] font-semibold text-charcoal">
+                  {person.name}
+                </h3>
+                <p className="text-sm text-gold-dark">{person.role}</p>
+                <p className="mt-2 text-sm text-muted leading-relaxed">
+                  {person.note}
+                </p>
+              </li>
+            ))}
+          </ul>
+        </FadeIn>
+      </section>
+
+      {/* Where to find us */}
+      <section
+        id="xuong"
+        aria-labelledby="places-title"
+        className={`${CONTAINER} mt-20 sm:mt-28 scroll-mt-24`}
+      >
+        <h2
+          id="places-title"
+          className="text-3xl sm:text-4xl font-semibold text-charcoal tracking-tight"
+        >
+          Ghé xưởng hoặc showroom
+        </h2>
+        <div className="mt-8 grid grid-cols-1 gap-4 md:grid-cols-2">
+          <Place
+            title="Xưởng Khánh Hòa"
+            address={contact.address}
+            note="Xưởng đang làm việc, nên gọi trước khi ghé để có người tiếp."
+          />
+          <Place
+            title="Showroom Quận 1"
+            address={contact.showroomAddress}
+            note={`Mở cửa ${contact.workingHours}. Ghé uống trà, thử mùi, không cần đặt lịch.`}
+          />
+        </div>
+        <p className="mt-6 text-[15px] text-muted">
+          Hoặc gọi{" "}
+          <a
+            href={`tel:${contact.hotline}`}
+            className="font-medium text-charcoal underline underline-offset-4 hover:text-gold-dark"
+          >
+            {contact.phoneFormatted}
+          </a>{" "}
+          để hỏi trước.
+        </p>
+      </section>
+    </div>
+  );
+}
+
+function Place({
+  title,
+  address,
+  note,
+}: {
+  title: string;
+  address: string;
+  note: string;
+}) {
+  return (
+    <div className="rounded-md border border-border-subtle p-6 sm:p-8">
+      <h3 className="text-xl font-semibold text-charcoal">{title}</h3>
+      <p className="mt-2 text-[15px] text-charcoal">{address}</p>
+      <p className="mt-2 text-sm text-muted leading-relaxed">{note}</p>
+      <Link
+        href={mapLink(address)}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="mt-5 inline-flex items-center gap-0.5 text-[15px] text-gold-dark hover:underline underline-offset-4"
+      >
+        Xem đường đi
+        <ChevronRight className="w-4 h-4" aria-hidden="true" />
+      </Link>
     </div>
   );
 }

@@ -10,6 +10,7 @@ import { formatVND } from "@/lib/format/currency";
 import { useCartStore } from "@/features/cart/useCartStore";
 import { MOTION_EASE } from "@/components/motion/MotionPrimitives";
 import { Button } from "@/components/ui/Button";
+import { useScrollLock } from "@/hooks/useScrollLock";
 
 function QuickViewModalContent({
   product,
@@ -204,17 +205,14 @@ export function QuickViewModal({
 
   useEffect(() => {
     if (!isOpen) return;
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") onCloseRef.current();
     };
     document.addEventListener("keydown", onKeyDown);
-    return () => {
-      document.body.style.overflow = previousOverflow;
-      document.removeEventListener("keydown", onKeyDown);
-    };
+    return () => document.removeEventListener("keydown", onKeyDown);
   }, [isOpen]);
+
+  useScrollLock(isOpen);
 
   return (
     <AnimatePresence>

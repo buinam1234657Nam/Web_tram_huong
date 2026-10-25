@@ -8,6 +8,7 @@ import { X, Plus, Minus } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { useCartStore } from "@/features/cart/useCartStore";
 import { useIsMounted } from "@/hooks/useIsMounted";
+import { useScrollLock } from "@/hooks/useScrollLock";
 import { formatVND } from "@/lib/format/currency";
 import { brandConfig } from "@/lib/config/brand";
 import { MOTION_EASE } from "@/components/motion/MotionPrimitives";
@@ -41,17 +42,14 @@ export function CartDrawer() {
     router.prefetch("/thanh-toan");
     closeButtonRef.current?.focus();
 
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") closeCart();
     };
     document.addEventListener("keydown", onKeyDown);
-    return () => {
-      document.body.style.overflow = previousOverflow;
-      document.removeEventListener("keydown", onKeyDown);
-    };
+    return () => document.removeEventListener("keydown", onKeyDown);
   }, [isOpen, router, closeCart]);
+
+  useScrollLock(isOpen);
 
   if (!mounted) return null;
 
