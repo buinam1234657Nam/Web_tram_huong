@@ -17,7 +17,9 @@ export const useCartStore = create<CartStoreState>()(
         const maxQty = selectedVariant.inventoryQuantity;
 
         set((state) => {
-          const existingItemIndex = state.items.findIndex((item) => item.id === itemId);
+          const existingItemIndex = state.items.findIndex(
+            (item) => item.id === itemId,
+          );
 
           if (existingItemIndex > -1) {
             const currentItem = state.items[existingItemIndex];
@@ -84,13 +86,16 @@ export const useCartStore = create<CartStoreState>()(
       },
 
       getSubtotal: () => {
-        return get().items.reduce((total, item) => total + item.price * item.quantity, 0);
+        return get().items.reduce(
+          (total, item) => total + item.price * item.quantity,
+          0,
+        );
       },
     }),
     {
       name: "vinhtram-cart-storage",
       storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({ items: state.items }),
-    }
-  )
+    },
+  ),
 );

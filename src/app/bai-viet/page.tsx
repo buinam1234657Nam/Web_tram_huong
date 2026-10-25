@@ -1,51 +1,51 @@
 import React from "react";
 import { Metadata } from "next";
-import Link from "next/link";
-import Image from "next/image";
-import { Clock, ArrowRight } from "lucide-react";
 import { catalogRepository } from "@/data/repositories/catalog-repository";
 import { Breadcrumbs } from "@/components/ui/Breadcrumbs";
 import { BreadcrumbJsonLd } from "@/components/seo/JsonLd";
-
 import { ArticlesView } from "./ArticlesView";
 
 export const metadata: Metadata = {
-  title: "Cẩm Nang Tri Thức & Nghệ Thuật Thưởng Trầm Hương",
+  title: "Tin Tức & Kiến Thức Trầm Hương",
   description:
-    "Tổng hợp kiến thức phân biệt trầm hương tự nhiên, phong thủy chuỗi vòng trầm 108 hạt và nghệ thuật thưởng trầm bên bàn trà.",
+    "Kiến thức phân biệt trầm hương tự nhiên, cách xông trầm, chăm sóc vòng tay và ý nghĩa chuỗi trầm 108 hạt.",
   alternates: {
     canonical: "/bai-viet",
   },
   openGraph: {
-    title: "Cẩm Nang Trầm Hương Việt Nam | VĨNH TRẦM",
-    description: "Khám phá chiều sâu văn hóa và kiến thức thưởng trầm đất Việt.",
-    url: "https://vinhtram.vn/bai-viet",
+    title: "Tin Tức & Kiến Thức Trầm Hương | VĨNH TRẦM",
+    description: "Kiến thức thưởng trầm và chăm sóc trầm hương tự nhiên.",
+    url: "/bai-viet",
+    images: [
+      {
+        url: "/images/artisan-story.jpg",
+        width: 1376,
+        height: 768,
+        alt: "Nghệ nhân Vĩnh Trầm chế tác trầm hương",
+      },
+    ],
   },
 };
 
 export default async function ArticlesPage() {
   const articles = await catalogRepository.getArticles();
 
-  const breadcrumbs = [
-    { label: "Kiến thức trầm", href: "/bai-viet" },
-  ];
+  const breadcrumbs = [{ label: "Tin tức", href: "/bai-viet" }];
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 space-y-8">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-24">
       <BreadcrumbJsonLd items={breadcrumbs} />
       <Breadcrumbs items={breadcrumbs} />
 
-      <div className="border-b border-border-subtle pb-6">
-        <span className="text-xs uppercase font-semibold text-agarwood-dark tracking-widest block mb-1">
-          Góc Văn Hóa & Nghệ Thuật
-        </span>
-        <h1 className="font-serif text-3xl sm:text-4xl font-bold text-charcoal">
-          Cẩm Nang Thưởng Trầm Đất Việt
+      <header className="mt-10 sm:mt-14 mb-10 max-w-2xl">
+        <h1 className="text-4xl sm:text-5xl font-semibold text-charcoal tracking-tight">
+          Tin tức & kiến thức trầm
         </h1>
-        <p className="text-xs sm:text-sm text-muted mt-2 max-w-2xl leading-relaxed">
-          Nơi chia sẻ những nghiên cứu tâm huyết, kiến thức phân biệt trầm tự nhiên và những câu chuyện mộc mạc bên chiếc bàn đục của người nghệ nhân.
+        <p className="mt-4 text-lg text-muted leading-relaxed">
+          Cách nhận biết trầm thật, cách xông, cách giữ vòng bền hương và những
+          câu chuyện từ xưởng chế tác.
         </p>
-      </div>
+      </header>
 
       <ArticlesView initialArticles={articles} />
     </div>

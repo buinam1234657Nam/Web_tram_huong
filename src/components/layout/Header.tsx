@@ -1,235 +1,234 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import {
-  Search,
-  ShoppingBag,
-  Menu,
-  X,
-  ChevronDown,
-  Sparkles,
-} from "lucide-react";
+import { Search, ShoppingBag, Menu, X } from "lucide-react";
 import { useCartStore } from "@/features/cart/useCartStore";
 import { useIsMounted } from "@/hooks/useIsMounted";
 import { mockCategories } from "@/data/mock/categories";
+import { MOTION_EASE } from "@/components/motion/MotionPrimitives";
 import { SearchOverlay } from "./SearchOverlay";
-import { motion, AnimatePresence, useScroll } from "motion/react";
+import { motion, AnimatePresence } from "motion/react";
+
+const NAV_LINKS = [
+  { href: "/san-pham", label: "Sản Phẩm", match: ["/san-pham"] },
+  { href: "/danh-muc/vong-tay-tram-huong", label: "Vòng Tay", match: [] },
+  { href: "/danh-muc/nhang-tram-huong", label: "Nhang Trầm", match: [] },
+  { href: "/danh-muc/bo-qua-tang", label: "Quà Tặng", match: [] },
+  { href: "/ve-chung-toi", label: "Về Chúng Tôi", match: ["/ve-chung-toi"] },
+  { href: "/bai-viet", label: "Tin Tức", match: ["/bai-viet"] },
+];
+
+const categoryLink = (slug: string) => {
+  const category = mockCategories.find((c) => c.slug === slug);
+  return { href: `/danh-muc/${slug}`, label: category?.name ?? slug };
+};
+
+const MEGA_COLUMNS = [
+  {
+    title: "Nổi bật",
+    links: [
+      { href: "/san-pham", label: "Tất cả sản phẩm" },
+      categoryLink("bo-qua-tang"),
+      {
+        href: "/chinh-sach/chinh-sach-bao-hanh",
+        label: "Bảo hành & đánh bóng",
+      },
+    ],
+  },
+  {
+    title: "Trầm đeo",
+    links: [categoryLink("vong-tay-tram-huong")],
+  },
+  {
+    title: "Trầm xông",
+    links: [
+      categoryLink("tram-nu-xong-nha"),
+      categoryLink("nhang-tram-huong"),
+      categoryLink("tram-huong-mieng"),
+      categoryLink("tinh-dau-tram"),
+    ],
+  },
+  {
+    title: "Tìm hiểu",
+    links: [
+      { href: "/ve-chung-toi", label: "Câu chuyện thương hiệu" },
+      { href: "/bai-viet", label: "Kiến thức trầm hương" },
+      { href: "/chinh-sach/chinh-sach-doi-tra", label: "Chính sách đổi trả" },
+      {
+        href: "/chinh-sach/chinh-sach-giao-hang",
+        label: "Giao hàng & đồng kiểm",
+      },
+    ],
+  },
+];
+
+/** Index of the nav item that owns the mega menu. */
+const MEGA_INDEX = 0;
+/** Hover-intent delays so the menu doesn't flicker when the pointer just passes over. */
+const OPEN_DELAY_MS = 120;
+const CLOSE_DELAY_MS = 180;
 
 export function Header() {
   const pathname = usePathname();
-  const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const [isCategoryHovered, setIsCategoryHovered] = useState(false);
+  const [isMegaOpen, setIsMegaOpen] = useState(false);
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const { scrollYProgress } = useScroll();
   const { getTotalItems, openCart } = useCartStore();
   const mounted = useIsMounted();
+  const totalItems = mounted ? getTotalItems() : 0;
+
+  const isActive = (link: (typeof NAV_LINKS)[number]) =>
+    pathname === link.href || link.match.some((m) => pathname.startsWith(m));
+  const activeIndex = NAV_LINKS.findIndex(isActive);
+  // Only one item is underlined at a time: whatever the pointer is on, else the current page.
+  const underlinedIndex = isMegaOpen
+    ? MEGA_INDEX
+    : (hoveredIndex ?? (activeIndex >= 0 ? activeIndex : null));
+
+  const scheduleMega = (open: boolean) => {
+    if (timerRef.current) clearTimeout(timerRef.current);
+    timerRef.current = setTimeout(
+      () => setIsMegaOpen(open),
+      open ? OPEN_DELAY_MS : CLOSE_DELAY_MS,
+    );
+  };
+
+  const closeMegaNow = () => {
+    if (timerRef.current) clearTimeout(timerRef.current);
+    setIsMegaOpen(false);
+  };
 
   useEffect(() => {
-    let ticking = false;
-    const handleScroll = () => {
-      if (!ticking) {
-        window.requestAnimationFrame(() => {
-          setIsScrolled((prev) => {
-            const next = window.scrollY > 20;
-            return prev !== next ? next : prev;
-          });
-          ticking = false;
-        });
-        ticking = true;
-      }
+    if (!isMegaOpen) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") closeMegaNow();
     };
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, [isMegaOpen]);
 
-  const totalItems = mounted ? getTotalItems() : 0;
+  useEffect(
+    () => () => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+    },
+    [],
+  );
 
   return (
     <>
       <header
-        className={`sticky top-0 z-40 w-full transition-[padding,background-color,box-shadow] duration-200 ${
-          isScrolled
-            ? "bg-[#F6F2E9]/98 backdrop-blur-xs shadow-xs border-b border-border-subtle py-3"
-            : "bg-[#F6F2E9] border-b border-border-subtle/60 py-4"
+        className={`sticky top-0 z-40 w-full backdrop-blur-md border-b border-border-subtle transition-colors duration-300 ${
+          isMegaOpen ? "bg-white" : "bg-white/95"
         }`}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between">
-            {/* Mobile Menu Button */}
-            <div className="flex items-center lg:hidden">
+          <div className="h-16 grid grid-cols-[1fr_auto_1fr] lg:grid-cols-[auto_1fr_auto] items-center gap-6">
+            {/* Mobile: menu + search */}
+            <div className="flex items-center gap-1 lg:hidden">
               <button
                 type="button"
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                className="p-2 text-charcoal hover:text-forest transition-colors"
+                className="p-2 -ml-2 text-charcoal"
                 aria-label="Mở menu điều hướng"
                 aria-expanded={isMobileMenuOpen}
               >
                 {isMobileMenuOpen ? (
-                  <X className="w-6 h-6" />
+                  <X className="w-5 h-5" />
                 ) : (
-                  <Menu className="w-6 h-6" />
+                  <Menu className="w-5 h-5" />
                 )}
               </button>
-
               <button
                 type="button"
                 onClick={() => setIsSearchOpen(true)}
-                className="p-2 text-charcoal hover:text-forest transition-colors ml-1"
+                className="p-2 text-charcoal"
                 aria-label="Tìm kiếm sản phẩm"
               >
                 <Search className="w-5 h-5" />
               </button>
             </div>
 
-            {/* Brand Logo */}
-            <div className="flex-1 lg:flex-none text-center lg:text-left">
-              <Link href="/" className="inline-block group">
-                <span className="brand-heading text-2xl sm:text-3xl font-bold tracking-[0.22em] text-forest group-hover:text-champagne-dark transition-colors duration-300 block">
-                  VĨNH TRẦM
-                </span>
-                <span className="text-[10px] sm:text-[11px] uppercase tracking-[0.32em] text-agarwood-dark font-medium block -mt-0.5">
-                  Trầm Hương Tự Nhiên
-                </span>
-              </Link>
-            </div>
+            {/* Wordmark */}
+            <Link href="/" className="text-center lg:text-left leading-none">
+              <span className="block text-lg sm:text-xl font-semibold tracking-[0.28em] text-espresso">
+                VĨNH TRẦM
+              </span>
+              <span className="block mt-1 text-[9px] uppercase tracking-[0.34em] text-gold-dark">
+                Trầm Hương Việt
+              </span>
+            </Link>
 
-            {/* Desktop Navigation */}
-            <nav className="hidden lg:flex items-center space-x-8 text-sm font-medium">
-              <Link
-                href="/"
-                className={`transition-colors py-1 ${
-                  pathname === "/"
-                    ? "text-forest border-b-2 border-forest font-semibold"
-                    : "text-charcoal/80 hover:text-forest"
-                }`}
-              >
-                Trang Chủ
-              </Link>
-
-              {/* Mega menu trigger for Categories */}
-              <div
-                className="relative group py-1"
-                onMouseEnter={() => setIsCategoryHovered(true)}
-                onMouseLeave={() => setIsCategoryHovered(false)}
-              >
-                <Link
-                  href="/san-pham"
-                  className={`flex items-center gap-1 transition-colors ${
-                    pathname.startsWith("/san-pham") || pathname.startsWith("/danh-muc")
-                      ? "text-forest font-semibold"
-                      : "text-charcoal/80 hover:text-forest"
-                  }`}
-                >
-                  Sản Phẩm
-                  <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${isCategoryHovered ? "rotate-180" : ""}`} />
-                </Link>
-
-                {/* Dropdown Menu */}
-                <AnimatePresence>
-                  {isCategoryHovered && (
-                    <motion.div
-                      initial={{ opacity: 0, y: 8, scale: 0.98 }}
-                      animate={{ opacity: 1, y: 0, scale: 1 }}
-                      exit={{ opacity: 0, y: 4, scale: 0.98 }}
-                      transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
-                      className="absolute top-full left-0 w-[490px] bg-white/98 backdrop-blur-md border border-border-subtle shadow-2xl rounded-sm p-4 grid grid-cols-2 gap-3 pt-3 z-50"
-                    >
-                      {mockCategories.map((cat) => (
-                        <Link
-                          key={cat.id}
-                          href={`/danh-muc/${cat.slug}`}
-                          className="p-2.5 rounded hover:bg-ivory transition-colors group/item"
-                        >
-                          <p className="font-medium text-xs text-charcoal group-hover/item:text-forest transition-colors">
-                            {cat.name}
-                          </p>
-                          <p className="text-[11px] text-muted line-clamp-1 mt-0.5">
-                            {cat.vietnameseName}
-                          </p>
-                        </Link>
-                      ))}
-                      <div className="col-span-2 pt-2 border-t border-border-subtle flex justify-between items-center text-xs">
-                        <span className="text-muted text-[11px]">Bộ sưu tập mộc độc bản</span>
-                        <Link
-                          href="/san-pham"
-                          className="text-forest font-semibold hover:underline flex items-center gap-1 text-xs"
-                        >
-                          Xem tất cả sản phẩm
-                          <Sparkles className="w-3 h-3 text-champagne" />
-                        </Link>
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
-
-              <Link
-                href="/ve-chung-toi"
-                className={`transition-colors py-1 ${
-                  pathname === "/ve-chung-toi"
-                    ? "text-forest border-b-2 border-forest font-semibold"
-                    : "text-charcoal/80 hover:text-forest"
-                }`}
-              >
-                Về Chúng Tôi
-              </Link>
-
-              <Link
-                href="/bai-viet"
-                className={`transition-colors py-1 ${
-                  pathname.startsWith("/bai-viet")
-                    ? "text-forest border-b-2 border-forest font-semibold"
-                    : "text-charcoal/80 hover:text-forest"
-                }`}
-              >
-                Kiến Thức Trầm
-              </Link>
-
-              <Link
-                href="/chinh-sach/chinh-sach-bao-hanh"
-                className={`transition-colors py-1 ${
-                  pathname.startsWith("/chinh-sach")
-                    ? "text-forest border-b-2 border-forest font-semibold"
-                    : "text-charcoal/80 hover:text-forest"
-                }`}
-              >
-                Chính Sách
-              </Link>
+            {/* Desktop nav */}
+            <nav
+              className="hidden lg:flex items-center justify-center gap-8 text-sm"
+              onMouseLeave={() => {
+                setHoveredIndex(null);
+                scheduleMega(false);
+              }}
+            >
+              {NAV_LINKS.map((link, idx) => {
+                const isMegaTrigger = idx === MEGA_INDEX;
+                return (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    onClick={closeMegaNow}
+                    onMouseEnter={() => {
+                      setHoveredIndex(idx);
+                      scheduleMega(isMegaTrigger);
+                    }}
+                    onFocus={() => isMegaTrigger && setIsMegaOpen(true)}
+                    aria-haspopup={isMegaTrigger ? "true" : undefined}
+                    aria-expanded={isMegaTrigger ? isMegaOpen : undefined}
+                    aria-current={isActive(link) ? "page" : undefined}
+                    className={`relative py-5 transition-colors duration-300 ${
+                      isActive(link)
+                        ? "text-espresso font-medium"
+                        : "text-charcoal/75 hover:text-espresso"
+                    }`}
+                  >
+                    {link.label}
+                    <span
+                      className={`absolute left-0 right-0 bottom-4 h-px bg-espresso origin-left transition-transform duration-300 ease-out ${
+                        underlinedIndex === idx ? "scale-x-100" : "scale-x-0"
+                      }`}
+                    />
+                  </Link>
+                );
+              })}
             </nav>
 
-            {/* Right Action Icons */}
-            <div className="flex items-center space-x-4">
+            {/* Actions */}
+            <div className="flex items-center justify-end gap-1">
               <button
                 type="button"
                 onClick={() => setIsSearchOpen(true)}
-                className="hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-full bg-ivory-dark/60 text-charcoal hover:bg-forest hover:text-ivory text-xs transition-colors border border-border-subtle cursor-pointer"
+                className="hidden lg:inline-flex p-2 text-charcoal hover:text-gold-dark transition-colors cursor-pointer"
                 aria-label="Tìm kiếm sản phẩm"
               >
-                <Search className="w-3.5 h-3.5" />
-                <span>Tìm kiếm...</span>
+                <Search className="w-5 h-5" />
               </button>
-
-              {/* Cart Drawer Trigger */}
               <button
                 type="button"
                 onClick={openCart}
-                className="relative p-2 text-forest hover:text-forest-dark transition-colors cursor-pointer"
+                className="relative p-2 -mr-2 text-charcoal hover:text-gold-dark transition-colors cursor-pointer"
                 aria-label={`Giỏ hàng có ${totalItems} sản phẩm`}
               >
-                <ShoppingBag className="w-6 h-6" />
+                <ShoppingBag className="w-5 h-5" />
                 <AnimatePresence>
                   {totalItems > 0 && (
                     <motion.span
                       key={totalItems}
-                      initial={{ scale: 0.5, opacity: 0 }}
-                      animate={{ scale: [1, 1.35, 1], opacity: 1 }}
-                      exit={{ scale: 0, opacity: 0 }}
-                      transition={{ duration: 0.28, ease: "easeOut" }}
-                      className="absolute top-1 right-0.5 bg-agarwood text-white text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center border-2 border-ivory shadow-xs"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      transition={{ duration: 0.3 }}
+                      className="absolute top-0.5 right-0 bg-espresso text-white text-[10px] font-medium rounded-full min-w-[18px] h-[18px] px-1 flex items-center justify-center"
                     >
                       {totalItems}
                     </motion.span>
@@ -240,89 +239,107 @@ export function Header() {
           </div>
         </div>
 
-        {/* Mobile Navigation Drawer with Smooth AnimatePresence */}
+        {/* Dim the page below the header while the mega menu is open */}
         <AnimatePresence>
-          {isMobileMenuOpen && (
+          {isMegaOpen && (
             <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: "auto" }}
-              exit={{ opacity: 0, height: 0 }}
-              transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
-              className="overflow-hidden lg:hidden border-t border-border-subtle bg-ivory px-4 pt-4 pb-6 space-y-3"
+              aria-hidden="true"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.35, ease: MOTION_EASE }}
+              onMouseEnter={() => scheduleMega(false)}
+              onClick={closeMegaNow}
+              className="hidden lg:block absolute inset-x-0 top-full h-screen bg-espresso-dark/20"
+            />
+          )}
+        </AnimatePresence>
+
+        {/* Desktop mega menu */}
+        <AnimatePresence>
+          {isMegaOpen && (
+            <motion.div
+              initial={{ opacity: 0, y: -8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.35, ease: MOTION_EASE }}
+              onMouseEnter={() => scheduleMega(true)}
+              onMouseLeave={() => scheduleMega(false)}
+              className="hidden lg:block absolute inset-x-0 top-full bg-white border-b border-border-subtle"
             >
-              <Link
-                href="/"
-                onClick={() => setIsMobileMenuOpen(false)}
-                className="block py-2 text-sm font-medium text-charcoal hover:text-forest"
-              >
-                Trang Chủ
-              </Link>
-              <div className="py-2">
-                <p className="text-xs uppercase font-bold text-agarwood tracking-wider mb-2">
-                  Danh Mục Sản Phẩm
-                </p>
-                <div className="space-y-1.5 pl-2 border-l border-border-subtle">
-                  {mockCategories.map((c) => (
-                    <Link
-                      key={c.id}
-                      href={`/danh-muc/${c.slug}`}
-                      onClick={() => setIsMobileMenuOpen(false)}
-                      className="block text-sm text-charcoal hover:text-forest py-1"
-                    >
-                      {c.name}
-                    </Link>
-                  ))}
-                  <Link
-                    href="/san-pham"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                    className="block text-sm font-semibold text-forest py-1"
-                  >
-                    Tất cả sản phẩm →
-                  </Link>
-                </div>
-              </div>
-              <Link
-                href="/ve-chung-toi"
-                onClick={() => setIsMobileMenuOpen(false)}
-                className="block py-2 text-sm font-medium text-charcoal hover:text-forest"
-              >
-                Về Chúng Tôi
-              </Link>
-              <Link
-                href="/bai-viet"
-                onClick={() => setIsMobileMenuOpen(false)}
-                className="block py-2 text-sm font-medium text-charcoal hover:text-forest"
-              >
-                Kiến Thức Trầm Hương
-              </Link>
-              <Link
-                href="/chinh-sach/chinh-sach-bao-hanh"
-                onClick={() => setIsMobileMenuOpen(false)}
-                className="block py-2 text-sm font-medium text-charcoal hover:text-forest"
-              >
-                Chính Sách & Bảo Hành
-              </Link>
-              <div className="pt-2 border-t border-border-subtle flex gap-2">
-                <Link
-                  href="/gio-hang"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  className="w-full py-2.5 text-center text-xs font-semibold bg-forest hover:bg-forest-dark text-ivory rounded transition-colors shadow-sm"
-                >
-                  Xem Giỏ Hàng ({totalItems})
-                </Link>
+              {/* Text-only columns, Nike-style: bold heading, muted links */}
+              <div className="max-w-5xl mx-auto px-8 pt-8 pb-12 grid grid-cols-4 gap-10">
+                {MEGA_COLUMNS.map((column) => (
+                  <div key={column.title}>
+                    <p className="text-base font-medium text-charcoal">
+                      {column.title}
+                    </p>
+                    <ul className="mt-4 space-y-2.5">
+                      {column.links.map((link) => (
+                        <li key={link.href}>
+                          <Link
+                            href={link.href}
+                            onClick={closeMegaNow}
+                            className="text-sm font-medium text-muted hover:text-charcoal transition-colors duration-300"
+                          >
+                            {link.label}
+                          </Link>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ))}
               </div>
             </motion.div>
           )}
         </AnimatePresence>
 
-        {/* Luxury Gold Scroll Reading Progress Bar */}
-        <motion.div
-          style={{ scaleX: scrollYProgress }}
-          className="absolute bottom-0 inset-x-0 h-[2px] bg-gradient-to-r from-champagne via-champagne-light to-champagne origin-left pointer-events-none"
-        />
+        {/* Mobile menu */}
+        <AnimatePresence>
+          {isMobileMenuOpen && (
+            <motion.nav
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.35, ease: MOTION_EASE }}
+              className="overflow-hidden lg:hidden border-t border-border-subtle bg-white"
+            >
+              <div className="px-4 pt-4 pb-8">
+                <ul className="divide-y divide-border-subtle">
+                  {NAV_LINKS.map((link) => (
+                    <li key={link.href}>
+                      <Link
+                        href={link.href}
+                        onClick={() => setIsMobileMenuOpen(false)}
+                        className="block py-3.5 text-lg font-medium text-charcoal"
+                      >
+                        {link.label}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+                <p className="mt-6 mb-3 text-base font-medium text-charcoal">
+                  Danh mục
+                </p>
+                <ul className="space-y-2.5">
+                  {mockCategories.map((c) => (
+                    <li key={c.id}>
+                      <Link
+                        href={`/danh-muc/${c.slug}`}
+                        onClick={() => setIsMobileMenuOpen(false)}
+                        className="block text-[15px] font-medium text-muted"
+                      >
+                        {c.name}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </motion.nav>
+          )}
+        </AnimatePresence>
       </header>
 
-      {/* Global Search Overlay */}
       <SearchOverlay
         isOpen={isSearchOpen}
         onClose={() => setIsSearchOpen(false)}

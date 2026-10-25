@@ -1,8 +1,9 @@
 import { MetadataRoute } from "next";
 import { catalogRepository } from "@/data/repositories/catalog-repository";
+import { siteUrl } from "@/lib/config/site";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const baseUrl = "https://vinhtram.vn";
+  const baseUrl = siteUrl;
 
   const [products, categories, articles] = await Promise.all([
     catalogRepository.getProducts(),

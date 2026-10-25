@@ -1,13 +1,15 @@
-import React from "react";
+import React, { Suspense } from "react";
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-import { Clock, User, Calendar, ArrowLeft, ArrowRight, Tag } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { catalogRepository } from "@/data/repositories/catalog-repository";
 import { Breadcrumbs } from "@/components/ui/Breadcrumbs";
 import { ArticleJsonLd, BreadcrumbJsonLd } from "@/components/seo/JsonLd";
 import { Button } from "@/components/ui/Button";
+import { MarkdownContent } from "../MarkdownContent";
+import { formatArticleDate } from "../formatArticleDate";
 
 interface ArticleDetailPageProps {
   params: Promise<{ slug: string }>;
@@ -39,7 +41,7 @@ export async function generateMetadata({
     openGraph: {
       title: article.title,
       description: article.excerpt,
-      url: `https://vinhtram.vn/bai-viet/${article.slug}`,
+      url: `/bai-viet/${article.slug}`,
       images: [{ url: article.coverImage, alt: article.title }],
       type: "article",
       publishedTime: article.publishedAt,
@@ -48,7 +50,17 @@ export async function generateMetadata({
   };
 }
 
-export default async function ArticleDetailPage({ params }: ArticleDetailPageProps) {
+// Non-async page: the URL-dependent part streams inside Suspense so the
+// route's shared shell stays instant (Next 16 partial prefetching).
+export default function ArticleDetailPage({ params }: ArticleDetailPageProps) {
+  return (
+    <Suspense fallback={<ArticleSkeleton />}>
+      <ArticleDetail params={params} />
+    </Suspense>
+  );
+}
+
+async function ArticleDetail({ params }: ArticleDetailPageProps) {
   const { slug } = await params;
   const article = await catalogRepository.getArticleBySlug(slug);
 
@@ -57,139 +69,144 @@ export default async function ArticleDetailPage({ params }: ArticleDetailPagePro
   }
 
   const allArticles = await catalogRepository.getArticles();
-  const relatedArticles = allArticles.filter((a) => a.id !== article.id).slice(0, 2);
+  const relatedArticles = allArticles
+    .filter((a) => a.id !== article.id)
+    .slice(0, 3);
 
   const breadcrumbs = [
-    { label: "Kiến thức trầm", href: "/bai-viet" },
+    { label: "Tin tức", href: "/bai-viet" },
     { label: article.title, href: `/bai-viet/${article.slug}` },
   ];
 
   return (
-    <article className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 space-y-8">
-      <ArticleJsonLd article={article} />
-      <BreadcrumbJsonLd items={breadcrumbs} />
-      <Breadcrumbs items={breadcrumbs} />
+    <div className="pb-24">
+      <article className="max-w-3xl mx-auto px-4 sm:px-6 pt-6">
+        <ArticleJsonLd article={article} />
+        <BreadcrumbJsonLd items={breadcrumbs} />
+        <Breadcrumbs items={breadcrumbs} />
 
-      {/* Article Header */}
-      <div className="space-y-4">
-        <span className="text-xs uppercase font-semibold text-agarwood tracking-widest block">
-          {article.category}
-        </span>
-        <h1 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-bold text-charcoal leading-tight">
-          {article.title}
-        </h1>
-
-        <div className="flex flex-wrap items-center gap-4 text-xs text-muted pt-2 pb-4 border-b border-border-subtle">
-          <div className="flex items-center gap-1.5">
-            <User className="w-3.5 h-3.5 text-forest" />
-            <span className="font-semibold text-charcoal">{article.author.name}</span>
-            <span className="text-stone-400">({article.author.role})</span>
-          </div>
-          <span>•</span>
-          <div className="flex items-center gap-1.5">
-            <Calendar className="w-3.5 h-3.5 text-forest" />
-            <span>{article.publishedAt}</span>
-          </div>
-          <span>•</span>
-          <div className="flex items-center gap-1.5">
-            <Clock className="w-3.5 h-3.5 text-forest" />
-            <span>{article.readingTimeMinutes} phút đọc</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Featured Cover Image */}
-      <div className="relative aspect-16/9 w-full rounded-sm overflow-hidden bg-ivory border border-border-subtle shadow-xs">
-        <Image
-          src={article.coverImage}
-          alt={article.title}
-          fill
-          priority
-          sizes="(max-width: 1024px) 100vw, 896px"
-          className="object-cover"
-        />
-      </div>
-
-      {/* Article Body Content */}
-      <div className="prose prose-stone max-w-none text-charcoal/90 leading-relaxed font-light space-y-5 text-sm sm:text-base whitespace-pre-line">
-        {article.content}
-      </div>
-
-      {/* Tags */}
-      {article.tags.length > 0 && (
-        <div className="pt-6 border-t border-border-subtle flex items-center gap-2 flex-wrap">
-          <Tag className="w-4 h-4 text-muted" />
-          <span className="text-xs text-muted">Chủ đề:</span>
-          {article.tags.map((tag) => (
-            <span
-              key={tag}
-              className="text-xs px-3 py-1 rounded-full bg-white border border-border-subtle text-charcoal"
-            >
-              #{tag}
-            </span>
-          ))}
-        </div>
-      )}
-
-      {/* Brand CTA Box */}
-      <div className="bg-forest-dark text-ivory p-6 sm:p-8 rounded-sm border border-forest flex flex-col sm:flex-row items-center justify-between gap-6">
-        <div>
-          <h3 className="font-serif text-lg sm:text-xl font-bold text-ivory mb-1">
-            Trải Nghiệm Trầm Hương Tự Nhiên Thật
-          </h3>
-          <p className="text-xs text-ivory/80 max-w-md">
-            Mỗi tác phẩm VĨNH TRẦM đều được bảo hành dây và hạt trọn đời. Đặt hàng để nhận kiện hàng đồng kiểm tận nơi.
+        <header className="mt-10 sm:mt-14">
+          <p className="text-sm font-medium text-gold-dark">
+            {article.category}
           </p>
+          <h1 className="mt-3 text-3xl sm:text-5xl font-semibold text-charcoal leading-[1.15] tracking-tight">
+            {article.title}
+          </h1>
+          <p className="mt-5 text-lg text-muted leading-relaxed">
+            {article.excerpt}
+          </p>
+          <p className="mt-6 text-sm text-muted">
+            <span className="font-medium text-charcoal">
+              {article.author.name}
+            </span>
+            {" · "}
+            {formatArticleDate(article.publishedAt)}
+            {" · "}
+            {article.readingTimeMinutes} phút đọc
+          </p>
+        </header>
+      </article>
+
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 mt-10">
+        <div className="relative aspect-video w-full bg-ivory overflow-hidden">
+          <Image
+            src={article.coverImage}
+            alt={article.title}
+            fill
+            preload
+            sizes="(max-width: 1024px) 100vw, 1024px"
+            className="object-cover"
+          />
         </div>
-        <Button href="/san-pham" variant="champagne" size="md">
-          Xem Bộ Sưu Tập
-        </Button>
       </div>
 
-      {/* Related Articles */}
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 mt-12">
+        <MarkdownContent>{article.content}</MarkdownContent>
+
+        {article.tags.length > 0 && (
+          <p className="mt-12 pt-6 border-t border-border-subtle text-sm text-muted">
+            Chủ đề: {article.tags.join(" · ")}
+          </p>
+        )}
+
+        <Link
+          href="/bai-viet"
+          className="mt-6 inline-flex items-center gap-0.5 text-[15px] text-gold-dark hover:underline underline-offset-4"
+        >
+          <ChevronLeft className="w-4 h-4" />
+          Tất cả bài viết
+        </Link>
+      </div>
+
+      {/* Product nudge, styled like the homepage showroom band */}
+      <section className="max-w-5xl mx-auto px-4 sm:px-6 mt-20">
+        <div className="bg-ivory px-6 py-12 sm:py-14 text-center">
+          <h2 className="text-2xl sm:text-3xl font-semibold text-charcoal">
+            Trải nghiệm trầm hương tự nhiên
+          </h2>
+          <p className="mt-3 text-muted max-w-lg mx-auto">
+            Bảo hành dây và đánh bóng trọn đời. Được mở hộp kiểm tra trước khi
+            thanh toán.
+          </p>
+          <div className="mt-7">
+            <Button href="/san-pham">Xem sản phẩm</Button>
+          </div>
+        </div>
+      </section>
+
       {relatedArticles.length > 0 && (
-        <div className="pt-8 border-t border-border-subtle space-y-4">
-          <h3 className="font-serif text-xl font-bold text-charcoal">
-            Bài Viết Cùng Chuyên Mục
-          </h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-20">
+          <div className="flex items-end justify-between gap-4 mb-8">
+            <h2 className="text-2xl sm:text-3xl font-semibold text-charcoal">
+              Đọc tiếp
+            </h2>
+            <Link
+              href="/bai-viet"
+              className="inline-flex items-center gap-0.5 text-[15px] text-gold-dark hover:underline underline-offset-4"
+            >
+              Tất cả bài viết
+              <ChevronRight className="w-4 h-4" />
+            </Link>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-x-4 gap-y-10">
             {relatedArticles.map((rel) => (
               <Link
                 key={rel.id}
                 href={`/bai-viet/${rel.slug}`}
-                className="p-4 bg-white border border-border-subtle rounded hover:border-champagne transition-colors flex gap-4 items-center group"
+                className="group block"
               >
-                <div className="relative w-16 h-16 rounded overflow-hidden bg-ivory shrink-0">
+                <div className="relative aspect-16/10 bg-ivory overflow-hidden">
                   <Image
                     src={rel.coverImage}
                     alt={rel.title}
                     fill
-                    sizes="64px"
-                    className="object-cover"
+                    sizes="(max-width: 768px) 100vw, 33vw"
+                    className="object-cover transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.04]"
                   />
                 </div>
-                <div className="flex-1 min-w-0">
-                  <h4 className="text-xs font-semibold text-charcoal group-hover:text-forest transition-colors line-clamp-2">
-                    {rel.title}
-                  </h4>
-                  <p className="text-[11px] text-muted mt-1">{rel.publishedAt}</p>
-                </div>
-                <ArrowRight className="w-4 h-4 text-stone-300 group-hover:text-forest group-hover:translate-x-1 transition-all shrink-0" />
+                <p className="mt-4 text-sm text-muted">
+                  {rel.category} · {rel.readingTimeMinutes} phút đọc
+                </p>
+                <h3 className="mt-1 text-lg font-medium text-charcoal leading-snug group-hover:text-gold-dark transition-colors duration-300">
+                  {rel.title}
+                </h3>
               </Link>
             ))}
           </div>
-        </div>
+        </section>
       )}
+    </div>
+  );
+}
 
-      <div className="pt-4">
-        <Link
-          href="/bai-viet"
-          className="inline-flex items-center gap-1.5 text-xs font-semibold text-forest hover:underline"
-        >
-          <ArrowLeft className="w-3.5 h-3.5" />
-          <span>Quay lại danh mục kiến thức</span>
-        </Link>
-      </div>
-    </article>
+function ArticleSkeleton() {
+  return (
+    <div className="max-w-3xl mx-auto px-4 sm:px-6 pt-6 pb-24 animate-pulse">
+      <div className="h-4 w-48 bg-ivory" />
+      <div className="mt-14 h-4 w-28 bg-ivory" />
+      <div className="mt-4 h-10 w-full bg-ivory" />
+      <div className="mt-3 h-10 w-2/3 bg-ivory" />
+      <div className="mt-10 aspect-video w-full bg-ivory" />
+    </div>
   );
 }

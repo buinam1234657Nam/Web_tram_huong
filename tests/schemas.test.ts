@@ -69,15 +69,41 @@ describe("Validation Schemas", () => {
       const result = checkoutFormSchema.safeParse(invalidData);
       expect(result.success).toBe(false);
     });
+
+    it("accepts bank transfer and rejects the removed card gateway", () => {
+      const base = {
+        fullName: "Nguyễn Văn An",
+        phone: "0908866989",
+        province: "Khánh Hòa",
+        district: "Vạn Ninh",
+        ward: "Vạn Giã",
+        streetAddress: "Số 68 Đường Trầm Hương",
+      };
+
+      expect(
+        checkoutFormSchema.safeParse({
+          ...base,
+          paymentMethod: "bank_transfer",
+        }).success,
+      ).toBe(true);
+      expect(
+        checkoutFormSchema.safeParse({ ...base, paymentMethod: "vnpay" })
+          .success,
+      ).toBe(false);
+    });
   });
 
   describe("newsletterSchema", () => {
     it("accepts valid email addresses", () => {
-      expect(newsletterSchema.safeParse({ email: "khachhang@vinhtram.vn" }).success).toBe(true);
+      expect(
+        newsletterSchema.safeParse({ email: "khachhang@vinhtram.vn" }).success,
+      ).toBe(true);
     });
 
     it("rejects malformed emails", () => {
-      expect(newsletterSchema.safeParse({ email: "not-an-email" }).success).toBe(false);
+      expect(
+        newsletterSchema.safeParse({ email: "not-an-email" }).success,
+      ).toBe(false);
     });
   });
 });

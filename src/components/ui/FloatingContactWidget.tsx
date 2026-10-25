@@ -1,107 +1,91 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { Phone, ArrowUp, MessageCircle } from "lucide-react";
+import React, { useEffect, useRef, useState } from "react";
+import { usePathname } from "next/navigation";
+import { AnimatePresence, motion } from "motion/react";
+import { MessageCircle, Phone, X } from "lucide-react";
 import { brandConfig } from "@/lib/config/brand";
+import { MOTION_EASE } from "@/components/motion/MotionPrimitives";
 
+/** Routes where a floating button would sit on top of the primary action. */
+const HIDDEN_ON = ["/gio-hang", "/thanh-toan"];
+
+/**
+ * One small contact button that expands into Zalo / call options, so it
+ * doesn't permanently cover page content on small screens.
+ */
 export function FloatingContactWidget() {
-  const [showScrollTop, setShowScrollTop] = useState(false);
-  const [scrollProgress, setScrollProgress] = useState(0);
+  const pathname = usePathname();
+  const [isOpen, setIsOpen] = useState(false);
+  const rootRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    let ticking = false;
-    const handleScroll = () => {
-      if (!ticking) {
-        window.requestAnimationFrame(() => {
-          const scrollHeight = document.documentElement.scrollHeight - window.innerHeight;
-          const progress = scrollHeight > 0 ? (window.scrollY / scrollHeight) * 100 : 0;
-          setScrollProgress(Math.min(100, Math.max(0, progress)));
-          setShowScrollTop(window.scrollY > 300);
-          ticking = false;
-        });
-        ticking = true;
-      }
+    if (!isOpen) return;
+    const onPointerDown = (e: PointerEvent) => {
+      if (!rootRef.current?.contains(e.target as Node)) setIsOpen(false);
     };
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setIsOpen(false);
+    };
+    document.addEventListener("pointerdown", onPointerDown);
+    document.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.removeEventListener("pointerdown", onPointerDown);
+      document.removeEventListener("keydown", onKeyDown);
+    };
+  }, [isOpen]);
 
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
-
-  const scrollToTop = () => {
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  };
-
-  const circumference = 138.23; // 2 * pi * 22
-  const strokeDashoffset = circumference - (circumference * scrollProgress) / 100;
+  if (HIDDEN_ON.includes(pathname)) return null;
 
   return (
-    <div className="fixed bottom-6 right-6 z-40 flex flex-col items-center gap-3">
-      {/* Zalo Button - Luxury Gold Tone */}
-      <a
-        href="https://zalo.me/0908866989"
-        target="_blank"
-        rel="noopener noreferrer"
-        aria-label="Tư vấn nhanh qua Zalo"
-        className="group relative w-12 h-12 rounded-full bg-gradient-to-br from-[#C5A46D] via-[#B89355] to-[#8C6B2D] text-white shadow-xl hover:shadow-2xl flex items-center justify-center transition-all duration-300 hover:scale-110 active:scale-95 border border-[#E2D0B3]/40"
-      >
-        <span className="absolute -inset-1 rounded-full bg-[#C5A46D]/40 animate-ping duration-1000 -z-10" />
-        <MessageCircle className="w-6 h-6 text-ivory drop-shadow-xs" />
-        {/* Tooltip */}
-        <span className="absolute right-14 whitespace-nowrap bg-charcoal text-ivory text-xs px-2.5 py-1 rounded-xs shadow-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none font-medium border border-border-subtle/50">
-          Tư vấn Zalo 24/7
-        </span>
-      </a>
-
-      {/* Hotline Call Button */}
-      <a
-        href={`tel:${brandConfig.contact.hotline}`}
-        aria-label="Gọi hotline tư vấn"
-        className="group relative w-12 h-12 rounded-full bg-forest text-champagne shadow-xl hover:shadow-2xl flex items-center justify-center transition-all duration-300 hover:scale-110 active:scale-95 border border-champagne/40"
-      >
-        <Phone className="w-5 h-5 animate-bounce duration-1000" />
-        {/* Tooltip */}
-        <span className="absolute right-14 whitespace-nowrap bg-charcoal text-ivory text-xs px-2.5 py-1 rounded-xs shadow-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none font-medium">
-          Hotline: {brandConfig.contact.phoneFormatted}
-        </span>
-      </a>
-
-      {/* Scroll to Top Button with Circular Progress Ring */}
-      {showScrollTop && (
-        <button
-          type="button"
-          onClick={scrollToTop}
-          aria-label="Cuộn lên đầu trang"
-          className="group relative w-11 h-11 rounded-full bg-white/95 backdrop-blur-md border border-border-subtle text-charcoal hover:text-forest shadow-xl flex items-center justify-center transition-all duration-300 hover:scale-105 active:scale-95 cursor-pointer animate-in fade-in zoom-in"
-        >
-          {/* Circular Progress Ring */}
-          <svg
-            className="absolute -inset-1 w-[52px] h-[52px] -rotate-90 pointer-events-none"
-            viewBox="0 0 52 52"
+    <div
+      ref={rootRef}
+      className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-40 flex flex-col items-end gap-2"
+    >
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            id="contact-options"
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 8 }}
+            transition={{ duration: 0.25, ease: MOTION_EASE }}
+            className="flex flex-col items-end gap-2"
           >
-            <circle
-              cx="26"
-              cy="26"
-              r="22"
-              fill="none"
-              stroke="#E3DCCF"
-              strokeWidth="2.5"
-            />
-            <circle
-              cx="26"
-              cy="26"
-              r="22"
-              fill="none"
-              stroke="#C5A46D"
-              strokeWidth="2.5"
-              strokeDasharray={circumference}
-              strokeDashoffset={strokeDashoffset}
-              strokeLinecap="round"
-              className="transition-[stroke-dashoffset] duration-150 ease-out"
-            />
-          </svg>
-          <ArrowUp className="w-4 h-4 transition-transform group-hover:-translate-y-0.5" />
-        </button>
-      )}
+            <a
+              href={brandConfig.social.zalo}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 pl-4 pr-3 py-2.5 rounded-full bg-white border border-border-subtle text-sm font-medium text-charcoal hover:bg-ivory transition-colors"
+            >
+              Nhắn Zalo
+              <MessageCircle className="w-4 h-4 text-gold-dark" />
+            </a>
+            <a
+              href={`tel:${brandConfig.contact.hotline}`}
+              className="inline-flex items-center gap-2 pl-4 pr-3 py-2.5 rounded-full bg-white border border-border-subtle text-sm font-medium text-charcoal hover:bg-ivory transition-colors"
+            >
+              Gọi {brandConfig.contact.phoneFormatted}
+              <Phone className="w-4 h-4 text-gold-dark" />
+            </a>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <button
+        type="button"
+        onClick={() => setIsOpen((v) => !v)}
+        aria-expanded={isOpen}
+        aria-controls="contact-options"
+        aria-label={isOpen ? "Đóng liên hệ" : "Liên hệ tư vấn"}
+        className="w-12 h-12 rounded-full bg-espresso text-white flex items-center justify-center hover:bg-espresso-light transition-colors cursor-pointer"
+      >
+        {isOpen ? (
+          <X className="w-5 h-5" />
+        ) : (
+          <MessageCircle className="w-5 h-5" />
+        )}
+      </button>
     </div>
   );
 }

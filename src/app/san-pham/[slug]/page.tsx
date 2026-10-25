@@ -1,5 +1,6 @@
-import React from "react";
+import React, { Suspense } from "react";
 import { Metadata } from "next";
+import { ProductDetailSkeleton } from "@/components/product/Skeletons";
 import { notFound } from "next/navigation";
 import { catalogRepository } from "@/data/repositories/catalog-repository";
 import { Breadcrumbs } from "@/components/ui/Breadcrumbs";
@@ -28,7 +29,8 @@ export async function generateMetadata({
   }
 
   const pageTitle =
-    product.seo.title.replace(/\s*\|\s*VĨNH TRẦM.*$/i, "").trim() || product.name;
+    product.seo.title.replace(/\s*\|\s*VĨNH TRẦM.*$/i, "").trim() ||
+    product.name;
 
   return {
     title: pageTitle,
@@ -40,12 +42,12 @@ export async function generateMetadata({
     openGraph: {
       title: product.seo.title,
       description: product.seo.description,
-      url: `https://vinhtram.vn/san-pham/${product.slug}`,
+      url: `/san-pham/${product.slug}`,
       images: [
         {
           url: product.images[0],
-          width: 800,
-          height: 800,
+          width: 1024,
+          height: 1024,
           alt: product.name,
         },
       ],
@@ -53,7 +55,19 @@ export async function generateMetadata({
   };
 }
 
-export default async function ProductDetailPage({ params }: ProductPageProps) {
+// The shell stays URL-independent; everything that reads `params` streams in
+// inside Suspense (see "Move URL data behind Suspense" in the Next.js docs).
+export default function ProductDetailPage({ params }: ProductPageProps) {
+  return (
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-24">
+      <Suspense fallback={<ProductDetailSkeleton />}>
+        <ProductContent params={params} />
+      </Suspense>
+    </div>
+  );
+}
+
+async function ProductContent({ params }: ProductPageProps) {
   const { slug } = await params;
   const product = await catalogRepository.getProductBySlug(slug);
 
@@ -62,7 +76,7 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
   }
 
   const [relatedProducts, reviews] = await Promise.all([
-    catalogRepository.getRelatedProducts(product.id, product.categorySlug, 3),
+    catalogRepository.getRelatedProducts(product.id, product.categorySlug, 6),
     catalogRepository.getReviewsByProductId(product.id),
   ]);
 
@@ -73,7 +87,7 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
   ];
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+    <>
       <ProductJsonLd product={product} />
       <BreadcrumbJsonLd items={breadcrumbs} />
       <Breadcrumbs items={breadcrumbs} />
@@ -85,6 +99,6 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
           reviews={reviews}
         />
       </div>
-    </div>
+    </>
   );
 }

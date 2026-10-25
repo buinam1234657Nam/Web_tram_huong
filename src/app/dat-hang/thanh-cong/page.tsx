@@ -1,14 +1,17 @@
 import React, { Suspense } from "react";
 import { Metadata } from "next";
 import { Breadcrumbs } from "@/components/ui/Breadcrumbs";
-import { OrderSuccessView } from "./OrderSuccessView";
+import { OrderLoading, OrderSuccessView } from "./OrderSuccessView";
 
 export const metadata: Metadata = {
   title: "Đặt Hàng Thành Công",
-  description: "Xác nhận đơn hàng và mã tra cứu bưu phẩm tại VĨNH TRẦM.",
+  description: "Xác nhận đơn hàng tại VĨNH TRẦM.",
+  alternates: {
+    canonical: "/dat-hang/thanh-cong",
+  },
   robots: {
     index: false,
-    follow: false,
+    follow: true,
   },
 };
 
@@ -19,12 +22,15 @@ export default function OrderSuccessPage() {
   ];
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 space-y-6">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-24">
       <Breadcrumbs items={breadcrumbs} />
 
-      <Suspense fallback={<div className="text-center py-24 text-xs text-muted">Đang tải chi tiết đơn hàng...</div>}>
-        <OrderSuccessView />
-      </Suspense>
+      <div className="mt-10">
+        {/* The order code comes from searchParams, so it must render inside Suspense. */}
+        <Suspense fallback={<OrderLoading />}>
+          <OrderSuccessView />
+        </Suspense>
+      </div>
     </div>
   );
 }

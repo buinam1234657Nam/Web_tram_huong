@@ -7,14 +7,14 @@ export function Badge({
   className = "",
 }: {
   children: React.ReactNode;
-  variant?: "default" | "forest" | "agarwood" | "champagne" | "outline";
+  variant?: "default" | "espresso" | "agarwood" | "gold" | "outline";
   className?: string;
 }) {
   const variantStyles = {
     default: "bg-ivory-dark text-charcoal",
-    forest: "bg-forest/10 text-forest border border-forest/20",
+    espresso: "bg-espresso/10 text-espresso border border-espresso/20",
     agarwood: "bg-agarwood/10 text-agarwood-dark border border-agarwood/20",
-    champagne: "bg-champagne/15 text-champagne-dark border border-champagne/30",
+    gold: "bg-gold/15 text-gold-dark border border-gold/30",
     outline: "border border-border-subtle text-muted",
   };
 

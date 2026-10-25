@@ -3,20 +3,19 @@
 import React, { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Eye, ShoppingBag, Check } from "lucide-react";
+import { Plus, Check } from "lucide-react";
 import { Product } from "@/types/product";
-import { formatVND, calculateDiscountPercentage } from "@/lib/format/currency";
+import { formatVND } from "@/lib/format/currency";
 import { useCartStore } from "@/features/cart/useCartStore";
-import { StarRating } from "@/components/ui/StarRating";
-import { StockBadge } from "@/components/ui/Badge";
 import { QuickViewModal } from "./QuickViewModal";
 
 export function ProductCard({
   product,
-  priority = false,
+  eager = false,
 }: {
   product: Product;
-  priority?: boolean;
+  /** Load immediately (cards in the first visible row). */
+  eager?: boolean;
 }) {
   const [isQuickViewOpen, setIsQuickViewOpen] = useState(false);
   const [justAdded, setJustAdded] = useState(false);
@@ -28,7 +27,7 @@ export function ProductCard({
   const compareAtPrice = defaultVariant
     ? defaultVariant.compareAtPrice
     : product.compareAtPrice;
-  const discount = calculateDiscountPercentage(price, compareAtPrice);
+  const isOutOfStock = product.inventoryStatus === "out_of_stock";
 
   const handleQuickAdd = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -43,33 +42,20 @@ export function ProductCard({
 
   return (
     <>
-      <article
-        className="group relative bg-white border border-[#E3DCCF] rounded-xs overflow-hidden flex flex-col justify-between h-full transition-[transform,box-shadow,border-color] duration-300 ease-out hover:-translate-y-1 hover:shadow-xl hover:border-[#C5A46D]/60 will-change-transform"
-      >
-        {/* Top Badges */}
-        <div className="absolute top-2.5 left-2.5 z-10 flex flex-col gap-1 items-start">
-          {product.bestseller && (
-            <span className="text-[10px] uppercase font-bold tracking-wider bg-[#28392F] text-[#F5F5F7] px-2.5 py-0.5 rounded-xs shadow-md border border-[#374E40]">
-              Bán chạy
-            </span>
-          )}
-          {discount && (
-            <span className="text-[10px] font-bold bg-[#966B45] text-white px-2 py-0.5 rounded-xs shadow-md">
-              -{discount}%
-            </span>
-          )}
-        </div>
-
-        {/* Image Container with 1:1 Aspect Ratio, Warm Ivory Background */}
-        <div className="relative aspect-square w-full bg-[#FAF8F4] overflow-hidden cursor-pointer shrink-0">
-          <Link href={`/san-pham/${product.slug}`} className="block w-full h-full relative">
+      <article className="group relative flex flex-col h-full">
+        <div className="relative aspect-square w-full bg-ivory overflow-hidden">
+          {/* Gentle zoom on hover; both stacked images scale together so the crossfade stays aligned */}
+          <Link
+            href={`/san-pham/${product.slug}`}
+            className="block w-full h-full relative transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.04]"
+          >
             <Image
               src={primaryImage}
               alt={product.name}
               fill
-              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 300px"
-              priority={priority}
-              className={`object-cover transition-all duration-500 ease-out group-hover:scale-105 ${
+              sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+              loading={eager ? "eager" : "lazy"}
+              className={`object-cover transition-opacity duration-700 ease-out ${
                 hoverImage !== primaryImage ? "group-hover:opacity-0" : ""
               }`}
             />
@@ -78,99 +64,68 @@ export function ProductCard({
                 src={hoverImage}
                 alt={`${product.name} - góc chụp khác`}
                 fill
-                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 300px"
-                className="object-cover transition-all duration-500 ease-out opacity-0 group-hover:opacity-100 group-hover:scale-105"
+                sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                className="object-cover transition-opacity duration-700 ease-out opacity-0 group-hover:opacity-100"
               />
             )}
           </Link>
 
-          {/* Quick Action Overlay Buttons */}
-          <div className="absolute inset-x-3 bottom-3 z-10 flex gap-2 translate-y-3 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300 ease-out">
+          <div className="absolute inset-x-3 bottom-3 hidden sm:flex gap-2 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity duration-500 ease-out">
             <button
               type="button"
               onClick={() => setIsQuickViewOpen(true)}
-              className="flex-1 py-2 px-3 text-xs font-semibold bg-[#FAF8F4]/95 text-[#1C2520] hover:bg-[#28392F] hover:text-[#F5F5F7] backdrop-blur-xs rounded-xs shadow-lg transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+              className="flex-1 h-10 rounded-full bg-white/95 text-xs font-medium text-charcoal hover:bg-white cursor-pointer"
               aria-label={`Xem nhanh ${product.name}`}
             >
-              <Eye className="w-3.5 h-3.5" />
-              <span>Xem nhanh</span>
+              Xem nhanh
             </button>
-
             <button
               type="button"
               onClick={handleQuickAdd}
-              disabled={product.inventoryStatus === "out_of_stock"}
-              className={`p-2.5 rounded-xs shadow-lg backdrop-blur-xs transition-all duration-200 flex items-center justify-center cursor-pointer ${
-                justAdded
-                  ? "bg-emerald-700 text-white scale-105"
-                  : "bg-[#28392F] text-[#F5F5F7] hover:bg-[#1A2520] hover:text-[#C5A46D] hover:scale-105"
-              }`}
+              disabled={isOutOfStock}
+              className="w-10 h-10 rounded-full bg-espresso text-white flex items-center justify-center hover:bg-espresso-light disabled:opacity-50 cursor-pointer"
               aria-label={`Thêm ${product.name} vào giỏ hàng`}
             >
               {justAdded ? (
-                <Check className="w-4 h-4 animate-in zoom-in" />
+                <Check className="w-4 h-4" />
               ) : (
-                <ShoppingBag className="w-4 h-4" />
+                <Plus className="w-4 h-4" />
               )}
             </button>
           </div>
         </div>
 
-        {/* Content */}
-        <div className="p-4 sm:p-5 flex-1 flex flex-col justify-between bg-white">
-          <div>
-            <div className="flex items-center text-[11px] text-muted mb-1.5 h-5">
-              <span className="font-medium tracking-wide uppercase text-[10px] text-agarwood-dark truncate">
-                {product.categoryName}
+        <div className="pt-4 flex-1 flex flex-col">
+          {product.bestseller && (
+            <p className="text-xs font-medium text-gold-dark mb-1">Bán chạy</p>
+          )}
+          {isOutOfStock && (
+            <p className="text-xs font-medium text-muted mb-1">Tạm hết hàng</p>
+          )}
+          <h3 className="text-[15px] font-medium text-charcoal leading-snug line-clamp-2">
+            <Link
+              href={`/san-pham/${product.slug}`}
+              className="hover:text-gold-dark transition-colors"
+            >
+              {product.name}
+            </Link>
+          </h3>
+          <p className="mt-1 text-sm text-muted">
+            {product.categoryName}
+            {product.variants.length > 1 &&
+              ` · ${product.variants.length} quy cách`}
+          </p>
+          <p className="mt-2 flex flex-wrap items-baseline gap-x-2 text-[15px] font-medium text-charcoal">
+            <span>{formatVND(price)}</span>
+            {compareAtPrice && compareAtPrice > price && (
+              <span className="text-sm font-normal text-muted-light line-through">
+                {formatVND(compareAtPrice)}
               </span>
-            </div>
-
-            <div className="h-[52px] flex items-start">
-              <h3 className="font-serif text-[17px] sm:text-lg font-bold text-charcoal group-hover:text-forest transition-colors line-clamp-2 leading-snug tracking-tight">
-                <Link href={`/san-pham/${product.slug}`}>{product.name}</Link>
-              </h3>
-            </div>
-
-            <div className="mt-2 mb-3 h-4 flex items-center">
-              <StarRating
-                rating={product.ratingAverage}
-                count={product.ratingCount}
-                size="sm"
-              />
-            </div>
-          </div>
-
-          <div className="pt-3 border-t border-border-subtle/50 flex flex-col justify-end space-y-1.5">
-            <div className="flex items-baseline gap-2 flex-wrap">
-              <span className="font-sans text-base sm:text-lg font-bold text-forest tracking-tight">
-                {formatVND(price)}
-              </span>
-              {compareAtPrice && compareAtPrice > price && (
-                <span className="text-xs text-stone-400 line-through">
-                  {formatVND(compareAtPrice)}
-                </span>
-              )}
-            </div>
-
-            {/* Bottom Row: Specifications (left) and StockBadge (right - filling the empty space) */}
-            <div className="h-6 flex items-center justify-between gap-2 mt-0.5">
-              {product.variants.length > 1 ? (
-                <span className="text-[10px] text-stone-600 font-medium bg-[#FAF8F4] px-2 py-0.5 rounded-xs border border-border-subtle inline-block shrink-0">
-                  {product.variants.length} quy cách
-                </span>
-              ) : (
-                <span className="text-[10px] text-stone-400 font-normal shrink-0">
-                  Quy cách tiêu chuẩn
-                </span>
-              )}
-
-              <StockBadge status={product.inventoryStatus} />
-            </div>
-          </div>
+            )}
+          </p>
         </div>
       </article>
 
-      {/* Accessible Quick View Dialog */}
       <QuickViewModal
         product={product}
         isOpen={isQuickViewOpen}

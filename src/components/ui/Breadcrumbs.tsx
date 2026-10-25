@@ -14,7 +14,7 @@ export function Breadcrumbs({ items }: { items: BreadcrumbItem[] }) {
         <li>
           <Link
             href="/"
-            className="flex items-center gap-1 hover:text-forest transition-colors"
+            className="flex items-center gap-1 hover:text-espresso transition-colors"
             title="Trang chủ"
           >
             <Home className="w-3.5 h-3.5" />
@@ -35,7 +35,7 @@ export function Breadcrumbs({ items }: { items: BreadcrumbItem[] }) {
               ) : (
                 <Link
                   href={item.href}
-                  className="hover:text-forest transition-colors truncate max-w-[150px] sm:max-w-none"
+                  className="hover:text-espresso transition-colors truncate max-w-[150px] sm:max-w-none"
                 >
                   {item.label}
                 </Link>

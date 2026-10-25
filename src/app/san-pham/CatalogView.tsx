@@ -1,41 +1,89 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
-import { Filter, X, RotateCcw, SlidersHorizontal } from "lucide-react";
+import Link from "next/link";
+import { ChevronDown, SlidersHorizontal, X } from "lucide-react";
+import { AnimatePresence, motion, useReducedMotion } from "motion/react";
+import {
+  MOTION_DURATION,
+  MOTION_EASE,
+  MOTION_RISE,
+} from "@/components/motion/MotionPrimitives";
 import { Product } from "@/types/product";
 import { Category } from "@/types/category";
 import { ProductCard } from "@/components/product/ProductCard";
+import { Select } from "@/components/ui/Select";
+
+const PURPOSE_OPTIONS = [
+  { value: "daily_wear", label: "Đeo hộ thân hàng ngày" },
+  { value: "meditation", label: "Thiền định & thưởng trà" },
+  { value: "relaxation", label: "Xông phòng & thư giãn" },
+  { value: "gift", label: "Quà biếu" },
+  { value: "fengshui", label: "Sưu tầm phong thủy" },
+];
+
+const PRICE_OPTIONS = [
+  { value: "under-1m", label: "Dưới 1.000.000₫", min: 0, max: 1000000 },
+  {
+    value: "1m-3m",
+    label: "1.000.000₫ – 3.000.000₫",
+    min: 1000000,
+    max: 3000000,
+  },
+  {
+    value: "3m-5m",
+    label: "3.000.000₫ – 5.000.000₫",
+    min: 3000000,
+    max: 5000000,
+  },
+  { value: "over-5m", label: "Trên 5.000.000₫", min: 5000000, max: Infinity },
+];
+
+const SORT_OPTIONS = [
+  { value: "bestseller", label: "Nổi bật" },
+  { value: "price_desc", label: "Giá: Cao - Thấp" },
+  { value: "price_asc", label: "Giá: Thấp - Cao" },
+  { value: "rating", label: "Đánh giá cao nhất" },
+];
+
+function toggle(list: string[], value: string) {
+  return list.includes(value)
+    ? list.filter((v) => v !== value)
+    : [...list, value];
+}
 
 export function CatalogView({
   initialProducts,
   categories,
-  initialCategorySlug,
+  activeCategory,
 }: {
   initialProducts: Product[];
   categories: Category[];
-  initialCategorySlug?: string;
+  activeCategory?: Category;
 }) {
-  const [selectedCategory, setSelectedCategory] = useState<string>(
-    initialCategorySlug || "all"
-  );
-  const [selectedPurpose, setSelectedPurpose] = useState<string>("all");
-  const [selectedSort, setSelectedSort] = useState<string>("bestseller");
-  const [priceMax, setPriceMax] = useState<number>(12000000);
-  const [inStockOnly, setInStockOnly] = useState<boolean>(false);
-  const [isMobileFilterOpen, setIsMobileFilterOpen] = useState<boolean>(false);
+  const [purposes, setPurposes] = useState<string[]>([]);
+  const [priceRanges, setPriceRanges] = useState<string[]>([]);
+  const [inStockOnly, setInStockOnly] = useState(false);
+  const [selectedSort, setSelectedSort] = useState("bestseller");
+  const [isFilterVisible, setIsFilterVisible] = useState(true);
+  const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
+  const reduceMotion = useReducedMotion();
 
   const filteredProducts = useMemo(() => {
-    let result = [...initialProducts];
+    let result = activeCategory
+      ? initialProducts.filter((p) => p.categorySlug === activeCategory.slug)
+      : [...initialProducts];
 
-    if (selectedCategory !== "all") {
-      result = result.filter((p) => p.categorySlug === selectedCategory);
+    if (purposes.length > 0) {
+      result = result.filter((p) => purposes.includes(p.purpose));
     }
 
-    if (selectedPurpose !== "all") {
-      result = result.filter((p) => p.purpose === selectedPurpose);
+    if (priceRanges.length > 0) {
+      const ranges = PRICE_OPTIONS.filter((o) => priceRanges.includes(o.value));
+      result = result.filter((p) =>
+        ranges.some((r) => p.price >= r.min && p.price < r.max),
+      );
     }
-
-    result = result.filter((p) => p.price <= priceMax);
 
     if (inStockOnly) {
       result = result.filter((p) => p.inventoryStatus !== "out_of_stock");
@@ -60,26 +108,12 @@ export function CatalogView({
     return result;
   }, [
     initialProducts,
-    selectedCategory,
-    selectedPurpose,
-    selectedSort,
-    priceMax,
+    activeCategory,
+    purposes,
+    priceRanges,
     inStockOnly,
+    selectedSort,
   ]);
-
-  const resetFilters = () => {
-    setSelectedCategory("all");
-    setSelectedPurpose("all");
-    setSelectedSort("bestseller");
-    setPriceMax(12000000);
-    setInStockOnly(false);
-  };
-
-  const hasActiveFilters =
-    selectedCategory !== "all" ||
-    selectedPurpose !== "all" ||
-    priceMax < 12000000 ||
-    inStockOnly;
 
   const categoryCounts = useMemo(() => {
     const counts: Record<string, number> = {};
@@ -89,319 +123,331 @@ export function CatalogView({
     return counts;
   }, [initialProducts]);
 
-  return (
-    <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-      {/* Mobile Filter Toggle */}
-      <div className="lg:hidden flex items-center justify-between pb-4 border-b border-border-subtle">
-        <button
-          onClick={() => setIsMobileFilterOpen(true)}
-          className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-border-subtle rounded text-xs font-semibold text-charcoal shadow-xs"
-        >
-          <Filter className="w-3.5 h-3.5 text-forest" />
-          <span>Bộ lọc & Sắp xếp ({hasActiveFilters ? "Đang lọc" : "Mặc định"})</span>
-        </button>
+  const activeFilterCount =
+    purposes.length + priceRanges.length + (inStockOnly ? 1 : 0);
 
-        <span className="text-xs text-muted">
-          Hiển thị <strong>{filteredProducts.length}</strong> sản phẩm
-        </span>
+  const resetFilters = () => {
+    setPurposes([]);
+    setPriceRanges([]);
+    setInStockOnly(false);
+  };
+
+  const title = activeCategory ? activeCategory.name : "Tất cả sản phẩm";
+
+  const filterPanel = (
+    <>
+      <nav aria-label="Danh mục sản phẩm" className="pb-6">
+        <ul className="space-y-2.5">
+          <li>
+            <CategoryLink href="/san-pham" active={!activeCategory}>
+              Tất cả sản phẩm
+            </CategoryLink>
+          </li>
+          {categories.map((c) => (
+            <li key={c.id}>
+              <CategoryLink
+                href={`/danh-muc/${c.slug}`}
+                active={activeCategory?.slug === c.slug}
+              >
+                {c.name}
+                <span className="ml-1 text-muted-light font-normal">
+                  ({categoryCounts[c.slug] || 0})
+                </span>
+              </CategoryLink>
+            </li>
+          ))}
+        </ul>
+      </nav>
+
+      <FilterGroup title="Mục đích sử dụng" count={purposes.length}>
+        {PURPOSE_OPTIONS.map((o) => (
+          <Checkbox
+            key={o.value}
+            label={o.label}
+            checked={purposes.includes(o.value)}
+            onChange={() => setPurposes((prev) => toggle(prev, o.value))}
+          />
+        ))}
+      </FilterGroup>
+
+      <FilterGroup title="Mua theo giá" count={priceRanges.length}>
+        {PRICE_OPTIONS.map((o) => (
+          <Checkbox
+            key={o.value}
+            label={o.label}
+            checked={priceRanges.includes(o.value)}
+            onChange={() => setPriceRanges((prev) => toggle(prev, o.value))}
+          />
+        ))}
+      </FilterGroup>
+
+      <FilterGroup title="Tình trạng" count={inStockOnly ? 1 : 0}>
+        <Checkbox
+          label="Chỉ hiện sản phẩm còn hàng"
+          checked={inStockOnly}
+          onChange={() => setInStockOnly((v) => !v)}
+        />
+      </FilterGroup>
+    </>
+  );
+
+  return (
+    <div>
+      {/* Title + controls bar */}
+      <div className="sticky top-(--header-h) z-20 bg-white/95 backdrop-blur-md -mx-4 px-4 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8 py-4 flex items-center justify-between gap-4">
+        <h1 className="text-xl sm:text-2xl font-medium text-charcoal">
+          {title}{" "}
+          <span className="text-muted-light">({filteredProducts.length})</span>
+        </h1>
+
+        <div className="flex items-center gap-6 text-[15px]">
+          <button
+            type="button"
+            onClick={() => setIsFilterVisible((v) => !v)}
+            className="hidden lg:inline-flex items-center gap-2 text-charcoal hover:text-gold-dark cursor-pointer"
+          >
+            {isFilterVisible ? "Ẩn bộ lọc" : "Hiện bộ lọc"}
+            <SlidersHorizontal className="w-4 h-4" />
+          </button>
+
+          <div className="hidden sm:block">
+            <Select
+              label="Sắp xếp theo"
+              value={selectedSort}
+              options={SORT_OPTIONS}
+              onChange={setSelectedSort}
+            />
+          </div>
+
+          <button
+            type="button"
+            onClick={() => setIsMobileFilterOpen(true)}
+            className="lg:hidden inline-flex items-center gap-2 px-4 py-2 rounded-full border border-border-subtle text-sm text-charcoal"
+          >
+            Bộ lọc{activeFilterCount > 0 && ` (${activeFilterCount})`}
+            <SlidersHorizontal className="w-4 h-4" />
+          </button>
+        </div>
       </div>
 
-      {/* Desktop Filter Sidebar */}
-      <aside className="hidden lg:block space-y-6 bg-white p-6 rounded-sm border border-border-subtle h-fit sticky top-28">
-        <div className="flex items-center justify-between pb-3 border-b border-border-subtle">
-          <div className="flex items-center gap-2">
-            <SlidersHorizontal className="w-4 h-4 text-forest" />
-            <h3 className="font-serif text-base font-semibold text-charcoal">Bộ Lọc Tìm Kiếm</h3>
-          </div>
-          {hasActiveFilters && (
-            <button
-              onClick={resetFilters}
-              className="text-xs text-agarwood-dark hover:underline flex items-center gap-1 cursor-pointer"
+      <div className="flex gap-10 pt-4">
+        <AnimatePresence initial={false}>
+          {isFilterVisible && (
+            <motion.aside
+              initial={{ opacity: 0, width: 0 }}
+              animate={{ opacity: 1, width: 240 }}
+              exit={{ opacity: 0, width: 0 }}
+              transition={{ duration: 0.5, ease: MOTION_EASE }}
+              className="hidden lg:block shrink-0 sticky top-[calc(var(--header-h)+5rem)] self-start max-h-[calc(100vh-10rem)] overflow-y-auto overflow-x-hidden no-scrollbar pb-10"
             >
-              <RotateCcw className="w-3 h-3" />
-              Đặt lại
-            </button>
+              <div className="w-60">{filterPanel}</div>
+            </motion.aside>
           )}
-        </div>
+        </AnimatePresence>
 
-        {/* Categories */}
-        <div>
-          <label className="block text-xs uppercase font-semibold text-charcoal tracking-wider mb-2.5">
-            Danh Mục Chế Tác
-          </label>
-          <div className="space-y-1.5">
-            <button
-              onClick={() => setSelectedCategory("all")}
-              className={`w-full text-left px-2.5 py-1.5 rounded text-xs flex justify-between items-center transition-colors cursor-pointer ${
-                selectedCategory === "all"
-                  ? "bg-forest text-ivory font-semibold"
-                  : "text-charcoal hover:bg-ivory"
+        <div className="flex-1 min-w-0">
+          {filteredProducts.length > 0 ? (
+            <div
+              className={`grid grid-cols-2 gap-x-4 gap-y-10 ${
+                isFilterVisible ? "lg:grid-cols-3" : "lg:grid-cols-4"
               }`}
             >
-              <span>Tất cả danh mục</span>
-              <span className="text-[11px] opacity-80">{initialProducts.length}</span>
-            </button>
-            {categories.map((c) => (
+              {filteredProducts.map((product, idx) => (
+                // Same fade/rise as the rest of the site; replays when filters change the set.
+                <motion.div
+                  key={product.id}
+                  initial={{ opacity: 0, y: reduceMotion ? 0 : MOTION_RISE }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{
+                    duration: MOTION_DURATION,
+                    delay: Math.min(idx, 8) * 0.08,
+                    ease: MOTION_EASE,
+                  }}
+                >
+                  <ProductCard product={product} eager={idx < 3} />
+                </motion.div>
+              ))}
+            </div>
+          ) : (
+            <div className="py-24 text-center">
+              <p className="text-lg font-medium text-charcoal">
+                Không tìm thấy sản phẩm phù hợp
+              </p>
+              <p className="mt-2 text-muted">
+                Thử bỏ bớt bộ lọc hoặc chọn danh mục khác.
+              </p>
               <button
-                key={c.id}
-                onClick={() => setSelectedCategory(c.slug)}
-                className={`w-full text-left px-2.5 py-1.5 rounded text-xs flex justify-between items-center transition-colors cursor-pointer ${
-                  selectedCategory === c.slug
-                    ? "bg-forest text-ivory font-semibold"
-                    : "text-charcoal hover:bg-ivory"
-                }`}
+                type="button"
+                onClick={resetFilters}
+                className="mt-6 px-6 py-3 rounded-full bg-espresso text-white text-sm font-medium cursor-pointer"
               >
-                <span>{c.name}</span>
-                <span className="text-[11px] opacity-80">{categoryCounts[c.slug] || 0}</span>
+                Xóa bộ lọc
               </button>
-            ))}
-          </div>
+            </div>
+          )}
         </div>
-
-        {/* Purpose */}
-        <div>
-          <label className="block text-xs uppercase font-semibold text-charcoal tracking-wider mb-2.5">
-            Mục Đích Sử Dụng
-          </label>
-          <select
-            value={selectedPurpose}
-            onChange={(e) => setSelectedPurpose(e.target.value)}
-            className="w-full text-xs p-2.5 rounded-sm bg-white border border-stone-300 hover:border-stone-400 text-charcoal focus:outline-none focus:ring-2 focus:ring-forest/20 focus:border-forest cursor-pointer shadow-2xs"
-          >
-            <option value="all">Tất cả mục đích</option>
-            <option value="daily_wear">Đeo hộ thân hàng ngày</option>
-            <option value="meditation">Thiền định & Thưởng trà</option>
-            <option value="relaxation">Xông phòng & Thư giãn</option>
-            <option value="gift">Quà biếu thượng khách</option>
-            <option value="fengshui">Sưu tầm phong thủy</option>
-          </select>
-        </div>
-
-        {/* Max Price Range Slider */}
-        <div>
-          <div className="flex justify-between items-center mb-1.5 text-xs">
-            <label className="uppercase font-semibold text-charcoal tracking-wider">
-              Mức Giá Tối Đa
-            </label>
-            <span className="font-semibold text-forest">
-              {new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(
-                priceMax
-              )}
-            </span>
-          </div>
-          <input
-            type="range"
-            min={400000}
-            max={12000000}
-            step={200000}
-            value={priceMax}
-            onChange={(e) => setPriceMax(Number(e.target.value))}
-            className="w-full accent-forest cursor-pointer"
-          />
-        </div>
-
-        {/* In Stock Only Toggle */}
-        <div className="pt-2 border-t border-border-subtle">
-          <label className="flex items-center gap-2.5 text-xs text-charcoal cursor-pointer">
-            <input
-              type="checkbox"
-              checked={inStockOnly}
-              onChange={(e) => setInStockOnly(e.target.checked)}
-              className="w-4 h-4 accent-forest rounded"
-            />
-            <span>Chỉ hiển thị sản phẩm còn hàng</span>
-          </label>
-        </div>
-      </aside>
-
-      {/* Product Content Column */}
-      <div className="lg:col-span-3 space-y-6">
-        {/* Top Filter & Sort Bar */}
-        <div className="bg-white p-4 rounded-sm border border-border-subtle flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="text-xs text-muted">
-            Tìm thấy <strong className="text-charcoal font-semibold">{filteredProducts.length}</strong> sản phẩm phù hợp
-          </div>
-
-          <div className="flex items-center gap-2 self-end sm:self-auto">
-            <label htmlFor="sort-select" className="text-xs text-muted whitespace-nowrap">
-              Sắp xếp theo:
-            </label>
-            <select
-              id="sort-select"
-              value={selectedSort}
-              onChange={(e) => setSelectedSort(e.target.value)}
-              className="text-xs p-2 rounded-sm bg-white border border-stone-300 hover:border-stone-400 text-charcoal focus:outline-none focus:ring-2 focus:ring-forest/20 focus:border-forest cursor-pointer shadow-2xs"
-            >
-              <option value="bestseller">Bán chạy nhất</option>
-              <option value="price_asc">Giá: Thấp đến Cao</option>
-              <option value="price_desc">Giá: Cao đến Thấp</option>
-              <option value="rating">Đánh giá cao nhất</option>
-            </select>
-          </div>
-        </div>
-
-        {/* Active Filter Badges */}
-        {hasActiveFilters && (
-          <div className="flex flex-wrap items-center gap-2 text-xs">
-            <span className="text-muted">Đang áp dụng:</span>
-            {selectedCategory !== "all" && (
-              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded bg-forest/10 text-forest font-medium">
-                {categories.find((c) => c.slug === selectedCategory)?.name}
-                <X
-                  className="w-3 h-3 cursor-pointer"
-                  onClick={() => setSelectedCategory("all")}
-                />
-              </span>
-            )}
-            {selectedPurpose !== "all" && (
-              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded bg-forest/10 text-forest font-medium">
-                Mục đích đã chọn
-                <X
-                  className="w-3 h-3 cursor-pointer"
-                  onClick={() => setSelectedPurpose("all")}
-                />
-              </span>
-            )}
-            {priceMax < 12000000 && (
-              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded bg-forest/10 text-forest font-medium">
-                Dưới {new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(priceMax)}
-                <X
-                  className="w-3 h-3 cursor-pointer"
-                  onClick={() => setPriceMax(12000000)}
-                />
-              </span>
-            )}
-            {inStockOnly && (
-              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded bg-forest/10 text-forest font-medium">
-                Chỉ còn hàng
-                <X
-                  className="w-3 h-3 cursor-pointer"
-                  onClick={() => setInStockOnly(false)}
-                />
-              </span>
-            )}
-            <button
-              onClick={resetFilters}
-              className="text-xs text-agarwood hover:underline ml-2"
-            >
-              Xóa tất cả
-            </button>
-          </div>
-        )}
-
-        {/* Products Grid */}
-        {filteredProducts.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredProducts.map((product) => (
-              <ProductCard key={product.id} product={product} />
-            ))}
-          </div>
-        ) : (
-          <div className="text-center py-16 bg-white rounded-sm border border-border-subtle p-8 space-y-3">
-            <p className="font-serif text-lg font-semibold text-charcoal">
-              Không tìm thấy sản phẩm phù hợp
-            </p>
-            <p className="text-xs text-muted max-w-md mx-auto">
-              Không có sản phẩm nào khớp với bộ lọc hiện tại của Quý khách. Vui lòng mở rộng khoảng giá hoặc chọn danh mục khác.
-            </p>
-            <button
-              onClick={resetFilters}
-              className="inline-flex items-center gap-1 px-4 py-2 bg-forest text-ivory text-xs font-semibold rounded cursor-pointer"
-            >
-              <RotateCcw className="w-3.5 h-3.5" />
-              Đặt lại toàn bộ bộ lọc
-            </button>
-          </div>
-        )}
       </div>
 
-      {/* Mobile Filter Modal */}
-      {isMobileFilterOpen && (
-        <div className="fixed inset-0 z-50 overflow-y-auto lg:hidden" role="dialog">
-          <div
-            className="fixed inset-0 bg-black/50"
-            onClick={() => setIsMobileFilterOpen(false)}
-          />
-          <div className="relative min-h-screen flex items-end">
-            <div className="w-full bg-white rounded-t-xl p-6 space-y-5 max-h-[85vh] overflow-y-auto">
-              <div className="flex items-center justify-between pb-3 border-b border-border-subtle">
-                <h3 className="font-serif text-lg font-bold text-charcoal">Bộ Lọc Sản Phẩm</h3>
-                <button
-                  onClick={() => setIsMobileFilterOpen(false)}
-                  className="p-1 text-stone-500"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
+      {/* Mobile filter sheet */}
+      <AnimatePresence>
+        {isMobileFilterOpen && (
+          <motion.div
+            initial={{ y: "100%" }}
+            animate={{ y: 0 }}
+            exit={{ y: "100%" }}
+            transition={{ duration: 0.5, ease: MOTION_EASE }}
+            className="fixed inset-0 z-50 bg-white flex flex-col lg:hidden"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Bộ lọc"
+          >
+            <div className="flex items-center justify-between px-4 h-16 border-b border-border-subtle">
+              <p className="text-lg font-medium text-charcoal">Bộ lọc</p>
+              <button
+                type="button"
+                onClick={() => setIsMobileFilterOpen(false)}
+                className="p-2 -mr-2 rounded-full bg-ivory"
+                aria-label="Đóng bộ lọc"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
 
-              {/* Category */}
-              <div>
-                <p className="text-xs uppercase font-bold text-charcoal mb-2">Danh mục</p>
-                <div className="flex flex-wrap gap-2">
-                  <button
-                    onClick={() => setSelectedCategory("all")}
-                    className={`text-xs px-3 py-1.5 rounded border ${
-                      selectedCategory === "all"
-                        ? "bg-forest text-ivory border-forest"
-                        : "bg-ivory border-border-subtle"
-                    }`}
-                  >
-                    Tất cả
-                  </button>
-                  {categories.map((c) => (
-                    <button
-                      key={c.id}
-                      onClick={() => setSelectedCategory(c.slug)}
-                      className={`text-xs px-3 py-1.5 rounded border ${
-                        selectedCategory === c.slug
-                          ? "bg-forest text-ivory border-forest"
-                          : "bg-ivory border-border-subtle"
-                      }`}
+            <div className="flex-1 overflow-y-auto px-4 py-6">
+              <div className="pb-6 border-b border-border-subtle">
+                <p className="text-lg font-medium text-charcoal mb-4">
+                  Sắp xếp theo
+                </p>
+                <div className="space-y-3">
+                  {SORT_OPTIONS.map((o) => (
+                    <label
+                      key={o.value}
+                      className="flex items-center gap-3 text-charcoal cursor-pointer"
                     >
-                      <span>{c.name}</span>
-                      <span className="text-[10px] opacity-75">({categoryCounts[c.slug] || 0})</span>
-                    </button>
+                      <input
+                        type="radio"
+                        name="sort-mobile"
+                        checked={selectedSort === o.value}
+                        onChange={() => setSelectedSort(o.value)}
+                        className="w-5 h-5 accent-espresso"
+                      />
+                      {o.label}
+                    </label>
                   ))}
                 </div>
               </div>
-
-              {/* Price */}
-              <div>
-                <div className="flex justify-between text-xs mb-1">
-                  <span className="font-bold">Mức giá tối đa</span>
-                  <span className="text-forest font-semibold">
-                    {new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(priceMax)}
-                  </span>
-                </div>
-                <input
-                  type="range"
-                  min={400000}
-                  max={12000000}
-                  step={200000}
-                  value={priceMax}
-                  onChange={(e) => setPriceMax(Number(e.target.value))}
-                  className="w-full accent-forest"
-                />
-              </div>
-
-              <div className="pt-4 border-t border-border-subtle flex gap-3">
-                <button
-                  onClick={resetFilters}
-                  className="flex-1 py-3 text-xs font-semibold border border-border-subtle rounded text-charcoal"
-                >
-                  Đặt lại
-                </button>
-                <button
-                  onClick={() => setIsMobileFilterOpen(false)}
-                  className="flex-1 py-3 text-xs font-semibold bg-forest text-ivory rounded"
-                >
-                  Áp dụng ({filteredProducts.length})
-                </button>
-              </div>
+              <div className="pt-6">{filterPanel}</div>
             </div>
-          </div>
-        </div>
-      )}
+
+            <div className="px-4 py-4 border-t border-border-subtle flex gap-3">
+              <button
+                type="button"
+                onClick={resetFilters}
+                className="flex-1 py-3.5 rounded-full border border-border-subtle text-charcoal font-medium"
+              >
+                Xóa bộ lọc
+              </button>
+              <button
+                type="button"
+                onClick={() => setIsMobileFilterOpen(false)}
+                className="flex-1 py-3.5 rounded-full bg-espresso text-white font-medium"
+              >
+                Xem {filteredProducts.length} sản phẩm
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
+  );
+}
+
+function CategoryLink({
+  href,
+  active,
+  children,
+}: {
+  href: string;
+  active: boolean;
+  children: React.ReactNode;
+}) {
+  return (
+    <Link
+      href={href}
+      aria-current={active ? "page" : undefined}
+      className={`text-[15px] font-medium transition-colors ${
+        active
+          ? "text-charcoal underline underline-offset-4"
+          : "text-charcoal/80 hover:text-gold-dark"
+      }`}
+    >
+      {children}
+    </Link>
+  );
+}
+
+function FilterGroup({
+  title,
+  count,
+  children,
+}: {
+  title: string;
+  count: number;
+  children: React.ReactNode;
+}) {
+  const [isOpen, setIsOpen] = useState(true);
+
+  return (
+    <div className="border-t border-border-subtle py-5">
+      <button
+        type="button"
+        onClick={() => setIsOpen((v) => !v)}
+        aria-expanded={isOpen}
+        className="w-full flex items-center justify-between text-[15px] font-medium text-charcoal cursor-pointer"
+      >
+        <span>
+          {title}
+          {count > 0 && ` (${count})`}
+        </span>
+        <ChevronDown
+          className={`w-5 h-5 transition-transform duration-300 ${isOpen ? "rotate-180" : ""}`}
+        />
+      </button>
+      <AnimatePresence initial={false}>
+        {isOpen && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.4, ease: MOTION_EASE }}
+            className="overflow-hidden"
+          >
+            <div className="pt-4 space-y-3">{children}</div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+function Checkbox({
+  label,
+  checked,
+  onChange,
+}: {
+  label: string;
+  checked: boolean;
+  onChange: () => void;
+}) {
+  return (
+    <label className="flex items-center gap-3 text-[15px] text-charcoal cursor-pointer">
+      <input
+        type="checkbox"
+        checked={checked}
+        onChange={onChange}
+        className="w-5 h-5 accent-espresso rounded"
+      />
+      {label}
+    </label>
   );
 }

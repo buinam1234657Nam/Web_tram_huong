@@ -1,30 +1,38 @@
-import { CartItem } from "./cart";
-
-export type PaymentMethod = "cod" | "bank_transfer" | "vnpay";
+export type PaymentMethod = "cod" | "bank_transfer";
 
 export interface ShippingAddress {
   fullName: string;
   phone: string;
-  email: string;
+  email?: string;
   province: string;
   district: string;
   ward: string;
   streetAddress: string;
   note?: string;
+  paymentMethod: PaymentMethod;
 }
 
+export interface OrderLine {
+  id: string;
+  productId: string;
+  variantId: string;
+  name: string;
+  variantName: string;
+  price: number;
+  quantity: number;
+  image: string;
+}
+
+/** Shape returned by the mock POST /api/orders and kept in sessionStorage for the success page. */
 export interface Order {
   id: string;
-  code: string; // e.g. "VT-20261019-9821"
+  code: string; // e.g. "VT-784394-7994"
   createdAt: string;
-  items: CartItem[];
   shippingAddress: ShippingAddress;
   paymentMethod: PaymentMethod;
+  items: OrderLine[];
   subtotal: number;
   shippingFee: number;
-  discount: number;
   total: number;
-  status: "pending_confirmation" | "confirmed" | "shipping" | "completed";
-  paymentStatus: "unpaid" | "paid" | "processing";
-  demoNote: string;
+  status: "confirmed";
 }

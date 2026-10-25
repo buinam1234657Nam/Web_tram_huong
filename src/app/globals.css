@@ -4,195 +4,109 @@ html {
   scroll-behavior: smooth;
 }
 
+/*
+  Palette follows the reference storefront: deep agarwood browns,
+  antique gold accent, white canvas with warm neutral panels.
+*/
 @theme {
-  --color-ivory: #F6F2E9;
-  --color-ivory-light: #FAF8F4;
-  --color-ivory-dark: #ECE5D5;
-  --color-forest: #28392F;
-  --color-forest-dark: #1A2720;
-  --color-forest-light: #374E40;
-  --color-agarwood: #966B45;
-  --color-agarwood-dark: #7A5333;
-  --color-agarwood-light: #B4845B;
-  --color-champagne: #C5A46D;
-  --color-champagne-light: #DFC8A2;
-  --color-champagne-dark: #9F7E47;
-  --color-charcoal: #1C2520;
-  --color-charcoal-light: #2D3933;
-  --color-muted: #667069;
-  --color-muted-light: #8E9891;
-  --color-border-subtle: #E3DCCF;
-  --color-border-dark: #374E40;
+  --color-ivory: #F6F3EE;
+  --color-ivory-light: #FBFAF8;
+  --color-ivory-dark: #EAE4DA;
+  --color-espresso: #2D1E19;
+  --color-espresso-dark: #231512;
+  --color-espresso-light: #4A3328;
+  --color-agarwood: #7C5A33;
+  --color-agarwood-dark: #5E4225;
+  --color-agarwood-light: #9C7647;
+  --color-gold: #B18E4F;
+  --color-gold-light: #D1B88F;
+  --color-gold-dark: #8F6F37;
+  --color-charcoal: #1D1611;
+  --color-charcoal-light: #3A2F28;
+  --color-muted: #6F6660;
+  --color-muted-light: #9A918A;
+  --color-border-subtle: #E8E2D9;
+  --color-border-dark: #4A3328;
 
-  --font-serif: var(--font-playfair), 'Playfair Display', Georgia, serif;
-  --font-serif-sub: var(--font-lora), Georgia, serif;
-  --font-sans: var(--font-inter), system-ui, -apple-system, sans-serif;
+  --font-sans: var(--font-be-vietnam), system-ui, -apple-system, sans-serif;
 }
 
 :root {
-  --background: #F6F2E9;
-  --foreground: #1C2520;
+  /* Height of the sticky header; sticky toolbars below it offset by this */
+  --header-h: 4rem;
+  --background: #FFFFFF;
+  --foreground: #1D1611;
 }
 
 body {
   background-color: var(--background);
   color: var(--foreground);
-  font-family: var(--font-inter), system-ui, -apple-system, sans-serif;
+  font-family: var(--font-be-vietnam), system-ui, -apple-system, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
 }
 
-/* Luxury Display & Serif typography overrides */
-h1, h2, h3, .font-serif {
-  font-family: var(--font-playfair), 'Playfair Display', Georgia, serif;
-  letter-spacing: -0.01em;
-  font-weight: 700;
+h1, h2, h3 {
+  letter-spacing: -0.02em;
+  font-weight: 600;
 }
 
-.brand-heading {
-  font-family: var(--font-playfair), serif;
-  letter-spacing: 0.08em;
-  font-weight: 700;
-}
-
-/* Custom Scrollbar for Luxury Aesthetic */
 ::-webkit-scrollbar {
   width: 7px;
   height: 7px;
 }
 ::-webkit-scrollbar-track {
-  background: #F6F2E9;
+  background: #FFFFFF;
 }
 ::-webkit-scrollbar-thumb {
-  background: #C5A46D;
+  background: #D1B88F;
   border-radius: 9999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #966B45;
+  background: #B18E4F;
 }
 
-/* Luxury selection highlight */
 ::selection {
-  background-color: #28392F;
-  color: #F6F2E9;
+  background-color: #2D1E19;
+  color: #FFFFFF;
 }
 
-/* Animated incense smoke drifting keyframes */
-@keyframes smokeDrift {
-  0% {
-    transform: translateY(0) translateX(0) scale(1) rotate(0deg);
-    opacity: 0;
-  }
-  20% {
-    opacity: 0.45;
-  }
-  60% {
-    transform: translateY(-90px) translateX(25px) scale(1.3) rotate(8deg);
-    opacity: 0.25;
-  }
-  100% {
-    transform: translateY(-180px) translateX(-15px) scale(1.6) rotate(-12deg);
-    opacity: 0;
-  }
+/*
+  Hero entrance runs in CSS (not JS) so the headline still renders
+  if hydration is slow or scripts fail. Values mirror FadeIn in
+  components/motion/MotionPrimitives.tsx (24px rise, 1s, same easing).
+*/
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(24px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
-.animate-smoke-1 {
-  animation: smokeDrift 9s infinite ease-out;
+.animate-fade-in {
+  animation: fade-in 1.2s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.animate-fade-up {
+  animation: fade-up 1s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
-.animate-smoke-2 {
-  animation: smokeDrift 13s infinite ease-out 3s;
-}
-
-.animate-smoke-3 {
-  animation: smokeDrift 11s infinite ease-out 6s;
-}
-
-/* Luxury Gold Glow Pulse */
-@keyframes goldPulse {
-  0%, 100% {
-    box-shadow: 0 0 15px rgba(197, 164, 109, 0.15);
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-in,
+  .animate-fade-up {
+    animation: none;
   }
-  50% {
-    box-shadow: 0 0 35px rgba(197, 164, 109, 0.45), 0 0 10px rgba(197, 164, 109, 0.3);
+  html {
+    scroll-behavior: auto;
   }
 }
 
-.glow-champagne {
-  animation: goldPulse 4s infinite ease-in-out;
+/* Hide native scrollbars on horizontal product rails */
+.no-scrollbar {
+  scrollbar-width: none;
 }
-
-/* Shimmer Sheen effect across luxury cards/badges */
-@keyframes shimmerSweep {
-  0% {
-    transform: translateX(-150%) skewX(-20deg);
-  }
-  100% {
-    transform: translateX(250%) skewX(-20deg);
-  }
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
 }
-
-.animate-shimmer {
-  position: relative;
-  overflow: hidden;
-}
-.animate-shimmer::after {
-  content: "";
-  position: absolute;
-  top: -50%;
-  left: -50%;
-  width: 200%;
-  height: 200%;
-  background: linear-gradient(
-    90deg,
-    transparent 0%,
-    rgba(255, 255, 255, 0.15) 50%,
-    transparent 100%
-  );
-  animation: shimmerSweep 4s infinite;
-}
-
-/* Gentle Organic Float for floating elements */
-@keyframes gentleFloat {
-  0%, 100% {
-    transform: translateY(0px);
-  }
-  50% {
-    transform: translateY(-8px);
-  }
-}
-
-.animate-float {
-  animation: gentleFloat 5s ease-in-out infinite;
-}
-
-/* Marquee / Infinite Ticker Animation */
-@keyframes ticker {
-  0% {
-    transform: translateX(0);
-  }
-  100% {
-    transform: translateX(-50%);
-  }
-}
-
-.animate-ticker {
-  display: flex;
-  width: 200%;
-  animation: ticker 32s linear infinite;
-}
-
-.animate-ticker:hover {
-  animation-play-state: paused;
-}
-
-/* Card hover luxury transition */
-.product-card-hover {
-  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.3s ease;
-}
-.product-card-hover:hover {
-  transform: translateY(-6px);
-  box-shadow: 0 20px 30px -10px rgba(40, 57, 47, 0.12), 0 0 1px 1px rgba(197, 164, 109, 0.4);
-}
-

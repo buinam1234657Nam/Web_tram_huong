@@ -3,14 +3,15 @@ import { Product } from "@/types/product";
 import { Article } from "@/types/article";
 import { BreadcrumbItem } from "@/components/ui/Breadcrumbs";
 import { brandConfig } from "@/lib/config/brand";
+import { absoluteUrl, siteUrl } from "@/lib/config/site";
 
 export function OrganizationJsonLd() {
   const schema = {
     "@context": "https://schema.org",
     "@type": "Organization",
     name: brandConfig.name,
-    url: "https://vinhtram.vn",
-    logo: "https://vinhtram.vn/images/hero-agarwood.jpg",
+    url: siteUrl,
+    logo: absoluteUrl("/images/hero-agarwood.jpg"),
     description: brandConfig.storySummary,
     telephone: brandConfig.contact.hotline,
     email: brandConfig.contact.email,
@@ -42,7 +43,7 @@ export function ProductJsonLd({ product }: { product: Product }) {
     "@type": "Product",
     name: product.name,
     image: product.images.map((img) =>
-      img.startsWith("http") ? img : `https://vinhtram.vn${img}`
+      img.startsWith("http") ? img : absoluteUrl(img),
     ),
     description: product.shortDescription,
     sku: product.variants[0]?.sku || product.id,
@@ -61,7 +62,7 @@ export function ProductJsonLd({ product }: { product: Product }) {
         product.inventoryStatus === "out_of_stock"
           ? "https://schema.org/OutOfStock"
           : "https://schema.org/InStock",
-      url: `https://vinhtram.vn/san-pham/${product.slug}`,
+      url: absoluteUrl(`/san-pham/${product.slug}`),
     },
     aggregateRating: {
       "@type": "AggregateRating",
@@ -88,8 +89,8 @@ export function BreadcrumbJsonLd({ items }: { items: BreadcrumbItem[] }) {
     item: item.href
       ? item.href.startsWith("http")
         ? item.href
-        : `https://vinhtram.vn${item.href}`
-      : "https://vinhtram.vn",
+        : absoluteUrl(item.href)
+      : siteUrl,
   }));
 
   const schema = {
@@ -114,7 +115,7 @@ export function ArticleJsonLd({ article }: { article: Article }) {
     description: article.excerpt,
     image: article.coverImage.startsWith("http")
       ? article.coverImage
-      : `https://vinhtram.vn${article.coverImage}`,
+      : absoluteUrl(article.coverImage),
     datePublished: article.publishedAt,
     author: {
       "@type": "Person",
@@ -126,12 +127,12 @@ export function ArticleJsonLd({ article }: { article: Article }) {
       name: brandConfig.name,
       logo: {
         "@type": "ImageObject",
-        url: "https://vinhtram.vn/images/hero-agarwood.jpg",
+        url: absoluteUrl("/images/hero-agarwood.jpg"),
       },
     },
     mainEntityOfPage: {
       "@type": "WebPage",
-      "@id": `https://vinhtram.vn/bai-viet/${article.slug}`,
+      "@id": absoluteUrl(`/bai-viet/${article.slug}`),
     },
   };
 

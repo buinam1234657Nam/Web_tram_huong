@@ -2,10 +2,19 @@
 
 import React, { useState, useMemo } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { Search, Sparkles } from "lucide-react";
+import { Search } from "lucide-react";
 import { mockProducts } from "@/data/mock/products";
 import { ProductCard } from "@/components/product/ProductCard";
 import { Button } from "@/components/ui/Button";
+
+const POPULAR_KEYWORDS = [
+  "Vòng tay 108 hạt",
+  "Trầm nụ",
+  "Nhang không tăm",
+  "Khánh Hòa",
+  "Tinh dầu trầm",
+  "Bộ quà tặng",
+];
 
 export function SearchView() {
   const searchParams = useSearchParams();
@@ -23,99 +32,87 @@ export function SearchView() {
         p.categoryName.toLowerCase().includes(q) ||
         p.shortDescription.toLowerCase().includes(q) ||
         p.origin.toLowerCase().includes(q) ||
-        p.seo.keywords.some((k) => k.toLowerCase().includes(q))
+        p.seo.keywords.some((k) => k.toLowerCase().includes(q)),
     );
   }, [initialQuery]);
 
-  const handleSearchSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (searchQuery.trim()) {
-      router.push(`/tim-kiem?q=${encodeURIComponent(searchQuery.trim())}`);
-    }
+  const runSearch = (query: string) => {
+    const q = query.trim();
+    if (q) router.push(`/tim-kiem?q=${encodeURIComponent(q)}`);
   };
 
-  const popularKeywords = [
-    "Vòng tay 108 hạt",
-    "Trầm nụ",
-    "Nhang không tăm",
-    "Khánh Hòa",
-    "Tinh dầu trầm",
-    "Bộ quà tặng",
-  ];
-
   return (
-    <div className="space-y-8">
-      {/* Search Input Bar */}
+    <div>
       <form
-        onSubmit={handleSearchSubmit}
-        className="max-w-2xl mx-auto flex items-center gap-2 bg-white p-2 border border-border-subtle rounded-sm shadow-xs"
+        role="search"
+        onSubmit={(e) => {
+          e.preventDefault();
+          runSearch(searchQuery);
+        }}
+        className="mt-8 max-w-2xl mx-auto flex items-center gap-2 rounded-full bg-ivory pl-5 pr-1.5 py-1.5"
       >
-        <Search className="w-5 h-5 text-forest ml-2 shrink-0" />
+        <Search className="w-5 h-5 text-muted shrink-0" aria-hidden="true" />
+        <label htmlFor="search-page-input" className="sr-only">
+          Từ khóa tìm kiếm
+        </label>
         <input
+          id="search-page-input"
           type="text"
+          enterKeyHint="search"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          placeholder="Nhập tên sản phẩm, chủng loại hoặc xuất xứ trầm..."
-          className="w-full text-xs sm:text-sm text-charcoal bg-transparent px-2 py-2 focus:outline-none placeholder-stone-400"
+          placeholder="Tên sản phẩm, loại trầm hoặc xuất xứ…"
+          className="flex-1 min-w-0 bg-transparent py-2.5 text-[15px] text-charcoal placeholder:text-muted-light focus:outline-none"
         />
-        <Button type="submit" variant="primary" size="md">
-          Tìm Kiếm
+        <Button type="submit" className="shrink-0 whitespace-nowrap">
+          Tìm
         </Button>
       </form>
 
-      {/* Suggested Keywords */}
-      <div className="flex flex-wrap items-center justify-center gap-2 text-xs">
-        <span className="text-muted flex items-center gap-1">
-          <Sparkles className="w-3.5 h-3.5 text-champagne" />
-          Gợi ý:
-        </span>
-        {popularKeywords.map((kw) => (
+      <div className="mt-5 flex flex-wrap items-center justify-center gap-2">
+        {POPULAR_KEYWORDS.map((kw) => (
           <button
             key={kw}
             type="button"
             onClick={() => {
               setSearchQuery(kw);
-              router.push(`/tim-kiem?q=${encodeURIComponent(kw)}`);
+              runSearch(kw);
             }}
-            className="px-3 py-1 bg-white border border-border-subtle rounded-full text-stone-700 hover:border-forest hover:text-forest transition-colors cursor-pointer"
+            className="px-4 py-2 rounded-full border border-border-subtle text-sm text-charcoal hover:border-charcoal transition-colors cursor-pointer"
           >
             {kw}
           </button>
         ))}
       </div>
 
-      {/* Results Header */}
       {initialQuery ? (
-        <div className="border-b border-border-subtle pb-4 flex items-center justify-between">
-          <h2 className="text-sm sm:text-base font-serif font-semibold text-charcoal">
-            Kết quả tìm kiếm cho: <span className="text-forest">&quot;{initialQuery}&quot;</span>
+        <section className="mt-16" aria-live="polite">
+          <h2 className="text-xl font-medium text-charcoal">
+            Kết quả cho “{initialQuery}”{" "}
+            <span className="text-muted-light">({results.length})</span>
           </h2>
-          <span className="text-xs text-muted">
-            Tìm thấy <strong>{results.length}</strong> sản phẩm
-          </span>
-        </div>
-      ) : null}
 
-      {/* Results Grid or Empty State */}
-      {initialQuery && results.length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {results.map((product) => (
-            <ProductCard key={product.id} product={product} />
-          ))}
-        </div>
-      ) : initialQuery ? (
-        <div className="text-center py-16 bg-white border border-border-subtle rounded-sm p-8 space-y-3">
-          <p className="font-serif text-lg font-semibold text-charcoal">
-            Không tìm thấy sản phẩm phù hợp với &quot;{initialQuery}&quot;
-          </p>
-          <p className="text-xs text-muted max-w-md mx-auto">
-            Quý khách vui lòng thử tìm kiếm bằng các từ khóa ngắn hơn như &quot;vòng tay&quot;, &quot;nụ&quot;, hoặc &quot;nhang&quot;.
-          </p>
-        </div>
+          {results.length > 0 ? (
+            <div className="mt-8 grid grid-cols-2 lg:grid-cols-4 gap-x-4 gap-y-10">
+              {results.map((product) => (
+                <ProductCard key={product.id} product={product} />
+              ))}
+            </div>
+          ) : (
+            <div className="py-16 text-center">
+              <p className="text-lg font-medium text-charcoal">
+                Không tìm thấy sản phẩm phù hợp
+              </p>
+              <p className="mt-2 text-[15px] text-muted">
+                Thử từ khóa ngắn hơn như “vòng tay”, “nụ” hoặc “nhang”.
+              </p>
+            </div>
+          )}
+        </section>
       ) : (
-        <div className="text-center py-12 text-muted text-xs">
-          Nhập từ khóa phía trên để bắt đầu tra cứu sản phẩm trầm hương.
-        </div>
+        <p className="mt-16 text-center text-[15px] text-muted">
+          Nhập từ khóa hoặc chọn một gợi ý để bắt đầu.
+        </p>
       )}
     </div>
   );

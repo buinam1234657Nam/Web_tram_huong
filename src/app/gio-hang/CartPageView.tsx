@@ -1,23 +1,14 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import Link from "next/link";
 import Image from "next/image";
-import {
-  Trash2,
-  Plus,
-  Minus,
-  ShoppingBag,
-  ArrowRight,
-  Truck,
-  ShieldCheck,
-  RotateCcw,
-} from "lucide-react";
 import { useCartStore } from "@/features/cart/useCartStore";
 import { useIsMounted } from "@/hooks/useIsMounted";
 import { formatVND } from "@/lib/format/currency";
 import { brandConfig } from "@/lib/config/brand";
 import { Button } from "@/components/ui/Button";
+import { QuantityStepper } from "@/components/cart/CartDrawer";
 
 export function CartPageView() {
   const {
@@ -30,249 +21,173 @@ export function CartPageView() {
   } = useCartStore();
 
   const mounted = useIsMounted();
-  const [orderNote, setOrderNote] = useState("");
 
   if (!mounted) {
-    return (
-      <div className="py-24 text-center text-muted text-xs">
-        Đang đồng bộ dữ liệu giỏ hàng...
-      </div>
-    );
+    return <div className="py-24" aria-busy="true" />;
   }
 
   const subtotal = getSubtotal();
   const totalItems = getTotalItems();
   const threshold = brandConfig.policies.freeShippingThreshold;
   const isFreeShipping = subtotal >= threshold;
-  const shippingFee = isFreeShipping ? 0 : brandConfig.policies.shippingStandardFee;
+  const shippingFee = isFreeShipping
+    ? 0
+    : brandConfig.policies.shippingStandardFee;
   const total = subtotal + shippingFee;
   const remainingForFree = Math.max(0, threshold - subtotal);
-  const progressPercent = Math.min(100, Math.round((subtotal / threshold) * 100));
+  const progressPercent = Math.min(
+    100,
+    Math.round((subtotal / threshold) * 100),
+  );
 
   if (items.length === 0) {
     return (
-      <div className="text-center py-20 bg-white border border-border-subtle rounded-sm p-8 max-w-2xl mx-auto space-y-4">
-        <div className="w-16 h-16 rounded-full bg-ivory flex items-center justify-center text-forest mx-auto">
-          <ShoppingBag className="w-8 h-8 opacity-60" />
-        </div>
-        <h2 className="font-serif text-2xl font-bold text-charcoal">
-          Giỏ Hàng Của Bạn Hiện Đang Trống
+      <div className="py-16 text-center max-w-md mx-auto">
+        <h2 className="text-2xl font-semibold text-charcoal">
+          Giỏ hàng của bạn đang trống
         </h2>
-        <p className="text-xs sm:text-sm text-muted max-w-md mx-auto leading-relaxed">
-          Quý khách chưa thêm sản phẩm nào vào giỏ hàng. Hãy khám phá những tác phẩm trầm hương tự nhiên thượng phẩm của VĨNH TRẦM.
+        <p className="mt-3 text-[15px] text-muted leading-relaxed">
+          Khám phá vòng tay, nhang và trầm nụ tự nhiên của Vĩnh Trầm.
         </p>
-        <div className="pt-2">
-          <Button href="/san-pham" variant="primary" size="md">
-            Khám phá bộ sưu tập
-          </Button>
+        <div className="mt-8">
+          <Button href="/san-pham">Xem sản phẩm</Button>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-      {/* Left 2 Cols: Items List */}
-      <div className="lg:col-span-2 space-y-6">
-        {/* Free Shipping Bar */}
-        <div className="bg-white p-4 border border-border-subtle rounded-sm">
-          <div className="flex items-center gap-2 text-xs text-charcoal mb-2">
-            <Truck className="w-4 h-4 text-forest shrink-0" />
+    <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16 items-start">
+      <div className="lg:col-span-8">
+        <div>
+          <p className="text-[15px] text-charcoal">
             {isFreeShipping ? (
-              <span className="text-emerald-700 font-semibold">
-                Đơn hàng của Quý khách được <strong>Miễn Phí Vận Chuyển Toàn Quốc!</strong>
-              </span>
+              "Đơn hàng của bạn được miễn phí vận chuyển."
             ) : (
-              <span>
-                Mua thêm <strong className="text-forest">{formatVND(remainingForFree)}</strong> để nhận <strong>Miễn phí vận chuyển</strong>
-              </span>
+              <>
+                Mua thêm{" "}
+                <span className="font-medium">
+                  {formatVND(remainingForFree)}
+                </span>{" "}
+                để được miễn phí vận chuyển.
+              </>
             )}
-          </div>
-          <div className="w-full bg-stone-100 h-2 rounded-full overflow-hidden">
+          </p>
+          <div
+            className="mt-3 h-1 w-full rounded-full bg-ivory-dark overflow-hidden"
+            role="progressbar"
+            aria-valuenow={progressPercent}
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-label="Tiến độ miễn phí vận chuyển"
+          >
             <div
-              className="bg-forest h-full transition-all duration-300 rounded-full"
+              className="h-full rounded-full bg-espresso transition-[width] duration-500"
               style={{ width: `${progressPercent}%` }}
             />
           </div>
         </div>
 
-        {/* Cart Items Table */}
-        <div className="bg-white border border-border-subtle rounded-sm overflow-hidden">
-          <div className="p-4 border-b border-border-subtle flex justify-between items-center bg-ivory">
-            <span className="font-serif text-sm font-semibold text-charcoal">
-              Danh Sách Sản Phẩm ({totalItems})
-            </span>
-            <button
-              onClick={clearCart}
-              className="text-xs text-stone-500 hover:text-red-600 transition-colors flex items-center gap-1 cursor-pointer"
-            >
-              <RotateCcw className="w-3 h-3" />
-              Xóa tất cả
-            </button>
-          </div>
-
-          <div className="divide-y divide-border-subtle p-4 sm:p-6">
-            {items.map((item) => (
-              <div
-                key={item.id}
-                className="py-4 first:pt-0 last:pb-0 flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between"
+        <ul className="mt-8 divide-y divide-border-subtle border-y border-border-subtle">
+          {items.map((item) => (
+            <li key={item.id} className="py-6 flex gap-4 sm:gap-6">
+              <Link
+                href={`/san-pham/${item.slug}`}
+                className="relative w-24 h-24 sm:w-32 sm:h-32 shrink-0 overflow-hidden bg-ivory"
               >
-                <div className="flex items-center gap-4">
-                  <div className="relative w-20 h-20 rounded-xs overflow-hidden bg-ivory shrink-0 border border-border-subtle">
-                    <Image
-                      src={item.image}
-                      alt={item.name}
-                      fill
-                      sizes="80px"
-                      className="object-cover"
-                    />
-                  </div>
-                  <div>
+                <Image
+                  src={item.image}
+                  alt={item.name}
+                  fill
+                  sizes="128px"
+                  className="object-cover"
+                />
+              </Link>
+
+              <div className="flex-1 min-w-0 flex flex-col">
+                <div className="flex items-start justify-between gap-4">
+                  <div className="min-w-0">
                     <Link
                       href={`/san-pham/${item.slug}`}
-                      className="font-serif text-sm sm:text-base font-semibold text-charcoal hover:text-forest transition-colors line-clamp-1"
+                      className="text-[15px] sm:text-base font-medium text-charcoal hover:text-gold-dark transition-colors"
                     >
                       {item.name}
                     </Link>
-                    <p className="text-xs text-muted mt-0.5">{item.variantName}</p>
-                    <p className="text-xs font-semibold text-forest sm:hidden mt-1">
-                      {formatVND(item.price)}
+                    <p className="mt-1 text-sm text-muted">
+                      {item.variantName}
                     </p>
                   </div>
+                  <p className="text-[15px] sm:text-base font-medium text-charcoal shrink-0">
+                    {formatVND(item.price * item.quantity)}
+                  </p>
                 </div>
 
-                <div className="flex items-center justify-between w-full sm:w-auto gap-6">
-                  {/* Quantity */}
-                  <div className="flex items-center border border-border-subtle rounded-sm bg-stone-50">
-                    <button
-                      onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                      className="w-8 h-8 flex items-center justify-center text-stone-600 hover:bg-stone-200 cursor-pointer"
-                      aria-label="Giảm số lượng"
-                    >
-                      <Minus className="w-3 h-3" />
-                    </button>
-                    <span className="w-10 text-center text-xs font-bold text-charcoal">
-                      {item.quantity}
-                    </span>
-                    <button
-                      onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                      disabled={item.quantity >= item.maxQuantity}
-                      className="w-8 h-8 flex items-center justify-center text-stone-600 hover:bg-stone-200 disabled:opacity-30 cursor-pointer"
-                      aria-label="Tăng số lượng"
-                    >
-                      <Plus className="w-3 h-3" />
-                    </button>
-                  </div>
-
-                  {/* Subtotal */}
-                  <div className="text-right min-w-[100px]">
-                    <p className="text-sm font-bold text-forest">
-                      {formatVND(item.price * item.quantity)}
-                    </p>
-                    {item.quantity > 1 && (
-                      <p className="text-[11px] text-muted">
-                        {formatVND(item.price)} / sản phẩm
-                      </p>
-                    )}
-                  </div>
-
-                  {/* Remove */}
+                <div className="mt-auto pt-4 flex items-center gap-6">
+                  <QuantityStepper
+                    quantity={item.quantity}
+                    max={item.maxQuantity}
+                    onChange={(q) => updateQuantity(item.id, q)}
+                    label={item.name}
+                  />
                   <button
+                    type="button"
                     onClick={() => removeItem(item.id)}
-                    className="p-1.5 text-stone-400 hover:text-red-600 transition-colors cursor-pointer"
-                    aria-label={`Xóa ${item.name}`}
+                    className="text-sm text-muted underline underline-offset-4 hover:text-charcoal transition-colors cursor-pointer"
+                    aria-label={`Xóa ${item.name} khỏi giỏ`}
                   >
-                    <Trash2 className="w-4 h-4" />
+                    Xóa
                   </button>
                 </div>
               </div>
-            ))}
-          </div>
-        </div>
+            </li>
+          ))}
+        </ul>
 
-        {/* Order Note */}
-        <div className="bg-white p-5 border border-border-subtle rounded-sm space-y-2">
-          <label htmlFor="order-note" className="block text-xs font-semibold uppercase tracking-wider text-charcoal">
-            Ghi chú đơn hàng (nếu có):
-          </label>
-          <textarea
-            id="order-note"
-            rows={3}
-            value={orderNote}
-            onChange={(e) => setOrderNote(e.target.value)}
-            placeholder="Ví dụ: Vui lòng đo đúng chu vi cổ tay 16cm, đóng gói hộp quà biếu giúp tôi..."
-            className="w-full text-xs p-3 rounded-sm bg-white border border-stone-300 hover:border-stone-400 text-charcoal placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-forest/20 focus:border-forest transition-all shadow-2xs"
-          />
-        </div>
-      </div>
-
-      {/* Right Col: Summary & Checkout */}
-      <div className="space-y-6">
-        <div className="bg-white p-6 border border-border-subtle rounded-sm space-y-4 sticky top-24">
-          <h3 className="font-serif text-lg font-bold text-charcoal pb-3 border-b border-border-subtle">
-            Tóm Tắt Đơn Hàng
-          </h3>
-
-          <div className="space-y-2.5 text-xs">
-            <div className="flex justify-between">
-              <span className="text-muted">Tổng tiền hàng:</span>
-              <span className="font-semibold text-charcoal">{formatVND(subtotal)}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-muted">Phí vận chuyển:</span>
-              <span className="font-semibold text-charcoal">
-                {isFreeShipping ? (
-                  <span className="text-emerald-700">Miễn phí</span>
-                ) : (
-                  formatVND(shippingFee)
-                )}
-              </span>
-            </div>
-          </div>
-
-          <div className="pt-3 border-t border-border-subtle flex justify-between items-baseline">
-            <span className="text-sm font-bold text-charcoal">Tổng cộng:</span>
-            <span className="font-serif text-2xl font-bold text-forest">
-              {formatVND(total)}
-            </span>
-          </div>
-
-          <p className="text-[11px] text-muted leading-relaxed italic">
-            * Giá đã bao gồm thuế và chi phí đóng gói chống sốc an toàn. Quý khách được đồng kiểm trước khi nhận.
-          </p>
-
-          <Button
-            href="/thanh-toan"
-            variant="primary"
-            size="lg"
-            className="w-full font-serif shadow-md text-base"
-            rightIcon={<ArrowRight className="w-4 h-4" />}
+        <div className="mt-6 flex items-center justify-between text-sm">
+          <Link
+            href="/san-pham"
+            className="text-charcoal underline underline-offset-4 hover:text-gold-dark transition-colors"
           >
-            Tiến Hành Đặt Hàng
-          </Button>
-
-          <div className="pt-2 text-center">
-            <Link
-              href="/san-pham"
-              className="text-xs text-forest hover:underline font-semibold"
-            >
-              ← Tiếp tục mua sắm
-            </Link>
-          </div>
-
-          {/* Trust Guarantees */}
-          <div className="pt-4 border-t border-border-subtle/70 space-y-2 text-[11px] text-stone-600">
-            <div className="flex items-center gap-2">
-              <ShieldCheck className="w-3.5 h-3.5 text-forest shrink-0" />
-              <span>Cam kết 100% trầm tự nhiên chuẩn xuất xứ</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Truck className="w-3.5 h-3.5 text-forest shrink-0" />
-              <span>Giao hàng hỏa tốc và đồng kiểm tận nơi</span>
-            </div>
-          </div>
+            Tiếp tục mua sắm
+          </Link>
+          <button
+            type="button"
+            onClick={clearCart}
+            className="text-muted hover:text-charcoal transition-colors cursor-pointer"
+          >
+            Xóa tất cả
+          </button>
         </div>
       </div>
+
+      <aside className="lg:col-span-4 lg:sticky lg:top-[calc(var(--header-h)+2rem)] rounded-2xl bg-ivory p-6 sm:p-8">
+        <h2 className="text-xl font-semibold text-charcoal">Tóm tắt</h2>
+        <dl className="mt-6 space-y-2 text-[15px]">
+          <div className="flex justify-between">
+            <dt className="text-muted">Tạm tính ({totalItems} sản phẩm)</dt>
+            <dd className="text-charcoal">{formatVND(subtotal)}</dd>
+          </div>
+          <div className="flex justify-between">
+            <dt className="text-muted">Vận chuyển</dt>
+            <dd className="text-charcoal">
+              {isFreeShipping ? "Miễn phí" : formatVND(shippingFee)}
+            </dd>
+          </div>
+          <div className="flex justify-between items-baseline pt-4 mt-2 border-t border-border-dark/10">
+            <dt className="font-medium text-charcoal">Tổng cộng</dt>
+            <dd className="text-2xl font-semibold text-charcoal">
+              {formatVND(total)}
+            </dd>
+          </div>
+        </dl>
+
+        <Button href="/thanh-toan" size="lg" className="mt-8 w-full">
+          Thanh toán
+        </Button>
+        <p className="mt-4 text-sm text-muted text-center leading-relaxed">
+          Giá đã gồm thuế và đóng gói. Bạn được kiểm tra hàng trước khi nhận.
+        </p>
+      </aside>
     </div>
   );
 }

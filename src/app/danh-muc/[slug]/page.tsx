@@ -1,11 +1,11 @@
-import React from "react";
+import React, { Suspense } from "react";
 import { Metadata } from "next";
+import { CatalogSkeleton } from "@/components/product/Skeletons";
 import { notFound } from "next/navigation";
-import Image from "next/image";
 import { catalogRepository } from "@/data/repositories/catalog-repository";
 import { Breadcrumbs } from "@/components/ui/Breadcrumbs";
 import { BreadcrumbJsonLd } from "@/components/seo/JsonLd";
-import { ProductGrid } from "@/components/product/ProductGrid";
+import { CatalogView } from "@/app/san-pham/CatalogView";
 
 interface CategoryPageProps {
   params: Promise<{ slug: string }>;
@@ -37,13 +37,25 @@ export async function generateMetadata({
     openGraph: {
       title: `${category.name} | VĨNH TRẦM`,
       description: category.description,
-      url: `https://vinhtram.vn/danh-muc/${category.slug}`,
+      url: `/danh-muc/${category.slug}`,
       images: [{ url: category.image, alt: category.name }],
     },
   };
 }
 
-export default async function CategoryPage({ params }: CategoryPageProps) {
+// The shell stays URL-independent; everything that reads `params` streams in
+// inside Suspense (see "Move URL data behind Suspense" in the Next.js docs).
+export default function CategoryPage({ params }: CategoryPageProps) {
+  return (
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-24">
+      <Suspense fallback={<CatalogSkeleton />}>
+        <CategoryContent params={params} />
+      </Suspense>
+    </div>
+  );
+}
+
+async function CategoryContent({ params }: CategoryPageProps) {
   const { slug } = await params;
   const category = await catalogRepository.getCategoryBySlug(slug);
 
@@ -51,7 +63,10 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
     notFound();
   }
 
-  const products = await catalogRepository.getProducts({ categorySlug: slug });
+  const [products, categories] = await Promise.all([
+    catalogRepository.getProducts(),
+    catalogRepository.getCategories(),
+  ]);
 
   const breadcrumbs = [
     { label: "Sản phẩm", href: "/san-pham" },
@@ -59,44 +74,14 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
   ];
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 space-y-8">
+    <>
       <BreadcrumbJsonLd items={breadcrumbs} />
       <Breadcrumbs items={breadcrumbs} />
-
-      {/* Category Banner */}
-      <div className="relative rounded-sm overflow-hidden bg-forest-dark text-ivory p-8 sm:p-12 lg:p-16 border border-forest">
-        <div className="absolute inset-0 z-0">
-          <Image
-            src={category.image}
-            alt={category.name}
-            fill
-            sizes="100vw"
-            priority
-            className="object-cover opacity-25"
-          />
-          <div className="absolute inset-0 bg-gradient-to-r from-forest-dark via-forest-dark/90 to-transparent" />
-        </div>
-
-        <div className="relative z-10 max-w-2xl space-y-3">
-          <span className="text-xs uppercase font-semibold text-champagne tracking-widest block">
-            Danh Mục Chế Tác
-          </span>
-          <h1 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-bold text-ivory">
-            {category.name}
-          </h1>
-          <p className="text-xs sm:text-sm text-ivory/80 leading-relaxed font-light">
-            {category.description}
-          </p>
-          <p className="text-xs text-champagne-light pt-2 font-medium">
-            Có sẵn {products.length} tác phẩm tuyển chọn
-          </p>
-        </div>
-      </div>
-
-      {/* Product Grid */}
-      <div className="pt-4">
-        <ProductGrid products={products} columns={4} />
-      </div>
-    </div>
+      <CatalogView
+        initialProducts={products}
+        categories={categories}
+        activeCategory={category}
+      />
+    </>
   );
 }
