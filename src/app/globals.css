@@ -2,6 +2,9 @@
 
 html {
   scroll-behavior: smooth;
+  /* Keep the scrollbar's space reserved so locking scroll (cart, search,
+     quick view) doesn't widen the page and shift the layout. */
+  scrollbar-gutter: stable;
 }
 
 /*
