@@ -47,8 +47,11 @@ export const brandConfig: BrandConfig = {
     hotline: "0908866989",
     phoneFormatted: "0908 866 989",
     email: "lienhe@vinhtram.vn",
+    // TODO: still pre-2025 units (Vĩnh Hòa, TP. Nha Trang); confirm the new ward with the owner.
     address: "Số 68 Đường Trầm Hương, Phường Vĩnh Hòa, TP. Nha Trang, Khánh Hòa",
-    showroomAddress: "Tầng 2, 18A Lê Thánh Tôn, Phường Bến Nghé, Quận 1, TP. Hồ Chí Minh",
+    // Post-2025 units: Phường Bến Nghé, Quận 1 became Phường Sài Gòn.
+    // TODO: chủ shop xác nhận tên phường mới in trên giấy tờ của showroom.
+    showroomAddress: "Tầng 2, 18A Lê Thánh Tôn, Phường Sài Gòn, TP. Hồ Chí Minh",
     workingHours: "08:30 - 21:00 (Thứ 2 - Chủ Nhật)",
   },
   social: {

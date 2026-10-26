@@ -47,7 +47,7 @@ export function BackInStockForm({
     return (
       <p
         role="status"
-        className="rounded-2xl border border-gold/40 bg-ivory px-5 py-4 text-[15px] text-charcoal"
+        className="rounded-2xl border border-gold/40 bg-cream-dark/40 px-5 py-4 text-[15px] text-charcoal"
       >
         {message}
       </p>

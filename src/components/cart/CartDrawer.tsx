@@ -96,7 +96,7 @@ export function CartDrawer() {
             animate={{ x: 0 }}
             exit={{ x: "100%" }}
             transition={{ duration: 0.5, ease: MOTION_EASE }}
-            className="absolute inset-y-0 right-0 w-full max-w-md bg-white flex flex-col"
+            className="absolute inset-y-0 right-0 w-full max-w-md bg-cream flex flex-col"
           >
             <div className="px-6 h-16 flex items-center justify-between border-b border-border-subtle">
               <h2
@@ -109,7 +109,7 @@ export function CartDrawer() {
                 ref={closeButtonRef}
                 type="button"
                 onClick={closeCart}
-                className="p-2 -mr-2 rounded-full text-charcoal hover:bg-ivory transition-colors cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-espresso focus-visible:ring-offset-2"
+                className="p-2 -mr-2 rounded-full text-charcoal hover:bg-cream-dark transition-colors cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-espresso focus-visible:ring-offset-2"
                 aria-label={t.close}
               >
                 <X className="w-5 h-5" />
@@ -152,13 +152,13 @@ export function CartDrawer() {
                 <ul className="divide-y divide-border-subtle">
                   {items.map((item) => (
                     <li key={item.id} className="py-5 flex gap-4">
-                      <div className="relative w-20 h-20 shrink-0 overflow-hidden bg-ivory">
+                      <div className="relative w-20 h-20 shrink-0 overflow-hidden rounded-lg bg-cream">
                         <Image
                           src={item.image}
                           alt={item.name}
                           fill
                           sizes="80px"
-                          className="object-cover"
+                          className="object-cover mix-blend-multiply"
                         />
                       </div>
 
@@ -258,7 +258,7 @@ export function QuantityStepper({
       <button
         type="button"
         onClick={() => onChange(quantity - 1)}
-        className={`${buttonSize} flex items-center justify-center rounded-full text-charcoal hover:bg-ivory transition-colors cursor-pointer`}
+        className={`${buttonSize} flex items-center justify-center rounded-full text-charcoal hover:bg-cream-dark transition-colors cursor-pointer`}
         aria-label={t.decrease(label)}
       >
         <Minus className="w-3.5 h-3.5" />
@@ -273,7 +273,7 @@ export function QuantityStepper({
         type="button"
         onClick={() => onChange(quantity + 1)}
         disabled={quantity >= max}
-        className={`${buttonSize} flex items-center justify-center rounded-full text-charcoal hover:bg-ivory transition-colors disabled:opacity-30 disabled:hover:bg-transparent cursor-pointer disabled:cursor-not-allowed`}
+        className={`${buttonSize} flex items-center justify-center rounded-full text-charcoal hover:bg-cream-dark transition-colors disabled:opacity-30 disabled:hover:bg-transparent cursor-pointer disabled:cursor-not-allowed`}
         aria-label={t.increase(label)}
       >
         <Plus className="w-3.5 h-3.5" />

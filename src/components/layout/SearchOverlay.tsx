@@ -100,7 +100,7 @@ export function SearchOverlay({
             exit={{ opacity: 0, y: -12 }}
             transition={{ duration: 0.3, ease: MOTION_EASE }}
             // Full screen on phones; a dropdown sheet from sm up.
-            className="relative h-dvh sm:h-auto sm:max-h-[88vh] overflow-y-auto bg-white"
+            className="relative h-dvh sm:h-auto sm:max-h-[88vh] overflow-y-auto bg-cream"
           >
             {/* Search row: same height as the header it covers */}
             <form
@@ -142,7 +142,7 @@ export function SearchOverlay({
                 <button
                   type="button"
                   onClick={handleClose}
-                  className="-mr-2 w-10 h-10 shrink-0 rounded-full flex items-center justify-center text-charcoal hover:bg-ivory transition-colors cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-espresso"
+                  className="-mr-2 w-10 h-10 shrink-0 rounded-full flex items-center justify-center text-charcoal hover:bg-cream-dark transition-colors cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-espresso"
                   aria-label={t.close}
                 >
                   <X className="w-5 h-5" />
@@ -160,7 +160,7 @@ export function SearchOverlay({
                       <button
                         type="button"
                         onClick={() => pickTerm(term.query)}
-                        className="group inline-flex md:flex w-full items-center justify-between gap-2 rounded-full md:rounded-md border border-border-subtle md:border-0 px-3.5 py-1.5 md:px-2 md:-mx-2 md:py-2 text-sm md:text-[15px] text-charcoal hover:bg-ivory transition-colors cursor-pointer"
+                        className="group inline-flex md:flex w-full items-center justify-between gap-2 rounded-full md:rounded-md border border-border-subtle md:border-0 px-3.5 py-1.5 md:px-2 md:-mx-2 md:py-2 text-sm md:text-[15px] text-charcoal hover:bg-cream-dark transition-colors cursor-pointer"
                       >
                         {term.label}
                         <ArrowRight
@@ -181,7 +181,7 @@ export function SearchOverlay({
                       <Link
                         href={link.href}
                         onClick={handleClose}
-                        className="group flex items-center justify-between gap-2 rounded-md px-2 -mx-2 py-2 text-[15px] text-charcoal hover:bg-ivory transition-colors"
+                        className="group flex items-center justify-between gap-2 rounded-md px-2 -mx-2 py-2 text-[15px] text-charcoal hover:bg-cream-dark transition-colors"
                       >
                         {link.label}
                         <ArrowRight
@@ -261,13 +261,13 @@ function ProductTiles({
             onClick={onSelect}
             className="group block"
           >
-            <div className="relative aspect-4/5 overflow-hidden rounded-xl bg-ivory">
+            <div className="relative aspect-4/5 overflow-hidden rounded-xl bg-cream">
               <Image
                 src={product.images[0]}
                 alt={product.name}
                 fill
                 sizes="(max-width: 640px) 50vw, 180px"
-                className="object-cover transition-transform duration-500 ease-out group-hover:scale-[1.03]"
+                className="object-cover mix-blend-multiply transition-transform duration-500 ease-out group-hover:scale-[1.03]"
               />
             </div>
             <p className="mt-2.5 text-sm font-medium text-charcoal leading-snug line-clamp-2 group-hover:text-gold-dark transition-colors">

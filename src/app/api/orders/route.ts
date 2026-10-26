@@ -2,12 +2,13 @@ import { NextRequest, NextResponse } from "next/server";
 import { checkoutFormSchema } from "@/data/schemas/checkout";
 import { catalogRepository } from "@/data/repositories/catalog-repository";
 import { brandConfig } from "@/lib/config/brand";
+import { createOrderCode, ORDER_CODE_PATTERN } from "@/features/cart/orderCode";
 import type { Order, OrderLine } from "@/types/order";
 
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { formData, items } = body;
+    const { formData, items, orderCode } = body;
 
     // Validate form schema
     const parseResult = checkoutFormSchema.safeParse(formData);
@@ -71,7 +72,13 @@ export async function POST(req: NextRequest) {
         : brandConfig.policies.shippingStandardFee;
     const total = subtotal + shippingFee;
 
-    const orderId = `VT-${Date.now().toString().slice(-6)}-${Math.floor(1000 + Math.random() * 9000)}`;
+    // Checkout shows the code before ordering (it is the transfer reference in
+    // the VietQR), so the client proposes it. TODO: a real backend should issue
+    // and reserve the code instead of trusting the browser.
+    const orderId =
+      typeof orderCode === "string" && ORDER_CODE_PATTERN.test(orderCode)
+        ? orderCode
+        : createOrderCode();
 
     // Mock order: nothing is persisted server-side; the client keeps it for the success page.
     const orderRecord: Order = {

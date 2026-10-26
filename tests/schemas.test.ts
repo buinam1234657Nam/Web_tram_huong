@@ -9,9 +9,8 @@ describe("Validation Schemas", () => {
         fullName: "Nguyễn Văn An",
         phone: "0908866989",
         email: "vanan@gmail.com",
-        province: "Khánh Hòa",
-        district: "Vạn Ninh",
-        ward: "Vạn Giã",
+        province: "Tỉnh Khánh Hòa",
+        ward: "Xã Vạn Ninh",
         streetAddress: "Số 68 Đường Trầm Hương",
         note: "Đóng gói kỹ giúp tôi",
         paymentMethod: "cod" as const,
@@ -26,9 +25,8 @@ describe("Validation Schemas", () => {
         fullName: "Nguyễn Văn An",
         phone: "123456", // Invalid phone
         email: "vanan@gmail.com",
-        province: "Khánh Hòa",
-        district: "Vạn Ninh",
-        ward: "Vạn Giã",
+        province: "Tỉnh Khánh Hòa",
+        ward: "Xã Vạn Ninh",
         streetAddress: "Số 68 Đường Trầm Hương",
         paymentMethod: "cod" as const,
       };
@@ -44,9 +42,8 @@ describe("Validation Schemas", () => {
       const invalidData = {
         fullName: "A", // too short
         phone: "0908866989",
-        province: "Khánh Hòa",
-        district: "Vạn Ninh",
-        ward: "Vạn Giã",
+        province: "Tỉnh Khánh Hòa",
+        ward: "Xã Vạn Ninh",
         streetAddress: "Số 68 Đường Trầm Hương",
         paymentMethod: "cod" as const,
       };
@@ -59,9 +56,8 @@ describe("Validation Schemas", () => {
       const invalidData = {
         fullName: "Nguyễn Văn An",
         phone: "0908866989",
-        province: "Khánh Hòa",
-        district: "Vạn Ninh",
-        ward: "Vạn Giã",
+        province: "Tỉnh Khánh Hòa",
+        ward: "Xã Vạn Ninh",
         streetAddress: "Số 68 Đường Trầm Hương",
         paymentMethod: "bitcoin", // invalid enum
       };
@@ -74,9 +70,8 @@ describe("Validation Schemas", () => {
       const base = {
         fullName: "Nguyễn Văn An",
         phone: "0908866989",
-        province: "Khánh Hòa",
-        district: "Vạn Ninh",
-        ward: "Vạn Giã",
+        province: "Tỉnh Khánh Hòa",
+        ward: "Xã Vạn Ninh",
         streetAddress: "Số 68 Đường Trầm Hương",
       };
 
@@ -90,6 +85,46 @@ describe("Validation Schemas", () => {
         checkoutFormSchema.safeParse({ ...base, paymentMethod: "vnpay" })
           .success,
       ).toBe(false);
+    });
+
+    it("accepts a phone typed with spaces and keeps digits only", () => {
+      const result = checkoutFormSchema.safeParse({
+        fullName: "Nguyễn Văn An",
+        phone: "0908 866 989",
+        province: "Thành phố Hồ Chí Minh",
+        ward: "Phường Sài Gòn",
+        streetAddress: "18A Lê Thánh Tôn",
+        paymentMethod: "cod",
+      });
+      expect(result.success).toBe(true);
+      if (result.success) expect(result.data.phone).toBe("0908866989");
+    });
+
+    it("rejects a ward that is not in the chosen province", () => {
+      const result = checkoutFormSchema.safeParse({
+        fullName: "Nguyễn Văn An",
+        phone: "0908866989",
+        province: "Tỉnh Khánh Hòa",
+        ward: "Phường Sài Gòn",
+        streetAddress: "Số 68 Đường Trầm Hương",
+        paymentMethod: "cod",
+      });
+      expect(result.success).toBe(false);
+      if (!result.success) {
+        expect(result.error.issues[0]?.path).toEqual(["ward"]);
+      }
+    });
+
+    it("rejects pre-2025 province names", () => {
+      const result = checkoutFormSchema.safeParse({
+        fullName: "Nguyễn Văn An",
+        phone: "0908866989",
+        province: "Tỉnh Quảng Nam",
+        ward: "Xã Tiên Phước",
+        streetAddress: "Thôn 1",
+        paymentMethod: "cod",
+      });
+      expect(result.success).toBe(false);
     });
   });
 

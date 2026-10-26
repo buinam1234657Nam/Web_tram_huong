@@ -139,7 +139,7 @@ export function Select({
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -6 }}
             transition={{ duration: 0.25, ease: MOTION_EASE }}
-            className={`absolute top-full mt-3 z-30 min-w-56 py-2 rounded-2xl bg-white border border-border-subtle shadow-[0_12px_32px_-12px_rgba(45,30,25,0.25)] focus:outline-none ${
+            className={`absolute top-full mt-3 z-30 min-w-56 py-2 rounded-2xl bg-cream border border-gold/25 shadow-[0_12px_32px_-12px_rgba(45,30,25,0.25)] focus:outline-none ${
               align === "right" ? "right-0" : "left-0"
             }`}
           >
@@ -155,7 +155,7 @@ export function Select({
                   onPointerEnter={() => setActiveIndex(idx)}
                   onClick={() => choose(idx)}
                   className={`mx-2 px-3 py-2.5 rounded-xl flex items-center justify-between gap-6 text-[15px] cursor-pointer transition-colors duration-200 ${
-                    isActive ? "bg-ivory" : ""
+                    isActive ? "bg-cream-dark" : ""
                   } ${isSelected ? "text-charcoal font-medium" : "text-charcoal/75"}`}
                 >
                   {option.label}

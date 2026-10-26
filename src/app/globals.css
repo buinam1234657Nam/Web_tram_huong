@@ -42,6 +42,8 @@ html {
   --color-charcoal-light: #3A2F28;
   --color-muted: #6F6660;
   --color-muted-light: #9A918A;
+  /* Form placeholders: clearly lighter than typed text (charcoal), still ~3.6:1 on the input fill */
+  --color-placeholder: #857B73;
   --color-border-subtle: #E8E2D9;
   --color-border-dark: #4A3328;
 

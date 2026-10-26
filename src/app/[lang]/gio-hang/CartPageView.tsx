@@ -96,14 +96,14 @@ export function CartPageView() {
             <li key={item.id} className="py-6 flex gap-4 sm:gap-6">
               <Link
                 href={`/san-pham/${item.slug}`}
-                className="relative w-24 h-24 sm:w-32 sm:h-32 shrink-0 overflow-hidden bg-ivory"
+                className="relative w-24 h-24 sm:w-32 sm:h-32 shrink-0 overflow-hidden rounded-lg bg-cream"
               >
                 <Image
                   src={item.image}
                   alt={item.name}
                   fill
                   sizes="128px"
-                  className="object-cover"
+                  className="object-cover mix-blend-multiply"
                 />
               </Link>
 
@@ -163,7 +163,7 @@ export function CartPageView() {
         </div>
       </div>
 
-      <aside className="lg:col-span-4 lg:sticky lg:top-[calc(var(--header-h)+2rem)] rounded-2xl bg-ivory p-6 sm:p-8">
+      <aside className="lg:col-span-4 lg:sticky lg:top-[calc(var(--header-h)+2rem)] rounded-2xl border border-gold/25 bg-cream-dark/40 p-6 sm:p-8">
         <h2 className="text-xl font-semibold text-agarwood">{t.summary}</h2>
         <dl className="mt-6 space-y-2 text-[15px]">
           <div className="flex justify-between">

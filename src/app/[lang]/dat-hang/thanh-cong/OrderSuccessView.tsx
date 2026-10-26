@@ -9,6 +9,7 @@ import { loadOrder } from "@/features/cart/orderStorage";
 import { formatVND } from "@/lib/format/currency";
 import { brandConfig } from "@/lib/config/brand";
 import { Button } from "@/components/ui/Button";
+import { BankTransferDetails } from "@/components/checkout/BankTransferDetails";
 import { FadeIn } from "@/components/motion/MotionPrimitives";
 import { useMessages } from "@/i18n/client";
 import { orderMessages } from "@/i18n/messages/order";
@@ -79,45 +80,28 @@ export function OrderSuccessView() {
       </FadeIn>
 
       {order.paymentMethod === "bank_transfer" && (
-        <section className="mt-12 rounded-2xl border border-charcoal p-6 sm:p-8">
-          <h2 className="text-lg font-semibold text-agarwood">
+        <section className="mt-12 rounded-2xl border border-agarwood/40 p-6 sm:p-8">
+          <h2 className="mb-5 text-lg font-semibold text-agarwood">
             {t.transferTitle}
           </h2>
-          <dl className="mt-4 grid grid-cols-[auto_1fr] gap-x-6 gap-y-2 text-[15px]">
-            <dt className="text-muted">{t.bank}</dt>
-            <dd className="text-charcoal">Vietcombank</dd>
-            <dt className="text-muted">{t.accountNumber}</dt>
-            <dd className="text-charcoal font-medium tracking-wide">
-              0123 456 789
-            </dd>
-            <dt className="text-muted">{t.accountHolder}</dt>
-            <dd className="text-charcoal">VĨNH TRẦM</dd>
-            <dt className="text-muted">{t.amount}</dt>
-            <dd className="text-charcoal font-medium">
-              {formatVND(order.total)}
-            </dd>
-            <dt className="text-muted">{t.transferNote}</dt>
-            <dd className="text-charcoal font-medium tracking-wide">
-              {order.code}
-            </dd>
-          </dl>
+          <BankTransferDetails amount={order.total} reference={order.code} />
         </section>
       )}
 
-      <section className="mt-12 rounded-2xl bg-ivory p-6 sm:p-8">
+      <section className="mt-12 rounded-2xl border border-gold/25 bg-cream-dark/40 p-6 sm:p-8">
         <h2 className="text-lg font-semibold text-agarwood">
           {t.detailsTitle}
         </h2>
         <ul className="mt-6 space-y-4">
           {order.items.map((item) => (
             <li key={item.id} className="flex items-center gap-4">
-              <div className="relative w-16 h-16 shrink-0 overflow-hidden bg-white">
+              <div className="relative w-16 h-16 shrink-0 overflow-hidden rounded-lg bg-cream">
                 <Image
                   src={item.image}
                   alt={item.name}
                   fill
                   sizes="64px"
-                  className="object-cover"
+                  className="object-cover mix-blend-multiply"
                 />
               </div>
               <div className="flex-1 min-w-0">
@@ -163,8 +147,7 @@ export function OrderSuccessView() {
               {address.fullName} · {address.phone}
             </p>
             <p className="text-charcoal">
-              {address.streetAddress}, {address.ward}, {address.district},{" "}
-              {address.province}
+              {address.streetAddress}, {address.ward}, {address.province}
             </p>
           </div>
           <div>

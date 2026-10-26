@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo } from "react";
 import Link from "@/components/i18n/Link";
-import { ChevronDown, SlidersHorizontal, X } from "lucide-react";
+import { Check, ChevronDown, SlidersHorizontal, X } from "lucide-react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import {
   MOTION_DURATION,
@@ -395,7 +395,7 @@ export function CatalogView({
             animate={{ y: 0 }}
             exit={{ y: "100%" }}
             transition={{ duration: 0.5, ease: MOTION_EASE }}
-            className="fixed inset-0 z-50 bg-white flex flex-col lg:hidden"
+            className="fixed inset-0 z-50 bg-cream flex flex-col lg:hidden"
             role="dialog"
             aria-modal="true"
             aria-label={t.filters}
@@ -405,7 +405,7 @@ export function CatalogView({
               <button
                 type="button"
                 onClick={() => setIsMobileFilterOpen(false)}
-                className="p-2 -mr-2 rounded-full bg-ivory"
+                className="p-2 -mr-2 rounded-full bg-cream-dark"
                 aria-label={t.closeFilters}
               >
                 <X className="w-5 h-5" />
@@ -565,12 +565,20 @@ function Checkbox({
 }) {
   return (
     <label className="flex items-center gap-3 text-[15px] text-charcoal cursor-pointer">
-      <input
-        type="checkbox"
-        checked={checked}
-        onChange={onChange}
-        className="w-5 h-5 accent-espresso rounded"
-      />
+      {/* Native checkboxes ignore border-radius, so the box is drawn by hand */}
+      <span className="relative grid place-items-center shrink-0">
+        <input
+          type="checkbox"
+          checked={checked}
+          onChange={onChange}
+          className="peer appearance-none w-5 h-5 rounded-md border border-gold/60 bg-cream cursor-pointer transition-colors hover:border-agarwood checked:bg-agarwood checked:border-agarwood focus:outline-none focus-visible:ring-2 focus-visible:ring-gold/40 focus-visible:ring-offset-1"
+        />
+        <Check
+          aria-hidden="true"
+          strokeWidth={3}
+          className="pointer-events-none absolute w-3.5 h-3.5 text-white opacity-0 transition-opacity peer-checked:opacity-100"
+        />
+      </span>
       {label}
     </label>
   );

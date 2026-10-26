@@ -4,8 +4,8 @@ export interface ShippingAddress {
   fullName: string;
   phone: string;
   email?: string;
+  /** Post-2025 units: province/city, then ward/commune (no district). */
   province: string;
-  district: string;
   ward: string;
   streetAddress: string;
   note?: string;
@@ -26,7 +26,7 @@ export interface OrderLine {
 /** Shape returned by the mock POST /api/orders and kept in sessionStorage for the success page. */
 export interface Order {
   id: string;
-  code: string; // e.g. "VT-784394-7994"
+  code: string; // e.g. "VT12345678", also the bank-transfer reference
   createdAt: string;
   shippingAddress: ShippingAddress;
   paymentMethod: PaymentMethod;
