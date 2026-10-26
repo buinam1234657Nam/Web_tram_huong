@@ -42,13 +42,14 @@ export function ProductCard({
   const hoverImage = product.images[1] || primaryImage;
 
   return (
-    // White panel: the studio photos have pale grey backdrops that clash with the cream canvas.
-    <article className="group relative flex flex-col h-full rounded-2xl bg-white p-2 sm:p-2.5 shadow-[0_1px_2px_rgba(45,30,25,0.04)] transition-shadow duration-500 hover:shadow-[0_12px_32px_-12px_rgba(45,30,25,0.18)]">
-      <div className="relative aspect-square w-full bg-mist overflow-hidden rounded-xl">
+    <article className="group relative flex flex-col h-full">
+      {/* Studio photos have pale grey backdrops; multiplying them onto cream turns
+          the backdrop into the page colour instead of a white box. */}
+      <div className="relative aspect-square w-full bg-cream overflow-hidden rounded-xl">
         {/* Gentle zoom on hover; both stacked images scale together so the crossfade stays aligned */}
         <Link
           href={href}
-          className="block w-full h-full relative transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.04]"
+          className="block w-full h-full relative bg-cream transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.04]"
         >
           <Image
             src={primaryImage}
@@ -56,7 +57,7 @@ export function ProductCard({
             fill
             sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
             loading={eager ? "eager" : "lazy"}
-            className={`object-cover transition-opacity duration-700 ease-out ${
+            className={`object-cover mix-blend-multiply transition-opacity duration-700 ease-out ${
               hoverImage !== primaryImage ? "group-hover:opacity-0" : ""
             }`}
           />
@@ -66,7 +67,7 @@ export function ProductCard({
               alt={t.altAngle(product.name)}
               fill
               sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-              className="object-cover transition-opacity duration-700 ease-out opacity-0 group-hover:opacity-100"
+              className="object-cover mix-blend-multiply transition-opacity duration-700 ease-out opacity-0 group-hover:opacity-100"
             />
           )}
         </Link>
@@ -75,7 +76,7 @@ export function ProductCard({
         )}
       </div>
 
-      <div className="px-1.5 pt-3 pb-1 flex-1 flex flex-col">
+      <div className="pt-3.5 flex-1 flex flex-col">
         {(product.bestseller || isOutOfStock) && (
           <p
             className={`text-xs font-medium mb-1 ${isOutOfStock ? "text-muted" : "text-gold-dark"}`}
@@ -90,38 +91,40 @@ export function ProductCard({
         </h3>
         <AgarwoodChips profile={product.agarwoodProfile} className="mt-2" />
 
-        {/* mt-auto pins price + cart to the bottom so they line up across a row */}
-        <div className="mt-auto pt-3 flex items-center justify-between gap-2">
-          <p className="min-w-0 flex flex-wrap items-baseline gap-x-2 text-[15px] font-semibold text-agarwood">
-            <span>{formatVND(price)}</span>
-            {compareAtPrice && compareAtPrice > price && (
-              <span className="text-xs font-normal text-muted-light line-through">
-                {formatVND(compareAtPrice)}
-              </span>
-            )}
-          </p>
+        <p className="mt-2 flex flex-wrap items-baseline gap-x-2 text-[15px] font-semibold text-agarwood">
+          <span>{formatVND(price)}</span>
+          {compareAtPrice && compareAtPrice > price && (
+            <span className="text-xs font-normal text-muted-light line-through">
+              {formatVND(compareAtPrice)}
+            </span>
+          )}
+        </p>
+
+        {/* Outlined so a row of cards doesn't turn into a dark band; fills on hover.
+            mt-auto pins it to the bottom so buttons line up across a row. */}
+        <div className="mt-auto pt-3">
           {isOutOfStock ? (
             <Link
               href={`${href}#bao-khi-co-hang`}
-              className="w-10 h-10 shrink-0 rounded-full border border-gold/50 text-agarwood flex items-center justify-center hover:bg-ivory transition-colors"
+              className="w-full h-10 px-3 rounded-full border border-gold/50 text-[13px] sm:text-sm font-medium text-agarwood inline-flex items-center justify-center gap-2 hover:bg-cream-dark transition-colors"
               aria-label={t.notifyMeLabel(product.name)}
-              title={t.notifyMe}
             >
-              <BellRing className="w-4.5 h-4.5" />
+              <BellRing className="w-4 h-4 shrink-0" aria-hidden="true" />
+              <span className="truncate">{t.notifyMe}</span>
             </Link>
           ) : (
             <button
               type="button"
               onClick={handleQuickAdd}
-              className="w-10 h-10 shrink-0 rounded-full border border-gold/50 text-agarwood flex items-center justify-center hover:bg-espresso hover:border-espresso hover:text-white transition-colors cursor-pointer"
+              className="w-full h-10 px-3 rounded-full border border-espresso/30 text-[13px] sm:text-sm font-medium text-espresso inline-flex items-center justify-center gap-2 hover:bg-espresso hover:border-espresso hover:text-white transition-colors cursor-pointer"
               aria-label={t.addToCartLabel(product.name)}
-              title={t.addToCart}
             >
               {justAdded ? (
-                <Check className="w-4.5 h-4.5" />
+                <Check className="w-4 h-4 shrink-0" aria-hidden="true" />
               ) : (
-                <ShoppingBag className="w-4.5 h-4.5" />
+                <ShoppingBag className="w-4 h-4 shrink-0" aria-hidden="true" />
               )}
+              <span className="truncate">{justAdded ? t.added : t.addToCart}</span>
             </button>
           )}
         </div>

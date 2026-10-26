@@ -31,7 +31,7 @@ export default function GlobalNotFound() {
   return (
     <html lang="vi-VN" className={`${beVietnam.variable} ${playfair.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col bg-cream text-charcoal font-sans">
-        <header className="bg-mist border-b border-black/8">
+        <header className="bg-cream border-b border-gold/20">
           <div className="max-w-site mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center">
             <NextLink href="/" className="leading-none">
               <span className="block text-lg font-semibold tracking-[0.28em] text-mahogany">VĨNH TRẦM</span>

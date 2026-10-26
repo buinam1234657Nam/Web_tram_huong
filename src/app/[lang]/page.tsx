@@ -256,7 +256,7 @@ export default async function HomePage() {
               <FadeIn
                 key={fact.label}
                 delay={idx * STAGGER}
-                className="h-full rounded-2xl border border-gold/35 bg-ivory-light p-5 sm:p-7"
+                className="h-full rounded-2xl border border-gold/35 bg-cream-dark/30 p-5 sm:p-7"
               >
                 <dt className="sr-only">{fact.label}</dt>
                 <dd>
@@ -299,7 +299,7 @@ export default async function HomePage() {
                   delay={idx * STAGGER}
                   className="h-full shrink-0 basis-[85%] md:basis-auto snap-start"
                 >
-                  <figure className="relative h-full flex flex-col rounded-2xl border border-gold/25 bg-ivory p-5 sm:p-6">
+                  <figure className="relative h-full flex flex-col rounded-2xl border border-gold/25 bg-cream p-5 sm:p-6">
                     {/* Large decorative quote mark */}
                     <span
                       aria-hidden="true"
@@ -347,7 +347,7 @@ export default async function HomePage() {
                             alt=""
                             fill
                             sizes="40px"
-                            className="object-cover"
+                            className="object-cover mix-blend-multiply"
                           />
                         </span>
                         <span className="min-w-0 text-xs">

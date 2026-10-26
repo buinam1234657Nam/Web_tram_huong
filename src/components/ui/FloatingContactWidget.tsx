@@ -84,7 +84,7 @@ export function FloatingContactWidget() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 8 }}
             transition={{ duration: 0.25, ease: MOTION_EASE }}
-            className="relative w-11 h-11 rounded-full bg-white border border-border-subtle text-charcoal hover:text-gold-dark shadow-lg flex items-center justify-center transition-colors cursor-pointer"
+            className="relative w-11 h-11 rounded-full bg-cream border border-gold/30 text-charcoal hover:text-gold-dark shadow-lg flex items-center justify-center transition-colors cursor-pointer"
           >
             <svg
               className="absolute -inset-1 w-[52px] h-[52px] -rotate-90 pointer-events-none"

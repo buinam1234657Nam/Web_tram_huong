@@ -162,7 +162,7 @@ export function Header() {
   return (
     <>
       <header
-        className={`sticky top-0 z-40 w-full border-b border-black/8 transition-colors duration-300 bg-mist`}
+        className={`sticky top-0 z-40 w-full border-b border-gold/20 transition-colors duration-300 bg-cream`}
       >
         <div className="max-w-site mx-auto px-4 sm:px-6 lg:px-8">
           <div className="h-16 grid grid-cols-[1fr_auto_1fr] lg:grid-cols-[auto_1fr_auto] items-center gap-6">
@@ -306,7 +306,7 @@ export function Header() {
               transition={{ duration: 0.35, ease: MOTION_EASE }}
               onMouseEnter={() => scheduleMega(true)}
               onMouseLeave={() => scheduleMega(false)}
-              className="hidden lg:block absolute inset-x-0 top-full bg-white border-b border-border-subtle"
+              className="hidden lg:block absolute inset-x-0 top-full bg-cream border-b border-gold/20"
             >
               {/* Text-only columns, Nike-style: bold heading, muted links */}
               <div className="max-w-6xl mx-auto px-8 pt-8 pb-12 grid grid-cols-5 gap-10">
@@ -343,7 +343,7 @@ export function Header() {
               animate={{ opacity: 1, height: "auto" }}
               exit={{ opacity: 0, height: 0 }}
               transition={{ duration: 0.35, ease: MOTION_EASE }}
-              className="overflow-hidden lg:hidden border-t border-border-subtle bg-white"
+              className="overflow-hidden lg:hidden border-t border-gold/20 bg-cream"
             >
               <div className="px-4 pt-4 pb-8">
                 <ul className="divide-y divide-border-subtle">

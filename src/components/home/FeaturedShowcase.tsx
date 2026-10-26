@@ -187,7 +187,7 @@ export function FeaturedShowcase({
         <Link
           key={c.href}
           href={c.href}
-          className="group flex flex-col overflow-hidden rounded-2xl border border-gold/20 bg-ivory shadow-sm shadow-espresso/5 hover:shadow-md transition-shadow lg:mb-11"
+          className="group flex flex-col overflow-hidden rounded-2xl border border-gold/20 bg-cream-dark/30 shadow-sm shadow-espresso/5 hover:shadow-md transition-shadow lg:mb-11"
         >
           <div className="relative aspect-4/3 lg:aspect-auto lg:flex-1 lg:min-h-[260px] overflow-hidden bg-cream-dark">
             <Image
@@ -233,7 +233,7 @@ function CarouselArrow({
       type="button"
       onClick={onClick}
       aria-label={direction === "prev" ? t.showcasePrev : t.showcaseNext}
-      className={`absolute z-20 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-white text-espresso shadow-md shadow-black/15 flex items-center justify-center hover:bg-cream transition-colors cursor-pointer ${className}`}
+      className={`absolute z-20 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-cream text-espresso shadow-md shadow-black/15 flex items-center justify-center hover:bg-cream-dark transition-colors cursor-pointer ${className}`}
     >
       <Icon className="w-5 h-5" />
     </button>

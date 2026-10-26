@@ -131,7 +131,7 @@ export function ProductDetailView({
             <p className="whitespace-pre-line">{product.description}</p>
           </div>
           {detailImage && (
-            <div className="relative aspect-4/3 overflow-hidden rounded-2xl bg-ivory lg:sticky lg:top-[calc(var(--header-h)+2rem)]">
+            <div className="relative aspect-4/3 overflow-hidden rounded-2xl bg-cream-dark lg:sticky lg:top-[calc(var(--header-h)+2rem)]">
               <Image
                 src={detailImage}
                 alt={t.imageAlt(product.name, 2)}
@@ -238,7 +238,7 @@ export function ProductDetailView({
                   type="button"
                   onMouseEnter={() => showImage(idx)}
                   onClick={() => showImage(idx)}
-                  className={`relative w-16 h-16 sm:w-18 sm:h-18 overflow-hidden rounded-xl border-2 bg-ivory cursor-pointer transition-all duration-300 ${
+                  className={`relative w-16 h-16 sm:w-18 sm:h-18 overflow-hidden rounded-xl border-2 bg-cream cursor-pointer transition-all duration-300 ${
                     activeImageIndex === idx
                       ? "border-espresso"
                       : "border-transparent opacity-70 hover:opacity-100"
@@ -251,14 +251,14 @@ export function ProductDetailView({
                     alt=""
                     fill
                     sizes="72px"
-                    className="object-cover"
+                    className="object-cover mix-blend-multiply"
                   />
                 </button>
               ))}
             </div>
           )}
 
-          <div className="relative flex-1 aspect-square bg-mist overflow-hidden rounded-2xl">
+          <div className="relative flex-1 aspect-square bg-cream overflow-hidden rounded-2xl">
             {/* Plain crossfade between gallery images */}
             <AnimatePresence initial={false}>
               <motion.div
@@ -267,7 +267,7 @@ export function ProductDetailView({
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.6, ease: MOTION_EASE }}
-                className="absolute inset-0"
+                className="absolute inset-0 bg-cream"
               >
                 <Image
                   src={images[activeImageIndex]}
@@ -276,7 +276,7 @@ export function ProductDetailView({
                   loading="eager"
                   fetchPriority="high"
                   sizes="(max-width: 1024px) 100vw, 720px"
-                  className="object-cover"
+                  className="object-cover mix-blend-multiply"
                 />
               </motion.div>
             </AnimatePresence>
@@ -288,7 +288,7 @@ export function ProductDetailView({
                 <button
                   type="button"
                   onClick={() => showImage(activeImageIndex - 1)}
-                  className="w-9 h-9 rounded-full bg-white flex items-center justify-center text-charcoal hover:bg-ivory cursor-pointer"
+                  className="w-9 h-9 rounded-full bg-cream/90 border border-gold/30 flex items-center justify-center text-charcoal hover:bg-cream-dark cursor-pointer"
                   aria-label={t.prevImage}
                 >
                   <ChevronLeft className="w-5 h-5" />
@@ -296,7 +296,7 @@ export function ProductDetailView({
                 <button
                   type="button"
                   onClick={() => showImage(activeImageIndex + 1)}
-                  className="w-9 h-9 rounded-full bg-white flex items-center justify-center text-charcoal hover:bg-ivory cursor-pointer"
+                  className="w-9 h-9 rounded-full bg-cream/90 border border-gold/30 flex items-center justify-center text-charcoal hover:bg-cream-dark cursor-pointer"
                   aria-label={t.nextImage}
                 >
                   <ChevronRight className="w-5 h-5" />
@@ -361,7 +361,7 @@ export function ProductDetailView({
             <motion.section
               variants={STAGGER_ITEM}
               aria-labelledby="ho-so-tram"
-              className="mt-6 rounded-2xl border border-gold/30 bg-ivory-light p-5"
+              className="mt-6 rounded-2xl border border-gold/30 bg-cream-dark/30 p-5"
             >
               <h2
                 id="ho-so-tram"
@@ -426,7 +426,7 @@ export function ProductDetailView({
                     <label
                       key={v.id}
                       className={`flex items-center gap-3 px-4 py-3.5 rounded-xl border text-[15px] cursor-pointer transition-colors duration-300 ${
-                        soldOut ? "bg-ivory" : "bg-ivory-light"
+                        soldOut ? "bg-cream-dark/50" : "bg-cream-dark/20"
                       } ${
                         isSelected
                           ? "border-espresso ring-1 ring-espresso"
@@ -506,7 +506,7 @@ export function ProductDetailView({
                 href={brandConfig.social.zalo}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-full h-12 rounded-full bg-ivory text-[15px] font-medium text-agarwood-dark hover:bg-ivory-dark transition-colors inline-flex items-center justify-center gap-2"
+                className="w-full h-12 rounded-full bg-cream-dark/60 text-[15px] font-medium text-agarwood-dark hover:bg-cream-dark transition-colors inline-flex items-center justify-center gap-2"
               >
                 <MessageCircle className="w-4 h-4" aria-hidden="true" />
                 {t.zaloConsult}
@@ -531,8 +531,8 @@ export function ProductDetailView({
         </motion.div>
       </div>
 
-      {/* Details: full-width paper band with tabs, below the cream buy area */}
-      <section className="bg-ivory-light border-t border-border-subtle">
+      {/* Details: tabs on the same cream as the rest of the page, set off by a hairline */}
+      <section className="border-t border-gold/20">
         <div className="max-w-site mx-auto px-4 sm:px-6 lg:px-8">
           <ProductTabs label={t.detailsLabel} tabs={tabs} />
         </div>
@@ -585,7 +585,7 @@ export function ProductDetailView({
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: MOTION_RISE }}
               transition={{ duration: 0.5, ease: MOTION_EASE }}
-              className="relative w-full max-w-lg bg-white p-6 sm:p-8"
+              className="relative w-full max-w-lg rounded-2xl bg-cream p-6 sm:p-8"
             >
               <div className="flex items-start justify-between gap-4">
                 <h3 className="text-xl font-medium text-charcoal">
@@ -594,7 +594,7 @@ export function ProductDetailView({
                 <button
                   type="button"
                   onClick={() => setIsSizeGuideOpen(false)}
-                  className="p-2 -m-2 rounded-full hover:bg-ivory cursor-pointer"
+                  className="p-2 -m-2 rounded-full hover:bg-cream-dark cursor-pointer"
                   aria-label={t.close}
                 >
                   <X className="w-5 h-5" />

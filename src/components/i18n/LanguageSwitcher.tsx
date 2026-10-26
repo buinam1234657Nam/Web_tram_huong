@@ -92,7 +92,7 @@ export function LanguageSwitcher({
         <ul
           role="listbox"
           aria-label="Language / Ngôn ngữ"
-          className="absolute right-0 top-full mt-2 w-44 rounded-xl border border-gold/25 bg-white py-1.5 shadow-lg shadow-espresso/10 z-50"
+          className="absolute right-0 top-full mt-2 w-44 rounded-xl border border-gold/25 bg-cream py-1.5 shadow-lg shadow-espresso/10 z-50"
         >
           {LOCALES.map((l) => (
             <li key={l} role="option" aria-selected={l === locale}>
@@ -104,7 +104,7 @@ export function LanguageSwitcher({
                 className={`flex items-center justify-between gap-3 px-4 py-2.5 text-sm transition-colors ${
                   l === locale
                     ? "text-mahogany font-semibold"
-                    : "text-charcoal hover:bg-cream"
+                    : "text-charcoal hover:bg-cream-dark"
                 }`}
               >
                 <span>
