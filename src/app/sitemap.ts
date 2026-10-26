@@ -1,6 +1,7 @@
 import { MetadataRoute } from "next";
 import { catalogRepository } from "@/data/repositories/catalog-repository";
 import { siteUrl } from "@/lib/config/site";
+import { RITUALS } from "@/data/content/rituals";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = siteUrl;
@@ -36,6 +37,18 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "weekly",
       priority: 0.8,
     },
+    {
+      url: `${baseUrl}/hieu-ve-tram`,
+      lastModified: new Date(),
+      changeFrequency: "monthly",
+      priority: 0.8,
+    },
+    ...RITUALS.map((r) => ({
+      url: `${baseUrl}/nhu-cau/${r.slug}`,
+      lastModified: new Date(),
+      changeFrequency: "weekly" as const,
+      priority: 0.85,
+    })),
   ];
 
   const categoryRoutes: MetadataRoute.Sitemap = categories.map((cat) => ({

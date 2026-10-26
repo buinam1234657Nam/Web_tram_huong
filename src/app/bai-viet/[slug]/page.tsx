@@ -89,7 +89,7 @@ async function ArticleDetail({ params }: ArticleDetailPageProps) {
           <p className="text-sm font-medium text-gold-dark">
             {article.category}
           </p>
-          <h1 className="mt-3 text-3xl sm:text-5xl font-semibold text-charcoal leading-[1.15] tracking-tight">
+          <h1 className="mt-3 text-3xl sm:text-5xl font-semibold text-agarwood leading-[1.15] tracking-tight">
             {article.title}
           </h1>
           <p className="mt-5 text-lg text-muted leading-relaxed">
@@ -141,7 +141,7 @@ async function ArticleDetail({ params }: ArticleDetailPageProps) {
       {/* Product nudge, styled like the homepage showroom band */}
       <section className="max-w-5xl mx-auto px-4 sm:px-6 mt-20">
         <div className="bg-ivory px-6 py-12 sm:py-14 text-center">
-          <h2 className="text-2xl sm:text-3xl font-semibold text-charcoal">
+          <h2 className="text-2xl sm:text-3xl font-semibold text-agarwood">
             Trải nghiệm trầm hương tự nhiên
           </h2>
           <p className="mt-3 text-muted max-w-lg mx-auto">
@@ -155,9 +155,9 @@ async function ArticleDetail({ params }: ArticleDetailPageProps) {
       </section>
 
       {relatedArticles.length > 0 && (
-        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-20">
+        <section className="max-w-site mx-auto px-4 sm:px-6 lg:px-8 mt-20">
           <div className="flex items-end justify-between gap-4 mb-8">
-            <h2 className="text-2xl sm:text-3xl font-semibold text-charcoal">
+            <h2 className="text-2xl sm:text-3xl font-semibold text-agarwood">
               Đọc tiếp
             </h2>
             <Link

@@ -118,7 +118,7 @@ export async function generateMetadata({
 // route's shared shell stays instant (Next 16 partial prefetching).
 export default function PolicyPage({ params }: PolicyPageProps) {
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-24">
+    <div className="max-w-site mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-24">
       <Suspense fallback={<PolicySkeleton />}>
         <PolicyContent params={params} />
       </Suspense>

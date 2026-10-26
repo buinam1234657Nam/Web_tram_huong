@@ -3,6 +3,7 @@ import { Metadata } from "next";
 import { catalogRepository } from "@/data/repositories/catalog-repository";
 import { Breadcrumbs } from "@/components/ui/Breadcrumbs";
 import { BreadcrumbJsonLd } from "@/components/seo/JsonLd";
+import { toSummary } from "@/data/catalog/products";
 import { CatalogView } from "./CatalogView";
 
 export const metadata: Metadata = {
@@ -38,10 +39,13 @@ export default async function ProductsPage() {
   const breadcrumbs = [{ label: "Sản phẩm", href: "/san-pham" }];
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-24">
+    <div className="max-w-site mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-24">
       <BreadcrumbJsonLd items={breadcrumbs} />
       <Breadcrumbs items={breadcrumbs} />
-      <CatalogView initialProducts={products} categories={categories} />
+      <CatalogView
+        products={products.map(toSummary)}
+        categories={categories}
+      />
     </div>
   );
 }

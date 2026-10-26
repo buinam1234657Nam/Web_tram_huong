@@ -21,11 +21,11 @@ export default function CartPage() {
   const breadcrumbs = [{ label: "Giỏ hàng", href: "/gio-hang" }];
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-24">
+    <div className="max-w-site mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-24">
       <BreadcrumbJsonLd items={breadcrumbs} />
       <Breadcrumbs items={breadcrumbs} />
 
-      <h1 className="mt-6 mb-10 text-3xl sm:text-4xl font-semibold text-charcoal">
+      <h1 className="mt-6 mb-10 text-3xl sm:text-4xl font-semibold text-agarwood">
         Giỏ hàng
       </h1>
 

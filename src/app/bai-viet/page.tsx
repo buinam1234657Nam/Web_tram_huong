@@ -33,12 +33,12 @@ export default async function ArticlesPage() {
   const breadcrumbs = [{ label: "Tin tức", href: "/bai-viet" }];
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-24">
+    <div className="max-w-site mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-24">
       <BreadcrumbJsonLd items={breadcrumbs} />
       <Breadcrumbs items={breadcrumbs} />
 
       <header className="mt-10 sm:mt-14 mb-10 max-w-2xl">
-        <h1 className="text-4xl sm:text-5xl font-semibold text-charcoal tracking-tight">
+        <h1 className="text-4xl sm:text-5xl font-semibold text-agarwood tracking-tight">
           Tin tức & kiến thức trầm
         </h1>
         <p className="mt-4 text-lg text-muted leading-relaxed">

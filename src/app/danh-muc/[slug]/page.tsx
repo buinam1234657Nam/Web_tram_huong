@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 import { catalogRepository } from "@/data/repositories/catalog-repository";
 import { Breadcrumbs } from "@/components/ui/Breadcrumbs";
 import { BreadcrumbJsonLd } from "@/components/seo/JsonLd";
+import { toSummary } from "@/data/catalog/products";
 import { CatalogView } from "@/app/san-pham/CatalogView";
 
 interface CategoryPageProps {
@@ -47,7 +48,7 @@ export async function generateMetadata({
 // inside Suspense (see "Move URL data behind Suspense" in the Next.js docs).
 export default function CategoryPage({ params }: CategoryPageProps) {
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-24">
+    <div className="max-w-site mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-24">
       <Suspense fallback={<CatalogSkeleton />}>
         <CategoryContent params={params} />
       </Suspense>
@@ -64,7 +65,7 @@ async function CategoryContent({ params }: CategoryPageProps) {
   }
 
   const [products, categories] = await Promise.all([
-    catalogRepository.getProducts(),
+    catalogRepository.getProducts({ categorySlug: category.slug }),
     catalogRepository.getCategories(),
   ]);
 
@@ -78,7 +79,7 @@ async function CategoryContent({ params }: CategoryPageProps) {
       <BreadcrumbJsonLd items={breadcrumbs} />
       <Breadcrumbs items={breadcrumbs} />
       <CatalogView
-        initialProducts={products}
+        products={products.map(toSummary)}
         categories={categories}
         activeCategory={category}
       />

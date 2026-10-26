@@ -85,7 +85,7 @@ export function ArticlesView({
               <p className="text-sm text-muted">
                 {featured.category} · {featured.readingTimeMinutes} phút đọc
               </p>
-              <h2 className="mt-2 text-2xl sm:text-4xl font-semibold text-charcoal leading-[1.2] tracking-tight group-hover:text-gold-dark transition-colors duration-300">
+              <h2 className="mt-2 text-2xl sm:text-4xl font-semibold text-agarwood leading-[1.2] tracking-tight group-hover:text-gold-dark transition-colors duration-300">
                 {featured.title}
               </h2>
               <p className="mt-4 text-[15px] sm:text-base text-muted leading-relaxed">

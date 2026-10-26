@@ -43,7 +43,7 @@ export function CartPageView() {
   if (items.length === 0) {
     return (
       <div className="py-16 text-center max-w-md mx-auto">
-        <h2 className="text-2xl font-semibold text-charcoal">
+        <h2 className="text-2xl font-semibold text-agarwood">
           Giỏ hàng của bạn đang trống
         </h2>
         <p className="mt-3 text-[15px] text-muted leading-relaxed">
@@ -161,7 +161,7 @@ export function CartPageView() {
       </div>
 
       <aside className="lg:col-span-4 lg:sticky lg:top-[calc(var(--header-h)+2rem)] rounded-2xl bg-ivory p-6 sm:p-8">
-        <h2 className="text-xl font-semibold text-charcoal">Tóm tắt</h2>
+        <h2 className="text-xl font-semibold text-agarwood">Tóm tắt</h2>
         <dl className="mt-6 space-y-2 text-[15px]">
           <div className="flex justify-between">
             <dt className="text-muted">Tạm tính ({totalItems} sản phẩm)</dt>

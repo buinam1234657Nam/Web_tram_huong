@@ -1,8 +1,8 @@
-import { Product, ProductFilterOptions } from "@/types/product";
+import { Product, ProductFilterOptions, Ritual } from "@/types/product";
 import { Category } from "@/types/category";
 import { Review } from "@/types/review";
 import { Article } from "@/types/article";
-import { mockProducts } from "@/data/mock/products";
+import { catalogProducts } from "@/data/catalog/products";
 import { mockCategories } from "@/data/mock/categories";
 import { mockReviews } from "@/data/mock/reviews";
 import { mockArticles } from "@/data/mock/articles";
@@ -13,29 +13,67 @@ export interface ICatalogRepository {
   getProductById(id: string): Promise<Product | null>;
   getBestsellers(limit?: number): Promise<Product[]>;
   getFeaturedProducts(limit?: number): Promise<Product[]>;
+  getProductsByRitual(ritual: Ritual): Promise<Product[]>;
   getRelatedProducts(productId: string, categorySlug: string, limit?: number): Promise<Product[]>;
   searchProducts(query: string): Promise<Product[]>;
-  
+
   getCategories(): Promise<Category[]>;
   getCategoryBySlug(slug: string): Promise<Category | null>;
-  
+
   getReviewsByProductId(productId: string): Promise<Review[]>;
   getAllReviews(): Promise<Review[]>;
-  
+
   getArticles(): Promise<Article[]>;
   getArticleBySlug(slug: string): Promise<Article | null>;
 }
 
+/** Lowercase and strip Vietnamese diacritics so "khanh hoa" finds "Khánh Hòa". */
+export function normalizeSearchText(text: string) {
+  return text
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .replace(/đ/g, "d")
+    .trim();
+}
+
+export function matchesSearch(product: Product, normalizedQuery: string) {
+  const profile = product.agarwoodProfile;
+  return [
+    product.name,
+    product.shortDescription,
+    product.categoryName,
+    product.origin,
+    profile.origin ?? "",
+    profile.grade ? `trầm ${profile.grade}` : "",
+    ...product.seo.keywords,
+  ].some((field) => normalizeSearchText(field).includes(normalizedQuery));
+}
+
+const categoryCounts = catalogProducts.reduce<Record<string, number>>(
+  (counts, p) => {
+    counts[p.categorySlug] = (counts[p.categorySlug] || 0) + 1;
+    return counts;
+  },
+  {},
+);
+
+const categories: Category[] = mockCategories.map((c) => ({
+  ...c,
+  productCount: categoryCounts[c.slug] || 0,
+}));
+
 export class MockCatalogRepository implements ICatalogRepository {
   async getProducts(filters?: ProductFilterOptions): Promise<Product[]> {
-    let result = [...mockProducts];
+    let result = [...catalogProducts];
 
     if (filters?.categorySlug) {
       result = result.filter((p) => p.categorySlug === filters.categorySlug);
     }
 
-    if (filters?.purpose) {
-      result = result.filter((p) => p.purpose === filters.purpose);
+    if (filters?.ritual) {
+      const ritual = filters.ritual;
+      result = result.filter((p) => p.ritual.includes(ritual));
     }
 
     if (filters?.priceMin !== undefined) {
@@ -44,10 +82,6 @@ export class MockCatalogRepository implements ICatalogRepository {
 
     if (filters?.priceMax !== undefined) {
       result = result.filter((p) => p.price <= (filters.priceMax ?? Infinity));
-    }
-
-    if (filters?.scentIntensity) {
-      result = result.filter((p) => p.scentProfile.intensity === filters.scentIntensity);
     }
 
     if (filters?.inStockOnly) {
@@ -77,61 +111,58 @@ export class MockCatalogRepository implements ICatalogRepository {
   }
 
   async getProductBySlug(slug: string): Promise<Product | null> {
-    const product = mockProducts.find((p) => p.slug === slug);
+    const product = catalogProducts.find((p) => p.slug === slug);
     return product || null;
   }
 
   async getProductById(id: string): Promise<Product | null> {
-    const product = mockProducts.find((p) => p.id === id);
+    const product = catalogProducts.find((p) => p.id === id);
     return product || null;
   }
 
   async getBestsellers(limit = 4): Promise<Product[]> {
-    const bestsellers = mockProducts.filter((p) => p.bestseller);
+    const bestsellers = catalogProducts.filter((p) => p.bestseller);
     if (bestsellers.length >= limit) {
       return bestsellers.slice(0, limit);
     }
-    const remaining = mockProducts.filter((p) => !p.bestseller);
+    const remaining = catalogProducts.filter((p) => !p.bestseller);
     return [...bestsellers, ...remaining].slice(0, limit);
   }
 
-  async getFeaturedProducts(limit = 6): Promise<Product[]> {
-    const featured = mockProducts.filter((p) => p.featured);
+  async getFeaturedProducts(limit = 4): Promise<Product[]> {
+    const featured = catalogProducts.filter((p) => p.featured);
     return featured.slice(0, limit);
   }
 
+  async getProductsByRitual(ritual: Ritual): Promise<Product[]> {
+    return catalogProducts.filter((p) => p.ritual.includes(ritual));
+  }
+
   async getRelatedProducts(productId: string, categorySlug: string, limit = 3): Promise<Product[]> {
-    const sameCategory = mockProducts.filter(
+    const sameCategory = catalogProducts.filter(
       (p) => p.id !== productId && p.categorySlug === categorySlug
     );
     if (sameCategory.length >= limit) {
       return sameCategory.slice(0, limit);
     }
-    const others = mockProducts.filter(
+    const others = catalogProducts.filter(
       (p) => p.id !== productId && p.categorySlug !== categorySlug
     );
     return [...sameCategory, ...others].slice(0, limit);
   }
 
   async searchProducts(query: string): Promise<Product[]> {
-    if (!query || !query.trim()) return [];
-    const normalized = query.toLowerCase().trim();
-    return mockProducts.filter(
-      (p) =>
-        p.name.toLowerCase().includes(normalized) ||
-        p.shortDescription.toLowerCase().includes(normalized) ||
-        p.categoryName.toLowerCase().includes(normalized) ||
-        p.origin.toLowerCase().includes(normalized) ||
-        p.seo.keywords.some((kw) => kw.toLowerCase().includes(normalized))
-    );
+    const normalized = normalizeSearchText(query);
+    if (!normalized) return [];
+    return catalogProducts.filter((p) => matchesSearch(p, normalized));
   }
 
   async getCategories(): Promise<Category[]> {
-    return [...mockCategories];
+    return [...categories];
   }
 
   async getCategoryBySlug(slug: string): Promise<Category | null> {
-    const cat = mockCategories.find((c) => c.slug === slug);
+    const cat = categories.find((c) => c.slug === slug);
     return cat || null;
   }
 

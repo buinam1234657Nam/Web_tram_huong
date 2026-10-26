@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Be_Vietnam_Pro } from "next/font/google";
+import { Be_Vietnam_Pro, Playfair_Display } from "next/font/google";
 import "./globals.css";
 import { AnnouncementBar } from "@/components/layout/AnnouncementBar";
 import { Header } from "@/components/layout/Header";
@@ -14,6 +14,14 @@ const beVietnam = Be_Vietnam_Pro({
   variable: "--font-be-vietnam",
   subsets: ["vietnamese", "latin"],
   weight: ["300", "400", "500", "600", "700"],
+  display: "swap",
+});
+
+/** Display serif for editorial headings (font-serif); has full Vietnamese diacritics. */
+const playfair = Playfair_Display({
+  variable: "--font-playfair",
+  subsets: ["vietnamese", "latin"],
+  weight: ["400", "500", "600"],
   display: "swap",
 });
 
@@ -52,9 +60,10 @@ export default function RootLayout({
   return (
     <html
       lang="vi"
-      className={`${beVietnam.variable} h-full antialiased`}
+      className={`${beVietnam.variable} ${playfair.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col bg-white text-charcoal font-sans">
+      {/* Warm cream canvas like the reference site; white is kept for cards on top of it */}
+      <body className="min-h-full flex flex-col bg-cream text-charcoal font-sans">
         <SmoothScroll />
         <OrganizationJsonLd />
         <AnnouncementBar />

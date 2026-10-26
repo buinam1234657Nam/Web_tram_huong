@@ -1,4 +1,4 @@
-import { Product, ProductVariant } from "./product";
+import { ProductSummary, ProductVariant } from "./product";
 
 export interface CartItem {
   id: string; // `${productId}-${variantId}`
@@ -17,7 +17,7 @@ export interface CartItem {
 export interface CartStoreState {
   items: CartItem[];
   isOpen: boolean;
-  addItem: (product: Product, variant?: ProductVariant, quantity?: number) => void;
+  addItem: (product: ProductSummary, variant?: ProductVariant, quantity?: number) => void;
   removeItem: (itemId: string) => void;
   updateQuantity: (itemId: string, quantity: number) => void;
   clearCart: () => void;

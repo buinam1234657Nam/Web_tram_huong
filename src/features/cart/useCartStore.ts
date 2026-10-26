@@ -3,7 +3,7 @@
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import { CartStoreState, CartItem } from "@/types/cart";
-import { Product, ProductVariant } from "@/types/product";
+import { ProductSummary, ProductVariant } from "@/types/product";
 
 export const useCartStore = create<CartStoreState>()(
   persist(
@@ -11,7 +11,7 @@ export const useCartStore = create<CartStoreState>()(
       items: [],
       isOpen: false,
 
-      addItem: (product: Product, variant?: ProductVariant, quantity = 1) => {
+      addItem: (product: ProductSummary, variant?: ProductVariant, quantity = 1) => {
         const selectedVariant = variant || product.variants[0];
         const itemId = `${product.id}-${selectedVariant.id}`;
         const maxQty = selectedVariant.inventoryQuantity;

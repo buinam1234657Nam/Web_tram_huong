@@ -54,9 +54,8 @@ export function ProductJsonLd({ product }: { product: Product }) {
     offers: {
       "@type": "AggregateOffer",
       priceCurrency: "VND",
-      lowPrice: product.variants[0]?.price || product.price,
-      highPrice:
-        product.variants[product.variants.length - 1]?.price || product.price,
+      lowPrice: Math.min(product.price, ...product.variants.map((v) => v.price)),
+      highPrice: Math.max(product.price, ...product.variants.map((v) => v.price)),
       offerCount: product.variants.length,
       availability:
         product.inventoryStatus === "out_of_stock"
@@ -64,13 +63,39 @@ export function ProductJsonLd({ product }: { product: Product }) {
           : "https://schema.org/InStock",
       url: absoluteUrl(`/san-pham/${product.slug}`),
     },
-    aggregateRating: {
-      "@type": "AggregateRating",
-      ratingValue: product.ratingAverage,
-      reviewCount: product.ratingCount,
-      bestRating: 5,
-      worstRating: 1,
-    },
+    // Google rejects an AggregateRating with zero reviews.
+    ...(product.ratingCount > 0 && {
+      aggregateRating: {
+        "@type": "AggregateRating",
+        ratingValue: product.ratingAverage,
+        reviewCount: product.ratingCount,
+        bestRating: 5,
+        worstRating: 1,
+      },
+    }),
+  };
+
+  return (
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+    />
+  );
+}
+
+export function FaqJsonLd({
+  items,
+}: {
+  items: Array<{ question: string; answer: string }>;
+}) {
+  const schema = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: items.map((item) => ({
+      "@type": "Question",
+      name: item.question,
+      acceptedAnswer: { "@type": "Answer", text: item.answer },
+    })),
   };
 
   return (

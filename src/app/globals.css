@@ -8,13 +8,27 @@ html {
 }
 
 /*
-  Palette follows the reference storefront: deep agarwood browns,
-  antique gold accent, white canvas with warm neutral panels.
+  Palette follows the reference storefront (thienmochuong.com), and so does
+  where each color goes, because the shop's photos are shot to sit on it:
+  - mist #F9F9F9: header bar, with mahogany wordmark and menu (measured on the reference)
+  - espresso-dark #231512: footer, dark bands
+  - mahogany #592B0C: top announcement bar, logo and menu text
+  - agarwood #7C5A33: headings, prices
+  - gold #B18E4F: accents, links, borders
+  - cream #F9F2E1: page canvas, with paper-white (ivory) cards on top
 */
 @theme {
-  --color-ivory: #F6F3EE;
-  --color-ivory-light: #FBFAF8;
-  --color-ivory-dark: #EAE4DA;
+  /* Page content width (max-w-site). Wide enough that 1920px screens aren't mostly gutter. */
+  --container-site: 90rem;
+  --color-mahogany: #592B0C;
+  --color-mist: #F9F9F9;
+  /* Page canvas, same warm cream as the reference site (rgb 249 242 225); cards sit on it in white */
+  --color-cream: #F9F2E1;
+  --color-cream-dark: #F1E4C6;
+  /* Panels and cards that sit on the cream canvas: warm paper white */
+  --color-ivory: #FFFCF5;
+  --color-ivory-light: #FFFEFB;
+  --color-ivory-dark: #F1E4C6;
   --color-espresso: #2D1E19;
   --color-espresso-dark: #231512;
   --color-espresso-light: #4A3328;
@@ -32,12 +46,13 @@ html {
   --color-border-dark: #4A3328;
 
   --font-sans: var(--font-be-vietnam), system-ui, -apple-system, sans-serif;
+  --font-serif: var(--font-playfair), Georgia, serif;
 }
 
 :root {
   /* Height of the sticky header; sticky toolbars below it offset by this */
   --header-h: 4rem;
-  --background: #FFFFFF;
+  --background: #F9F2E1;
   --foreground: #1D1611;
 }
 
@@ -55,12 +70,19 @@ h1, h2, h3 {
   font-weight: 600;
 }
 
+/* Reference headings are agarwood brown. In the base layer so any text-* class still wins. */
+@layer base {
+  h1, h2, h3 {
+    color: var(--color-agarwood);
+  }
+}
+
 ::-webkit-scrollbar {
   width: 7px;
   height: 7px;
 }
 ::-webkit-scrollbar-track {
-  background: #FFFFFF;
+  background: #F9F2E1;
 }
 ::-webkit-scrollbar-thumb {
   background: #D1B88F;
@@ -105,6 +127,7 @@ h1, h2, h3 {
     scroll-behavior: auto;
   }
 }
+
 
 /* Hide native scrollbars on horizontal product rails */
 .no-scrollbar {

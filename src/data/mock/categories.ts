@@ -4,7 +4,7 @@ export const mockCategories: Category[] = [
   {
     id: "cat-1",
     slug: "vong-tay-tram-huong",
-    name: "Vòng Tay & Trang Sức",
+    name: "Vòng Tay Trầm Hương",
     vietnameseName: "Vòng tay Trầm hương",
     description: "Chế tác từ trầm tự nhiên Khánh Hòa & Tiên Phước, tiện thủ công từng hạt tròn mộc, tỏa hương thanh ngọt ấm áp khi tiếp xúc nhiệt cơ thể.",
     image: "/images/bracelet-108.jpg",
@@ -60,5 +60,33 @@ export const mockCategories: Category[] = [
     image: "/images/gift-set.jpg",
     productCount: 4,
     featured: true,
+  },
+  // Added for the crawled catalog. TODO: chủ shop duyệt mô tả và ảnh đại diện danh mục.
+  {
+    id: "cat-7",
+    slug: "trang-suc-tram-huong",
+    name: "Trang Sức Trầm Hương",
+    vietnameseName: "Chuỗi cổ, nhẫn, mặt dây chuyền trầm",
+    description: "Chuỗi cổ, nhẫn, bông tai và mặt dây chuyền chế tác từ trầm hương, đeo hằng ngày như một vật hộ thân.",
+    image: "https://thienmochuong.com/wp-content/uploads/2022/07/mat-day-chuyen-tram-huong-khoen-vang.jpg",
+    productCount: 0,
+  },
+  {
+    id: "cat-8",
+    slug: "phu-kien-xong-tram",
+    name: "Lư Xông & Phụ Kiện",
+    vietnameseName: "Lư đốt trầm, thác khói, dụng cụ xông",
+    description: "Lư đồng, lư sứ, thác khói và dụng cụ đốt trầm cho bàn trà, bàn thờ và góc thiền.",
+    image: "https://thienmochuong.com/wp-content/uploads/2022/03/thac-khoi-tram-huong-tam-sen-5.jpg",
+    productCount: 0,
+  },
+  {
+    id: "cat-9",
+    slug: "my-nghe-tram-huong",
+    name: "Mỹ Nghệ Trầm Hương",
+    vietnameseName: "Tượng, tranh và trầm cảnh",
+    description: "Tượng, tranh và trầm cảnh tạc từ gỗ trầm, dành cho không gian thờ, phòng khách và làm quà biếu.",
+    image: "https://thienmochuong.com/wp-content/uploads/2024/11/tieu-canh-bonsai-tram-huong-mau-190-thien-moc-huong.webp",
+    productCount: 0,
   },
 ];

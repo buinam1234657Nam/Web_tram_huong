@@ -18,7 +18,7 @@ export default function GlobalError({
   return (
     <div className="max-w-2xl mx-auto px-4 sm:px-6 py-24 sm:py-32 text-center">
       <p className="text-sm font-medium text-gold-dark">Đã có lỗi</p>
-      <h1 className="mt-3 text-3xl sm:text-5xl font-semibold text-charcoal tracking-tight">
+      <h1 className="mt-3 text-3xl sm:text-5xl font-semibold text-agarwood tracking-tight">
         Trang chưa tải được
       </h1>
       <p className="mt-4 text-[15px] sm:text-base text-muted leading-relaxed">

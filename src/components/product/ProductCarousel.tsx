@@ -4,18 +4,18 @@ import React, { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { FadeIn } from "@/components/motion/MotionPrimitives";
-import { Product } from "@/types/product";
+import { ProductSummary } from "@/types/product";
 import { ProductCard } from "./ProductCard";
 
 export function ProductCarousel({
   title,
   products,
   href,
-  linkLabel = "Mua",
+  linkLabel = "Xem tất cả",
   contained = true,
 }: {
   title: string;
-  products: Product[];
+  products: ProductSummary[];
   href?: string;
   linkLabel?: string;
   /** Wrap in the page-width container; false when the parent already provides it. */
@@ -46,10 +46,10 @@ export function ProductCarousel({
 
   return (
     <section
-      className={contained ? "max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" : ""}
+      className={contained ? "max-w-site mx-auto px-4 sm:px-6 lg:px-8" : ""}
     >
       <FadeIn className="flex items-center justify-between gap-4 mb-6">
-        <h2 className="text-2xl sm:text-3xl text-charcoal">{title}</h2>
+        <h2 className="text-2xl sm:text-3xl text-agarwood">{title}</h2>
         <div className="flex items-center gap-3">
           {href && (
             <Link

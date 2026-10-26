@@ -8,6 +8,7 @@ import { useCartStore } from "@/features/cart/useCartStore";
 import { useIsMounted } from "@/hooks/useIsMounted";
 import { mockCategories } from "@/data/mock/categories";
 import { MOTION_EASE } from "@/components/motion/MotionPrimitives";
+import { RITUALS } from "@/data/content/rituals";
 import { SearchOverlay } from "./SearchOverlay";
 import { motion, AnimatePresence } from "motion/react";
 
@@ -15,7 +16,8 @@ const NAV_LINKS = [
   { href: "/san-pham", label: "Sản Phẩm", match: ["/san-pham"] },
   { href: "/danh-muc/vong-tay-tram-huong", label: "Vòng Tay", match: [] },
   { href: "/danh-muc/nhang-tram-huong", label: "Nhang Trầm", match: [] },
-  { href: "/danh-muc/bo-qua-tang", label: "Quà Tặng", match: [] },
+  { href: "/nhu-cau/qua-bieu", label: "Quà Biếu", match: [] },
+  { href: "/hieu-ve-tram", label: "Hiểu Về Trầm", match: ["/hieu-ve-tram"] },
   { href: "/ve-chung-toi", label: "Về Chúng Tôi", match: ["/ve-chung-toi"] },
   { href: "/bai-viet", label: "Tin Tức", match: ["/bai-viet"] },
 ];
@@ -27,19 +29,18 @@ const categoryLink = (slug: string) => {
 
 const MEGA_COLUMNS = [
   {
-    title: "Nổi bật",
+    title: "Theo nhu cầu",
     links: [
       { href: "/san-pham", label: "Tất cả sản phẩm" },
-      categoryLink("bo-qua-tang"),
-      {
-        href: "/chinh-sach/chinh-sach-bao-hanh",
-        label: "Bảo hành & đánh bóng",
-      },
+      ...RITUALS.map((r) => ({ href: `/nhu-cau/${r.slug}`, label: r.label })),
     ],
   },
   {
     title: "Trầm đeo",
-    links: [categoryLink("vong-tay-tram-huong")],
+    links: [
+      categoryLink("vong-tay-tram-huong"),
+      categoryLink("trang-suc-tram-huong"),
+    ],
   },
   {
     title: "Trầm xông",
@@ -48,11 +49,24 @@ const MEGA_COLUMNS = [
       categoryLink("nhang-tram-huong"),
       categoryLink("tram-huong-mieng"),
       categoryLink("tinh-dau-tram"),
+      categoryLink("phu-kien-xong-tram"),
+    ],
+  },
+  {
+    title: "Quà & mỹ nghệ",
+    links: [
+      categoryLink("bo-qua-tang"),
+      categoryLink("my-nghe-tram-huong"),
+      {
+        href: "/chinh-sach/chinh-sach-bao-hanh",
+        label: "Bảo hành & đánh bóng",
+      },
     ],
   },
   {
     title: "Tìm hiểu",
     links: [
+      { href: "/hieu-ve-tram", label: "Hiểu về trầm" },
       { href: "/ve-chung-toi", label: "Câu chuyện thương hiệu" },
       { href: "/bai-viet", label: "Kiến thức trầm hương" },
       { href: "/chinh-sach/chinh-sach-doi-tra", label: "Chính sách đổi trả" },
@@ -122,18 +136,16 @@ export function Header() {
   return (
     <>
       <header
-        className={`sticky top-0 z-40 w-full backdrop-blur-md border-b border-border-subtle transition-colors duration-300 ${
-          isMegaOpen ? "bg-white" : "bg-white/95"
-        }`}
+        className={`sticky top-0 z-40 w-full border-b border-black/8 transition-colors duration-300 bg-mist`}
       >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-site mx-auto px-4 sm:px-6 lg:px-8">
           <div className="h-16 grid grid-cols-[1fr_auto_1fr] lg:grid-cols-[auto_1fr_auto] items-center gap-6">
             {/* Mobile: menu + search */}
             <div className="flex items-center gap-1 lg:hidden">
               <button
                 type="button"
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                className="p-2 -ml-2 text-charcoal"
+                className="p-2 -ml-2 text-mahogany"
                 aria-label="Mở menu điều hướng"
                 aria-expanded={isMobileMenuOpen}
               >
@@ -146,7 +158,7 @@ export function Header() {
               <button
                 type="button"
                 onClick={() => setIsSearchOpen(true)}
-                className="p-2 text-charcoal"
+                className="p-2 text-mahogany"
                 aria-label="Tìm kiếm sản phẩm"
               >
                 <Search className="w-5 h-5" />
@@ -155,7 +167,7 @@ export function Header() {
 
             {/* Wordmark */}
             <Link href="/" className="text-center lg:text-left leading-none">
-              <span className="block text-lg sm:text-xl font-semibold tracking-[0.28em] text-espresso">
+              <span className="block text-lg sm:text-xl font-semibold tracking-[0.28em] text-mahogany">
                 VĨNH TRẦM
               </span>
               <span className="block mt-1 text-[9px] uppercase tracking-[0.34em] text-gold-dark">
@@ -165,7 +177,7 @@ export function Header() {
 
             {/* Desktop nav */}
             <nav
-              className="hidden lg:flex items-center justify-center gap-8 text-sm"
+              className="hidden lg:flex items-center justify-center gap-6 xl:gap-8 text-sm"
               onMouseLeave={() => {
                 setHoveredIndex(null);
                 scheduleMega(false);
@@ -188,13 +200,13 @@ export function Header() {
                     aria-current={isActive(link) ? "page" : undefined}
                     className={`relative py-5 transition-colors duration-300 ${
                       isActive(link)
-                        ? "text-espresso font-medium"
-                        : "text-charcoal/75 hover:text-espresso"
+                        ? "text-gold-dark font-medium"
+                        : "text-mahogany hover:text-gold-dark"
                     }`}
                   >
                     {link.label}
                     <span
-                      className={`absolute left-0 right-0 bottom-4 h-px bg-espresso origin-left transition-transform duration-300 ease-out ${
+                      className={`absolute left-0 right-0 bottom-4 h-px bg-gold origin-left transition-transform duration-300 ease-out ${
                         underlinedIndex === idx ? "scale-x-100" : "scale-x-0"
                       }`}
                     />
@@ -208,7 +220,7 @@ export function Header() {
               <button
                 type="button"
                 onClick={() => setIsSearchOpen(true)}
-                className="hidden lg:inline-flex p-2 text-charcoal hover:text-gold-dark transition-colors cursor-pointer"
+                className="hidden lg:inline-flex p-2 text-mahogany hover:text-gold-dark transition-colors cursor-pointer"
                 aria-label="Tìm kiếm sản phẩm"
               >
                 <Search className="w-5 h-5" />
@@ -216,7 +228,7 @@ export function Header() {
               <button
                 type="button"
                 onClick={openCart}
-                className="relative p-2 -mr-2 text-charcoal hover:text-gold-dark transition-colors cursor-pointer"
+                className="relative p-2 -mr-2 text-mahogany hover:text-gold-dark transition-colors cursor-pointer"
                 aria-label={`Giỏ hàng có ${totalItems} sản phẩm`}
               >
                 <ShoppingBag className="w-5 h-5" />
@@ -228,7 +240,7 @@ export function Header() {
                       animate={{ opacity: 1 }}
                       exit={{ opacity: 0 }}
                       transition={{ duration: 0.3 }}
-                      className="absolute top-0.5 right-0 bg-espresso text-white text-[10px] font-medium rounded-full min-w-[18px] h-[18px] px-1 flex items-center justify-center"
+                      className="absolute top-0.5 right-0 bg-gold text-white text-[10px] font-semibold rounded-full min-w-4.5 h-4.5 px-1 flex items-center justify-center"
                     >
                       {totalItems}
                     </motion.span>
@@ -268,10 +280,10 @@ export function Header() {
               className="hidden lg:block absolute inset-x-0 top-full bg-white border-b border-border-subtle"
             >
               {/* Text-only columns, Nike-style: bold heading, muted links */}
-              <div className="max-w-5xl mx-auto px-8 pt-8 pb-12 grid grid-cols-4 gap-10">
+              <div className="max-w-6xl mx-auto px-8 pt-8 pb-12 grid grid-cols-5 gap-10">
                 {MEGA_COLUMNS.map((column) => (
                   <div key={column.title}>
-                    <p className="text-base font-medium text-charcoal">
+                    <p className="text-base font-medium text-agarwood">
                       {column.title}
                     </p>
                     <ul className="mt-4 space-y-2.5">

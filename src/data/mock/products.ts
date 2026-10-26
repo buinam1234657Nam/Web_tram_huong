@@ -1,6 +1,8 @@
-import { Product } from "@/types/product";
+import { AgarwoodProfile, Product, Ritual } from "@/types/product";
 
-export const mockProducts: Product[] = [
+type LegacyProduct = Omit<Product, "agarwoodProfile" | "ritual" | "storyLine">;
+
+const legacyProducts: LegacyProduct[] = [
   {
     id: "prod-1",
     slug: "vong-tay-tram-huong-khanh-hoa-108-hat",
@@ -16,7 +18,7 @@ Mỗi chuỗi vòng đều giữ trọn vẹn vân dầu tự nhiên, không qua
     categorySlug: "vong-tay-tram-huong",
     categoryName: "Vòng Tay & Trang Sức",
     images: ["/images/bracelet-108.jpg", "/images/single-bracelet.jpg"],
-    featured: true,
+    featured: false,
     bestseller: true,
     purpose: "daily_wear",
     scentProfile: {
@@ -78,7 +80,7 @@ Khi thắp trên lư gốm xông, dòng khói trắng mềm mại nhẹ nhàng l
     categorySlug: "tram-nu-xong-nha",
     categoryName: "Trầm Nụ & Xông Hương",
     images: ["/images/incense-cones.jpg", "/images/hero-agarwood.jpg"],
-    featured: true,
+    featured: false,
     bestseller: true,
     purpose: "relaxation",
     scentProfile: {
@@ -139,7 +141,7 @@ Khói nhang mỏng như làn tơ, lan tỏa êm dịu, không gây cay mắt hay
     categorySlug: "nhang-tram-huong",
     categoryName: "Nhang Trầm Tự Nhiên",
     images: ["/images/incense-sticks.jpg", "/images/hero-agarwood.jpg"],
-    featured: true,
+    featured: false,
     bestseller: true,
     purpose: "meditation",
     scentProfile: {
@@ -322,7 +324,7 @@ Chỉ một giọt nhỏ thoa nhẹ lên cổ tay hoặc chấm vào trang phụ
     categorySlug: "bo-qua-tang",
     categoryName: "Bộ Quà Tặng Thượng Phẩm",
     images: ["/images/gift-set.jpg", "/images/bracelet-108.jpg"],
-    featured: true,
+    featured: false,
     bestseller: true,
     purpose: "gift",
     scentProfile: {
@@ -383,7 +385,7 @@ Từng hạt trầm 14mm nặng chắc, khi thả vào nước sẽ chìm hoàn 
     categorySlug: "vong-tay-tram-huong",
     categoryName: "Vòng Tay & Trang Sức",
     images: ["/images/single-bracelet.jpg", "/images/bracelet-108.jpg"],
-    featured: true,
+    featured: false,
     bestseller: true,
     purpose: "fengshui",
     scentProfile: {
@@ -828,3 +830,35 @@ Vĩnh Trầm viết thiệp tay theo lời nhắn của bạn và gói quà sẵ
     },
   },
 ];
+
+/**
+ * The sample products predate the agarwood profile. Their old spec text was
+ * placeholder copy, not owner-confirmed data, so nothing is copied across.
+ */
+const UNCONFIRMED_PROFILE: AgarwoodProfile = {
+  grade: null, // TODO: chủ shop bổ sung
+  origin: null, // TODO: chủ shop bổ sung
+  resinAgeYears: null, // TODO: chủ shop bổ sung
+  source: null, // TODO: chủ shop bổ sung
+  oilContent: null, // TODO: chủ shop bổ sung
+  scentProfile: null, // TODO: chủ shop bổ sung
+  sinksInWater: null, // TODO: chủ shop bổ sung
+  treatment: null, // TODO: chủ shop bổ sung
+  beadSizeMm: null, // TODO: chủ shop bổ sung
+  certificate: null, // TODO: chủ shop bổ sung
+};
+
+const RITUAL_BY_PURPOSE: Record<NonNullable<Product["purpose"]>, Ritual[]> = {
+  daily_wear: ["deo-ho-than"],
+  fengshui: ["deo-ho-than"],
+  meditation: ["thien"],
+  relaxation: ["ban-tra"],
+  gift: ["qua-bieu"],
+};
+
+export const mockProducts: Product[] = legacyProducts.map((p) => ({
+  ...p,
+  agarwoodProfile: UNCONFIRMED_PROFILE,
+  ritual: p.purpose ? RITUAL_BY_PURPOSE[p.purpose] : [],
+  storyLine: null, // TODO: chủ shop bổ sung
+}));

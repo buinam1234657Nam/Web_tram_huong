@@ -1,16 +1,16 @@
 "use client";
 
-import React, { useState, useEffect, useRef, useMemo } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { ArrowRight, Search, X } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
-import { mockProducts } from "@/data/mock/products";
 import { formatVND } from "@/lib/format/currency";
-import type { Product } from "@/types/product";
+import type { ProductSummary } from "@/types/product";
 import { MOTION_EASE } from "@/components/motion/MotionPrimitives";
 import { useScrollLock } from "@/hooks/useScrollLock";
+import { useProductSearch } from "@/hooks/useProductSearch";
 
 const POPULAR_SEARCHES = [
   "Vòng tay 108 hạt",
@@ -27,18 +27,7 @@ const SHORTCUTS = [
   { href: "/danh-muc/bo-qua-tang", label: "Quà biếu" },
 ];
 
-const BESTSELLERS = mockProducts.filter((p) => p.bestseller).slice(0, 4);
 const MAX_PREVIEW = 4;
-
-function matches(product: Product, q: string) {
-  return (
-    product.name.toLowerCase().includes(q) ||
-    product.categoryName.toLowerCase().includes(q) ||
-    product.shortDescription.toLowerCase().includes(q) ||
-    product.origin.toLowerCase().includes(q) ||
-    product.seo.keywords.some((k) => k.toLowerCase().includes(q))
-  );
-}
 
 export function SearchOverlay({
   isOpen,
@@ -79,10 +68,11 @@ export function SearchOverlay({
   useScrollLock(isOpen);
 
   const trimmed = query.trim();
-  const results = useMemo(() => {
-    const q = trimmed.toLowerCase();
-    return q ? mockProducts.filter((p) => matches(p, q)) : [];
-  }, [trimmed]);
+  // An empty query returns bestsellers for the idle state.
+  const search = useProductSearch(trimmed, {
+    limit: MAX_PREVIEW,
+    enabled: isOpen,
+  });
 
   const goToResults = () => {
     if (!trimmed) return;
@@ -218,15 +208,17 @@ export function SearchOverlay({
                   <>
                     <p className="text-xs font-medium text-muted">Bán chạy</p>
                     <ProductTiles
-                      products={BESTSELLERS}
+                      products={search.query === "" ? search.products : []}
                       onSelect={handleClose}
                     />
                   </>
-                ) : results.length > 0 ? (
+                ) : search.isLoading || search.total > 0 ? (
                   <>
                     <div className="flex items-baseline justify-between gap-4">
                       <p className="text-xs font-medium text-muted">
-                        {results.length} sản phẩm cho “{trimmed}”
+                        {search.isLoading
+                          ? "Đang tìm…"
+                          : `${search.total} sản phẩm cho “${trimmed}”`}
                       </p>
                       <button
                         type="button"
@@ -237,8 +229,9 @@ export function SearchOverlay({
                         <ArrowRight className="w-4 h-4" aria-hidden="true" />
                       </button>
                     </div>
+                    {/* While a new query loads, keep the previous query's tiles (not the bestsellers) */}
                     <ProductTiles
-                      products={results.slice(0, MAX_PREVIEW)}
+                      products={search.query ? search.products : []}
                       onSelect={handleClose}
                     />
                   </>
@@ -265,7 +258,7 @@ function ProductTiles({
   products,
   onSelect,
 }: {
-  products: Product[];
+  products: ProductSummary[];
   onSelect: () => void;
 }) {
   return (
@@ -277,7 +270,7 @@ function ProductTiles({
             onClick={onSelect}
             className="group block"
           >
-            <div className="relative aspect-4/5 overflow-hidden rounded-md bg-ivory">
+            <div className="relative aspect-4/5 overflow-hidden rounded-xl bg-ivory">
               <Image
                 src={product.images[0]}
                 alt={product.name}

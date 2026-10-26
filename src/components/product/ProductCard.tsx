@@ -3,21 +3,20 @@
 import React, { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Plus, Check } from "lucide-react";
-import { Product } from "@/types/product";
+import { BellRing, Check, ShoppingBag } from "lucide-react";
+import { ProductSummary } from "@/types/product";
 import { formatVND } from "@/lib/format/currency";
 import { useCartStore } from "@/features/cart/useCartStore";
-import { QuickViewModal } from "./QuickViewModal";
+import { AgarwoodChips, SinksBadge } from "./AgarwoodChips";
 
 export function ProductCard({
   product,
   eager = false,
 }: {
-  product: Product;
+  product: ProductSummary;
   /** Load immediately (cards in the first visible row). */
   eager?: boolean;
 }) {
-  const [isQuickViewOpen, setIsQuickViewOpen] = useState(false);
   const [justAdded, setJustAdded] = useState(false);
 
   const addItem = useCartStore((state) => state.addItem);
@@ -28,10 +27,9 @@ export function ProductCard({
     ? defaultVariant.compareAtPrice
     : product.compareAtPrice;
   const isOutOfStock = product.inventoryStatus === "out_of_stock";
+  const href = `/san-pham/${product.slug}`;
 
-  const handleQuickAdd = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
+  const handleQuickAdd = () => {
     addItem(product, defaultVariant, 1);
     setJustAdded(true);
     setTimeout(() => setJustAdded(false), 1600);
@@ -41,96 +39,95 @@ export function ProductCard({
   const hoverImage = product.images[1] || primaryImage;
 
   return (
-    <>
-      <article className="group relative flex flex-col h-full">
-        <div className="relative aspect-square w-full bg-ivory overflow-hidden">
-          {/* Gentle zoom on hover; both stacked images scale together so the crossfade stays aligned */}
-          <Link
-            href={`/san-pham/${product.slug}`}
-            className="block w-full h-full relative transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.04]"
-          >
+    <article className="group relative flex flex-col h-full">
+      <div className="relative aspect-square w-full bg-ivory overflow-hidden rounded-xl">
+        {/* Gentle zoom on hover; both stacked images scale together so the crossfade stays aligned */}
+        <Link
+          href={href}
+          className="block w-full h-full relative transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.04]"
+        >
+          <Image
+            src={primaryImage}
+            alt={product.name}
+            fill
+            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+            loading={eager ? "eager" : "lazy"}
+            className={`object-cover transition-opacity duration-700 ease-out ${
+              hoverImage !== primaryImage ? "group-hover:opacity-0" : ""
+            }`}
+          />
+          {hoverImage !== primaryImage && (
             <Image
-              src={primaryImage}
-              alt={product.name}
+              src={hoverImage}
+              alt={`${product.name} - góc chụp khác`}
               fill
               sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-              loading={eager ? "eager" : "lazy"}
-              className={`object-cover transition-opacity duration-700 ease-out ${
-                hoverImage !== primaryImage ? "group-hover:opacity-0" : ""
-              }`}
+              className="object-cover transition-opacity duration-700 ease-out opacity-0 group-hover:opacity-100"
             />
-            {hoverImage !== primaryImage && (
-              <Image
-                src={hoverImage}
-                alt={`${product.name} - góc chụp khác`}
-                fill
-                sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-                className="object-cover transition-opacity duration-700 ease-out opacity-0 group-hover:opacity-100"
-              />
-            )}
-          </Link>
+          )}
+        </Link>
+        {product.agarwoodProfile.sinksInWater && (
+          <SinksBadge className="absolute left-2.5 top-2.5" />
+        )}
+      </div>
 
-          <div className="absolute inset-x-3 bottom-3 hidden sm:flex gap-2 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity duration-500 ease-out">
-            <button
-              type="button"
-              onClick={() => setIsQuickViewOpen(true)}
-              className="flex-1 h-10 rounded-full bg-white/95 text-xs font-medium text-charcoal hover:bg-white cursor-pointer"
-              aria-label={`Xem nhanh ${product.name}`}
+      <div className="pt-3.5 flex-1 flex flex-col">
+        {(product.bestseller || isOutOfStock) && (
+          <p
+            className={`text-xs font-medium mb-1 ${isOutOfStock ? "text-muted" : "text-gold-dark"}`}
+          >
+            {isOutOfStock ? "Tạm hết hàng" : "Bán chạy"}
+          </p>
+        )}
+        <h3 className="text-[15px] font-medium text-charcoal leading-snug line-clamp-2">
+          <Link href={href} className="hover:text-agarwood transition-colors">
+            {product.name}
+          </Link>
+        </h3>
+        <AgarwoodChips profile={product.agarwoodProfile} className="mt-2" />
+        <p className="mt-2 flex flex-wrap items-baseline gap-x-2 text-[15px] font-semibold text-agarwood">
+          <span>{formatVND(price)}</span>
+          {compareAtPrice && compareAtPrice > price && (
+            <span className="text-sm font-normal text-muted-light line-through">
+              {formatVND(compareAtPrice)}
+            </span>
+          )}
+        </p>
+
+        {/* mt-auto pins the actions to the bottom so buttons line up across a row */}
+        <div className="mt-auto pt-3 flex gap-2">
+          <Link
+            href={href}
+            className="flex-1 min-w-0 h-11 inline-flex items-center justify-center rounded-full bg-espresso px-3 text-[13px] sm:text-sm font-medium text-white hover:bg-espresso-light transition-colors"
+          >
+            Xem chi tiết
+          </Link>
+          {isOutOfStock ? (
+            <Link
+              href={`${href}#bao-khi-co-hang`}
+              className="w-11 h-11 shrink-0 rounded-full border border-gold/50 text-agarwood flex items-center justify-center hover:bg-ivory transition-colors"
+              aria-label={`Báo tôi khi có hàng: ${product.name}`}
+              title="Báo tôi khi có hàng"
             >
-              Xem nhanh
-            </button>
+              <BellRing className="w-4.5 h-4.5" />
+            </Link>
+          ) : (
             <button
               type="button"
               onClick={handleQuickAdd}
-              disabled={isOutOfStock}
-              className="w-10 h-10 rounded-full bg-espresso text-white flex items-center justify-center hover:bg-espresso-light disabled:opacity-50 cursor-pointer"
-              aria-label={`Thêm ${product.name} vào giỏ hàng`}
+              className="w-11 h-11 shrink-0 rounded-full border border-gold/50 text-agarwood flex items-center justify-center hover:bg-ivory transition-colors cursor-pointer"
+              aria-label={`Thêm vào giỏ: ${product.name}`}
+              title="Thêm vào giỏ"
             >
               {justAdded ? (
-                <Check className="w-4 h-4" />
+                <Check className="w-4.5 h-4.5" />
               ) : (
-                <Plus className="w-4 h-4" />
+                <ShoppingBag className="w-4.5 h-4.5" />
               )}
             </button>
-          </div>
-        </div>
-
-        <div className="pt-4 flex-1 flex flex-col">
-          {product.bestseller && (
-            <p className="text-xs font-medium text-gold-dark mb-1">Bán chạy</p>
           )}
-          {isOutOfStock && (
-            <p className="text-xs font-medium text-muted mb-1">Tạm hết hàng</p>
-          )}
-          <h3 className="text-[15px] font-medium text-charcoal leading-snug line-clamp-2">
-            <Link
-              href={`/san-pham/${product.slug}`}
-              className="hover:text-gold-dark transition-colors"
-            >
-              {product.name}
-            </Link>
-          </h3>
-          <p className="mt-1 text-sm text-muted">
-            {product.categoryName}
-            {product.variants.length > 1 &&
-              ` · ${product.variants.length} quy cách`}
-          </p>
-          <p className="mt-2 flex flex-wrap items-baseline gap-x-2 text-[15px] font-medium text-charcoal">
-            <span>{formatVND(price)}</span>
-            {compareAtPrice && compareAtPrice > price && (
-              <span className="text-sm font-normal text-muted-light line-through">
-                {formatVND(compareAtPrice)}
-              </span>
-            )}
-          </p>
         </div>
-      </article>
-
-      <QuickViewModal
-        product={product}
-        isOpen={isQuickViewOpen}
-        onClose={() => setIsQuickViewOpen(false)}
-      />
-    </>
+      </div>
+    </article>
   );
 }

@@ -9,18 +9,14 @@ import {
   MOTION_EASE,
   MOTION_RISE,
 } from "@/components/motion/MotionPrimitives";
-import { Product } from "@/types/product";
+import { AgarwoodGrade, ProductSummary } from "@/types/product";
 import { Category } from "@/types/category";
 import { ProductCard } from "@/components/product/ProductCard";
 import { Select } from "@/components/ui/Select";
+import { RITUALS } from "@/data/content/rituals";
+import { gradeLabel } from "@/lib/format/agarwood";
 
-const PURPOSE_OPTIONS = [
-  { value: "daily_wear", label: "Đeo hộ thân hàng ngày" },
-  { value: "meditation", label: "Thiền định & thưởng trà" },
-  { value: "relaxation", label: "Xông phòng & thư giãn" },
-  { value: "gift", label: "Quà biếu" },
-  { value: "fengshui", label: "Sưu tầm phong thủy" },
-];
+const GRADE_ORDER: AgarwoodGrade[] = ["chìm", "bán chìm", "nổi", "tốc"];
 
 const PRICE_OPTIONS = [
   { value: "under-1m", label: "Dưới 1.000.000₫", min: 0, max: 1000000 },
@@ -46,6 +42,9 @@ const SORT_OPTIONS = [
   { value: "rating", label: "Đánh giá cao nhất" },
 ];
 
+/** Cards rendered per "Xem thêm" step; the full catalog is several hundred items. */
+const PAGE_SIZE = 24;
+
 function toggle(list: string[], value: string) {
   return list.includes(value)
     ? list.filter((v) => v !== value)
@@ -53,29 +52,86 @@ function toggle(list: string[], value: string) {
 }
 
 export function CatalogView({
-  initialProducts,
+  products,
   categories,
   activeCategory,
+  title = activeCategory ? activeCategory.name : "Tất cả sản phẩm",
+  hideRitualFilter = false,
 }: {
-  initialProducts: Product[];
+  /** Already scoped to the page (a category, a need, or everything). */
+  products: ProductSummary[];
   categories: Category[];
   activeCategory?: Category;
+  title?: string;
+  /** On /nhu-cau pages the need is the page itself. */
+  hideRitualFilter?: boolean;
 }) {
-  const [purposes, setPurposes] = useState<string[]>([]);
+  const [rituals, setRituals] = useState<string[]>([]);
+  const [grades, setGrades] = useState<string[]>([]);
+  const [origins, setOrigins] = useState<string[]>([]);
   const [priceRanges, setPriceRanges] = useState<string[]>([]);
   const [inStockOnly, setInStockOnly] = useState(false);
   const [selectedSort, setSelectedSort] = useState("bestseller");
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
   const [isFilterVisible, setIsFilterVisible] = useState(true);
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
   const reduceMotion = useReducedMotion();
 
-  const filteredProducts = useMemo(() => {
-    let result = activeCategory
-      ? initialProducts.filter((p) => p.categorySlug === activeCategory.slug)
-      : [...initialProducts];
+  /** Any filter or sort change starts the list from the top again. */
+  const withReset =
+    <T,>(setter: (value: T) => void) =>
+    (value: T) => {
+      setter(value);
+      setVisibleCount(PAGE_SIZE);
+    };
 
-    if (purposes.length > 0) {
-      result = result.filter((p) => purposes.includes(p.purpose));
+  // Only offer values that exist in this listing, so no single option leads to zero results.
+  const gradeOptions = useMemo(
+    () =>
+      GRADE_ORDER.filter((g) =>
+        products.some((p) => p.agarwoodProfile.grade === g),
+      ).map((g) => ({ value: g, label: gradeLabel(g) })),
+    [products],
+  );
+
+  const originOptions = useMemo(() => {
+    const counts = new Map<string, number>();
+    products.forEach((p) => {
+      const origin = p.agarwoodProfile.origin;
+      if (origin) counts.set(origin, (counts.get(origin) || 0) + 1);
+    });
+    return [...counts.entries()]
+      .sort((a, b) => b[1] - a[1])
+      .map(([origin]) => ({ value: origin, label: origin }));
+  }, [products]);
+
+  const ritualOptions = useMemo(
+    () =>
+      RITUALS.filter((r) => products.some((p) => p.ritual.includes(r.slug))).map(
+        (r) => ({ value: r.slug, label: r.label }),
+      ),
+    [products],
+  );
+
+  const filteredProducts = useMemo(() => {
+    let result = [...products];
+
+    if (rituals.length > 0) {
+      result = result.filter((p) => p.ritual.some((r) => rituals.includes(r)));
+    }
+
+    if (grades.length > 0) {
+      result = result.filter((p) => {
+        const grade = p.agarwoodProfile.grade;
+        return grade !== null && grades.includes(grade);
+      });
+    }
+
+    if (origins.length > 0) {
+      result = result.filter((p) => {
+        const origin = p.agarwoodProfile.origin;
+        return origin !== null && origins.includes(origin);
+      });
     }
 
     if (priceRanges.length > 0) {
@@ -107,32 +163,32 @@ export function CatalogView({
 
     return result;
   }, [
-    initialProducts,
-    activeCategory,
-    purposes,
+    products,
+    rituals,
+    grades,
+    origins,
     priceRanges,
     inStockOnly,
     selectedSort,
   ]);
 
-  const categoryCounts = useMemo(() => {
-    const counts: Record<string, number> = {};
-    initialProducts.forEach((p) => {
-      counts[p.categorySlug] = (counts[p.categorySlug] || 0) + 1;
-    });
-    return counts;
-  }, [initialProducts]);
+  const visibleProducts = filteredProducts.slice(0, visibleCount);
 
   const activeFilterCount =
-    purposes.length + priceRanges.length + (inStockOnly ? 1 : 0);
+    rituals.length +
+    grades.length +
+    origins.length +
+    priceRanges.length +
+    (inStockOnly ? 1 : 0);
 
   const resetFilters = () => {
-    setPurposes([]);
+    setRituals([]);
+    setGrades([]);
+    setOrigins([]);
     setPriceRanges([]);
     setInStockOnly(false);
+    setVisibleCount(PAGE_SIZE);
   };
-
-  const title = activeCategory ? activeCategory.name : "Tất cả sản phẩm";
 
   const filterPanel = (
     <>
@@ -151,7 +207,7 @@ export function CatalogView({
               >
                 {c.name}
                 <span className="ml-1 text-muted-light font-normal">
-                  ({categoryCounts[c.slug] || 0})
+                  ({c.productCount})
                 </span>
               </CategoryLink>
             </li>
@@ -159,33 +215,45 @@ export function CatalogView({
         </ul>
       </nav>
 
-      <FilterGroup title="Mục đích sử dụng" count={purposes.length}>
-        {PURPOSE_OPTIONS.map((o) => (
-          <Checkbox
-            key={o.value}
-            label={o.label}
-            checked={purposes.includes(o.value)}
-            onChange={() => setPurposes((prev) => toggle(prev, o.value))}
-          />
-        ))}
-      </FilterGroup>
+      {!hideRitualFilter && ritualOptions.length > 0 && (
+        <CheckboxGroup
+          title="Nhu cầu"
+          options={ritualOptions}
+          selected={rituals}
+          onChange={withReset(setRituals)}
+        />
+      )}
 
-      <FilterGroup title="Mua theo giá" count={priceRanges.length}>
-        {PRICE_OPTIONS.map((o) => (
-          <Checkbox
-            key={o.value}
-            label={o.label}
-            checked={priceRanges.includes(o.value)}
-            onChange={() => setPriceRanges((prev) => toggle(prev, o.value))}
-          />
-        ))}
-      </FilterGroup>
+      {gradeOptions.length > 0 && (
+        <CheckboxGroup
+          title="Loại trầm"
+          options={gradeOptions}
+          selected={grades}
+          onChange={withReset(setGrades)}
+        />
+      )}
+
+      {originOptions.length > 0 && (
+        <CheckboxGroup
+          title="Vùng nguồn gốc"
+          options={originOptions}
+          selected={origins}
+          onChange={withReset(setOrigins)}
+        />
+      )}
+
+      <CheckboxGroup
+        title="Khoảng giá"
+        options={PRICE_OPTIONS}
+        selected={priceRanges}
+        onChange={withReset(setPriceRanges)}
+      />
 
       <FilterGroup title="Tình trạng" count={inStockOnly ? 1 : 0}>
         <Checkbox
           label="Chỉ hiện sản phẩm còn hàng"
           checked={inStockOnly}
-          onChange={() => setInStockOnly((v) => !v)}
+          onChange={() => withReset(setInStockOnly)(!inStockOnly)}
         />
       </FilterGroup>
     </>
@@ -194,8 +262,8 @@ export function CatalogView({
   return (
     <div>
       {/* Title + controls bar */}
-      <div className="sticky top-(--header-h) z-20 bg-white/95 backdrop-blur-md -mx-4 px-4 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8 py-4 flex items-center justify-between gap-4">
-        <h1 className="text-xl sm:text-2xl font-medium text-charcoal">
+      <div className="sticky top-(--header-h) z-20 bg-cream/95 backdrop-blur-md -mx-4 px-4 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8 py-4 flex items-center justify-between gap-4">
+        <h1 className="text-xl sm:text-2xl font-medium text-agarwood">
           {title}{" "}
           <span className="text-muted-light">({filteredProducts.length})</span>
         </h1>
@@ -215,14 +283,14 @@ export function CatalogView({
               label="Sắp xếp theo"
               value={selectedSort}
               options={SORT_OPTIONS}
-              onChange={setSelectedSort}
+              onChange={withReset(setSelectedSort)}
             />
           </div>
 
           <button
             type="button"
             onClick={() => setIsMobileFilterOpen(true)}
-            className="lg:hidden inline-flex items-center gap-2 px-4 py-2 rounded-full border border-border-subtle text-sm text-charcoal"
+            className="lg:hidden shrink-0 whitespace-nowrap inline-flex items-center gap-2 h-11 px-4 rounded-full border border-border-subtle text-sm text-charcoal"
           >
             Bộ lọc{activeFilterCount > 0 && ` (${activeFilterCount})`}
             <SlidersHorizontal className="w-4 h-4" />
@@ -247,27 +315,46 @@ export function CatalogView({
 
         <div className="flex-1 min-w-0">
           {filteredProducts.length > 0 ? (
-            <div
-              className={`grid grid-cols-2 gap-x-4 gap-y-10 ${
-                isFilterVisible ? "lg:grid-cols-3" : "lg:grid-cols-4"
-              }`}
-            >
-              {filteredProducts.map((product, idx) => (
-                // Same fade/rise as the rest of the site; replays when filters change the set.
-                <motion.div
-                  key={product.id}
-                  initial={{ opacity: 0, y: reduceMotion ? 0 : MOTION_RISE }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{
-                    duration: MOTION_DURATION,
-                    delay: Math.min(idx, 8) * 0.08,
-                    ease: MOTION_EASE,
-                  }}
-                >
-                  <ProductCard product={product} eager={idx < 3} />
-                </motion.div>
-              ))}
-            </div>
+            <>
+              <div
+                className={`grid grid-cols-2 gap-x-4 gap-y-10 ${
+                  isFilterVisible ? "lg:grid-cols-3" : "lg:grid-cols-4"
+                }`}
+              >
+                {visibleProducts.map((product, idx) => (
+                  // Same fade/rise as the rest of the site; replays when filters change the set.
+                  <motion.div
+                    key={product.id}
+                    initial={{ opacity: 0, y: reduceMotion ? 0 : MOTION_RISE }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{
+                      duration: MOTION_DURATION,
+                      // Stagger restarts for each page so newly loaded cards don't wait.
+                      delay: Math.min(idx % PAGE_SIZE, 8) * 0.08,
+                      ease: MOTION_EASE,
+                    }}
+                  >
+                    <ProductCard product={product} eager={idx < 3} />
+                  </motion.div>
+                ))}
+              </div>
+
+              {visibleCount < filteredProducts.length && (
+                <div className="mt-14 text-center">
+                  <p className="text-sm text-muted">
+                    Đang xem {visibleProducts.length} / {filteredProducts.length}{" "}
+                    sản phẩm
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => setVisibleCount((n) => n + PAGE_SIZE)}
+                    className="mt-4 h-12 px-8 rounded-full border border-charcoal/25 text-[15px] font-medium text-charcoal hover:border-charcoal transition-colors cursor-pointer"
+                  >
+                    Xem thêm sản phẩm
+                  </button>
+                </div>
+              )}
+            </>
           ) : (
             <div className="py-24 text-center">
               <p className="text-lg font-medium text-charcoal">
@@ -328,7 +415,7 @@ export function CatalogView({
                         type="radio"
                         name="sort-mobile"
                         checked={selectedSort === o.value}
-                        onChange={() => setSelectedSort(o.value)}
+                        onChange={() => withReset(setSelectedSort)(o.value)}
                         className="w-5 h-5 accent-espresso"
                       />
                       {o.label}
@@ -377,7 +464,7 @@ function CategoryLink({
       aria-current={active ? "page" : undefined}
       className={`text-[15px] font-medium transition-colors ${
         active
-          ? "text-charcoal underline underline-offset-4"
+          ? "text-agarwood underline underline-offset-4"
           : "text-charcoal/80 hover:text-gold-dark"
       }`}
     >
@@ -427,6 +514,31 @@ function FilterGroup({
         )}
       </AnimatePresence>
     </div>
+  );
+}
+
+function CheckboxGroup({
+  title,
+  options,
+  selected,
+  onChange,
+}: {
+  title: string;
+  options: Array<{ value: string; label: string }>;
+  selected: string[];
+  onChange: (next: string[]) => void;
+}) {
+  return (
+    <FilterGroup title={title} count={selected.length}>
+      {options.map((o) => (
+        <Checkbox
+          key={o.value}
+          label={o.label}
+          checked={selected.includes(o.value)}
+          onChange={() => onChange(toggle(selected, o.value))}
+        />
+      ))}
+    </FilterGroup>
   );
 }
 

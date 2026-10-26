@@ -188,7 +188,7 @@ export function CheckoutForm() {
   if (items.length === 0 || !verifiedData || verifiedData.items.length === 0) {
     return (
       <div className="py-20 text-center max-w-md mx-auto">
-        <h2 className="text-2xl font-semibold text-charcoal">
+        <h2 className="text-2xl font-semibold text-agarwood">
           Giỏ hàng của bạn đang trống
         </h2>
         <p className="mt-3 text-[15px] text-muted leading-relaxed">
@@ -396,7 +396,7 @@ export function CheckoutForm() {
 
       {/* Order summary */}
       <aside className="lg:col-span-5 lg:sticky lg:top-[calc(var(--header-h)+2rem)] rounded-2xl bg-ivory p-6 sm:p-8">
-        <h2 className="text-xl font-semibold text-charcoal">
+        <h2 className="text-xl font-semibold text-agarwood">
           Đơn hàng ({verifiedData.items.length})
         </h2>
 

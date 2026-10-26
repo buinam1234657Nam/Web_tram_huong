@@ -4,7 +4,13 @@ import { ProductDetailSkeleton } from "@/components/product/Skeletons";
 import { notFound } from "next/navigation";
 import { catalogRepository } from "@/data/repositories/catalog-repository";
 import { Breadcrumbs } from "@/components/ui/Breadcrumbs";
-import { ProductJsonLd, BreadcrumbJsonLd } from "@/components/seo/JsonLd";
+import {
+  ProductJsonLd,
+  BreadcrumbJsonLd,
+  FaqJsonLd,
+} from "@/components/seo/JsonLd";
+import { toSummary } from "@/data/catalog/products";
+import { productFaq } from "@/data/content/product-guides";
 import { ProductDetailView } from "./ProductDetailView";
 
 interface ProductPageProps {
@@ -59,7 +65,7 @@ export async function generateMetadata({
 // inside Suspense (see "Move URL data behind Suspense" in the Next.js docs).
 export default function ProductDetailPage({ params }: ProductPageProps) {
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-24">
+    <div className="max-w-site mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-24">
       <Suspense fallback={<ProductDetailSkeleton />}>
         <ProductContent params={params} />
       </Suspense>
@@ -80,6 +86,8 @@ async function ProductContent({ params }: ProductPageProps) {
     catalogRepository.getReviewsByProductId(product.id),
   ]);
 
+  const faq = productFaq(product.categorySlug);
+
   const breadcrumbs = [
     { label: "Sản phẩm", href: "/san-pham" },
     { label: product.categoryName, href: `/danh-muc/${product.categorySlug}` },
@@ -90,13 +98,15 @@ async function ProductContent({ params }: ProductPageProps) {
     <>
       <ProductJsonLd product={product} />
       <BreadcrumbJsonLd items={breadcrumbs} />
+      <FaqJsonLd items={faq} />
       <Breadcrumbs items={breadcrumbs} />
 
       <div className="pt-4">
         <ProductDetailView
           product={product}
-          relatedProducts={relatedProducts}
+          relatedProducts={relatedProducts.map(toSummary)}
           reviews={reviews}
+          faq={faq}
         />
       </div>
     </>

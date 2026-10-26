@@ -32,7 +32,7 @@ export const metadata: Metadata = {
   },
 };
 
-const CONTAINER = "max-w-7xl mx-auto px-4 sm:px-6 lg:px-8";
+const CONTAINER = "max-w-site mx-auto px-4 sm:px-6 lg:px-8";
 
 const mapLink = (address: string) =>
   `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`;
@@ -56,7 +56,7 @@ export default function AboutUsPage() {
           <p className="text-sm font-medium text-gold-dark">
             {ABOUT_INTRO.eyebrow}
           </p>
-          <h1 className="mt-3 text-4xl sm:text-5xl font-semibold text-charcoal leading-[1.12] tracking-tight">
+          <h1 className="mt-3 text-4xl sm:text-5xl font-semibold text-agarwood leading-[1.12] tracking-tight">
             {ABOUT_INTRO.title}
           </h1>
           <p className="mt-5 text-[17px] text-muted leading-relaxed">
@@ -88,7 +88,7 @@ export default function AboutUsPage() {
       {/* Philosophy: one readable column, then the three rules as a row */}
       <section
         aria-labelledby="philosophy-title"
-        className="mt-20 sm:mt-28 bg-ivory py-16 sm:py-20"
+        className="mt-20 sm:mt-28 bg-cream-dark py-16 sm:py-20"
       >
         <div className={CONTAINER}>
           <div className="max-w-3xl">

@@ -1,11 +1,11 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { Search } from "lucide-react";
-import { mockProducts } from "@/data/mock/products";
 import { ProductCard } from "@/components/product/ProductCard";
 import { Button } from "@/components/ui/Button";
+import { useProductSearch } from "@/hooks/useProductSearch";
 
 const POPULAR_KEYWORDS = [
   "Vòng tay 108 hạt",
@@ -23,18 +23,11 @@ export function SearchView() {
 
   const [searchQuery, setSearchQuery] = useState(initialQuery);
 
-  const results = useMemo(() => {
-    if (!initialQuery.trim()) return [];
-    const q = initialQuery.toLowerCase().trim();
-    return mockProducts.filter(
-      (p) =>
-        p.name.toLowerCase().includes(q) ||
-        p.categoryName.toLowerCase().includes(q) ||
-        p.shortDescription.toLowerCase().includes(q) ||
-        p.origin.toLowerCase().includes(q) ||
-        p.seo.keywords.some((k) => k.toLowerCase().includes(q)),
-    );
-  }, [initialQuery]);
+  const trimmedQuery = initialQuery.trim();
+  const search = useProductSearch(trimmedQuery, {
+    enabled: Boolean(trimmedQuery),
+  });
+  const results = search.query === trimmedQuery ? search.products : [];
 
   const runSearch = (query: string) => {
     const q = query.trim();
@@ -87,18 +80,33 @@ export function SearchView() {
 
       {initialQuery ? (
         <section className="mt-16" aria-live="polite">
-          <h2 className="text-xl font-medium text-charcoal">
+          <h2 className="text-xl font-medium text-agarwood">
             Kết quả cho “{initialQuery}”{" "}
-            <span className="text-muted-light">({results.length})</span>
+            {!search.isLoading && (
+              <span className="text-muted-light">({search.total})</span>
+            )}
           </h2>
 
-          {results.length > 0 ? (
+          {search.isLoading ? (
+            <p className="py-16 text-center text-[15px] text-muted">
+              Đang tìm…
+            </p>
+          ) : results.length > 0 ? (
             <div className="mt-8 grid grid-cols-2 lg:grid-cols-4 gap-x-4 gap-y-10">
               {results.map((product) => (
                 <ProductCard key={product.id} product={product} />
               ))}
             </div>
-          ) : (
+          ) : null}
+
+          {!search.isLoading && search.total > results.length ? (
+            <p className="mt-10 text-center text-sm text-muted">
+              Đang hiển thị {results.length} / {search.total} kết quả. Thêm từ
+              khóa để thu hẹp tìm kiếm.
+            </p>
+          ) : null}
+
+          {search.isLoading || results.length > 0 ? null : (
             <div className="py-16 text-center">
               <p className="text-lg font-medium text-charcoal">
                 Không tìm thấy sản phẩm phù hợp

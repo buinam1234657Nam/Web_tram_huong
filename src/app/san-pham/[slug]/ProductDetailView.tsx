@@ -3,20 +3,37 @@
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { Check, ChevronDown, ChevronLeft, ChevronRight, X } from "lucide-react";
+import Link from "next/link";
+import {
+  Check,
+  ChevronDown,
+  ChevronLeft,
+  ChevronRight,
+  MessageCircle,
+  ShieldCheck,
+  X,
+} from "lucide-react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import {
   MOTION_DURATION,
   MOTION_EASE,
   MOTION_RISE,
 } from "@/components/motion/MotionPrimitives";
-import { Product, ProductVariant } from "@/types/product";
+import { Product, ProductSummary, ProductVariant } from "@/types/product";
 import { Review } from "@/types/review";
 import { formatVND, calculateDiscountPercentage } from "@/lib/format/currency";
+import { profileRows } from "@/lib/format/agarwood";
 import { useCartStore } from "@/features/cart/useCartStore";
 import { StarRating } from "@/components/ui/StarRating";
 import { ProductCarousel } from "@/components/product/ProductCarousel";
+import { SinksBadge } from "@/components/product/AgarwoodChips";
+import { BackInStockForm } from "@/components/product/BackInStockForm";
 import { brandConfig } from "@/lib/config/brand";
+import { AuthenticitySigns } from "@/components/product/AuthenticitySigns";
+import { careGuideFor } from "@/data/content/product-guides";
+
+/** From this price up, offer a one-to-one Zalo consultation next to the cart buttons. */
+const CONSULT_MIN_PRICE = 5_000_000;
 
 const STAGGER_ITEM = {
   hidden: { opacity: 0, y: MOTION_RISE },
@@ -31,10 +48,12 @@ export function ProductDetailView({
   product,
   relatedProducts,
   reviews,
+  faq,
 }: {
   product: Product;
-  relatedProducts: Product[];
+  relatedProducts: ProductSummary[];
   reviews: Review[];
+  faq: Array<{ question: string; answer: string }>;
 }) {
   const router = useRouter();
   const [selectedVariant, setSelectedVariant] = useState<ProductVariant>(
@@ -54,6 +73,13 @@ export function ProductDetailView({
   const images =
     product.images.length > 0 ? product.images : ["/images/hero-agarwood.jpg"];
   const isBracelet = product.categorySlug === "vong-tay-tram-huong";
+  const profile = product.agarwoodProfile;
+  const profileTable = profileRows(profile);
+  const specRows = [
+    { label: "Xuất xứ", value: product.origin },
+    { label: "Thu hái", value: product.harvestMethod },
+    ...product.specifications,
+  ].filter((row) => row.value);
 
   const showImage = (idx: number) =>
     setActiveImageIndex((idx + images.length) % images.length);
@@ -87,7 +113,7 @@ export function ProductDetailView({
                   type="button"
                   onMouseEnter={() => showImage(idx)}
                   onClick={() => showImage(idx)}
-                  className={`relative w-16 h-16 overflow-hidden bg-ivory cursor-pointer transition-opacity duration-300 ${
+                  className={`relative w-16 h-16 overflow-hidden rounded-lg bg-ivory cursor-pointer transition-opacity duration-300 ${
                     activeImageIndex === idx
                       ? "opacity-100"
                       : "opacity-60 hover:opacity-100"
@@ -110,7 +136,7 @@ export function ProductDetailView({
             </div>
           )}
 
-          <div className="relative flex-1 aspect-square bg-ivory overflow-hidden">
+          <div className="relative flex-1 aspect-square bg-ivory overflow-hidden rounded-2xl">
             {/* Plain crossfade between gallery images */}
             <AnimatePresence initial={false}>
               <motion.div
@@ -171,7 +197,7 @@ export function ProductDetailView({
                 Bán chạy
               </p>
             )}
-            <h1 className="text-2xl sm:text-3xl font-medium text-charcoal leading-tight">
+            <h1 className="text-2xl sm:text-3xl font-medium text-espresso leading-tight">
               {product.name}
             </h1>
             <p className="mt-1 text-[15px] text-muted">
@@ -180,7 +206,7 @@ export function ProductDetailView({
           </motion.div>
 
           <motion.div variants={STAGGER_ITEM}>
-            <p className="mt-5 text-xl font-medium text-charcoal">
+            <p className="mt-5 text-xl font-semibold text-agarwood">
               {formatVND(price)}
               {compareAtPrice && compareAtPrice > price && (
                 <span className="ml-3 text-base font-normal text-muted-light line-through">
@@ -194,6 +220,47 @@ export function ProductDetailView({
               </p>
             )}
           </motion.div>
+
+          {/* Hồ sơ trầm: only confirmed facts; the whole block hides when none are */}
+          {(profileTable.length > 0 || profile.treatment) && (
+            <motion.section
+              variants={STAGGER_ITEM}
+              aria-labelledby="ho-so-tram"
+              className="mt-6 rounded-2xl border border-gold/30 bg-ivory-light p-5"
+            >
+              <div className="flex items-center justify-between gap-3">
+                <h2
+                  id="ho-so-tram"
+                  className="text-[15px] font-semibold text-agarwood"
+                >
+                  Hồ sơ trầm
+                </h2>
+                {profile.sinksInWater && <SinksBadge />}
+              </div>
+              {profileTable.length > 0 && (
+                <dl className="mt-3 grid grid-cols-[auto_1fr] gap-x-6 gap-y-2 text-[15px]">
+                  {profileTable.map((row) => (
+                    <React.Fragment key={row.label}>
+                      <dt className="text-muted">{row.label}</dt>
+                      <dd className="text-charcoal">{row.value}</dd>
+                    </React.Fragment>
+                  ))}
+                </dl>
+              )}
+              {profile.treatment && (
+                <p className="mt-4 pt-4 border-t border-gold/20 flex gap-2 text-[15px] text-charcoal">
+                  <ShieldCheck
+                    className="w-5 h-5 shrink-0 text-gold-dark"
+                    aria-hidden="true"
+                  />
+                  <span>
+                    <span className="font-medium">Cam kết:</span>{" "}
+                    {profile.treatment}
+                  </span>
+                </p>
+              )}
+            </motion.section>
+          )}
 
           {product.variants.length > 0 && (
             <motion.div variants={STAGGER_ITEM} className="mt-8">
@@ -216,20 +283,24 @@ export function ProductDetailView({
                   const isSelected = selectedVariant.id === v.id;
                   const soldOut = v.inventoryStatus === "out_of_stock";
                   return (
+                    // Sold-out sizes stay selectable so the shopper can ask to be notified.
                     <button
                       key={v.id}
                       type="button"
                       onClick={() => setSelectedVariant(v)}
-                      disabled={soldOut}
                       aria-pressed={isSelected}
-                      className={`px-4 py-3.5 rounded-md border text-left text-[15px] transition-colors duration-300 cursor-pointer disabled:cursor-not-allowed disabled:text-muted-light disabled:bg-ivory-light ${
+                      className={`px-4 py-3.5 rounded-xl border text-left text-[15px] transition-colors duration-300 cursor-pointer ${
+                        soldOut ? "bg-ivory-light" : ""
+                      } ${
                         isSelected
-                          ? "border-charcoal ring-1 ring-charcoal"
+                          ? "border-espresso ring-1 ring-espresso"
                           : "border-border-subtle hover:border-charcoal/40"
                       }`}
                     >
                       <span className="flex items-center justify-between gap-4">
-                        <span className="text-charcoal">{v.name}</span>
+                        <span className={soldOut ? "text-muted" : "text-charcoal"}>
+                          {v.name}
+                        </span>
                         <span className="text-muted shrink-0">
                           {soldOut ? "Hết hàng" : formatVND(v.price)}
                         </span>
@@ -241,39 +312,58 @@ export function ProductDetailView({
             </motion.div>
           )}
 
-          <motion.div variants={STAGGER_ITEM} className="mt-8 space-y-3">
-            <button
-              type="button"
-              onClick={handleAddToCart}
-              disabled={isOutOfStock}
-              className="relative w-full h-14 overflow-hidden rounded-full bg-espresso text-white text-[15px] font-medium hover:bg-espresso-light transition-colors duration-300 disabled:opacity-40 cursor-pointer disabled:cursor-not-allowed"
-            >
-              <AnimatePresence mode="wait" initial={false}>
-                <motion.span
-                  key={isOutOfStock ? "out" : isAdded ? "added" : "add"}
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.25 }}
-                  className="absolute inset-0 flex items-center justify-center gap-2"
+          <motion.div
+            variants={STAGGER_ITEM}
+            id="bao-khi-co-hang"
+            className="mt-8 space-y-3 scroll-mt-[calc(var(--header-h)+1.5rem)]"
+          >
+            {isOutOfStock ? (
+              <BackInStockForm
+                key={selectedVariant.id}
+                productId={product.id}
+                variantId={selectedVariant.id}
+              />
+            ) : (
+              <>
+                <button
+                  type="button"
+                  onClick={handleAddToCart}
+                  className="relative w-full h-14 overflow-hidden rounded-full bg-espresso text-white text-[15px] font-medium hover:bg-espresso-light transition-colors duration-300 cursor-pointer"
                 >
-                  {isAdded && <Check className="w-4 h-4" />}
-                  {isOutOfStock
-                    ? "Tạm hết hàng"
-                    : isAdded
-                      ? "Đã thêm vào giỏ"
-                      : "Thêm vào giỏ hàng"}
-                </motion.span>
-              </AnimatePresence>
-            </button>
-            <button
-              type="button"
-              onClick={handleBuyNow}
-              disabled={isOutOfStock}
-              className="w-full py-4 rounded-full border border-border-subtle text-[15px] font-medium text-charcoal hover:border-charcoal transition-colors disabled:opacity-40 cursor-pointer disabled:cursor-not-allowed"
-            >
-              Mua ngay
-            </button>
+                  <AnimatePresence mode="wait" initial={false}>
+                    <motion.span
+                      key={isAdded ? "added" : "add"}
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      transition={{ duration: 0.25 }}
+                      className="absolute inset-0 flex items-center justify-center gap-2"
+                    >
+                      {isAdded && <Check className="w-4 h-4" />}
+                      {isAdded ? "Đã thêm vào giỏ" : "Thêm vào giỏ"}
+                    </motion.span>
+                  </AnimatePresence>
+                </button>
+                <button
+                  type="button"
+                  onClick={handleBuyNow}
+                  className="w-full h-14 rounded-full border border-charcoal/25 text-[15px] font-medium text-charcoal hover:border-charcoal transition-colors cursor-pointer"
+                >
+                  Mua ngay
+                </button>
+              </>
+            )}
+            {price >= CONSULT_MIN_PRICE && (
+              <a
+                href={brandConfig.social.zalo}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full h-12 rounded-full bg-ivory text-[15px] font-medium text-agarwood-dark hover:bg-ivory-dark transition-colors inline-flex items-center justify-center gap-2"
+              >
+                <MessageCircle className="w-4 h-4" aria-hidden="true" />
+                Tư vấn chọn trầm qua Zalo
+              </a>
+            )}
           </motion.div>
 
           <motion.div variants={STAGGER_ITEM}>
@@ -286,40 +376,34 @@ export function ProductDetailView({
                 <p className="whitespace-pre-line">{product.description}</p>
               </Accordion>
 
-              <Accordion title="Hương thơm">
-                <dl className="space-y-2">
-                  <div className="flex justify-between gap-4">
-                    <dt className="text-muted">Độ tỏa hương</dt>
-                    <dd className="capitalize">
-                      {product.scentProfile.intensity}
-                    </dd>
-                  </div>
-                  <div className="flex justify-between gap-4">
-                    <dt className="text-muted">Tầng hương</dt>
-                    <dd className="text-right">
-                      {product.scentProfile.notes.join(", ")}
-                    </dd>
-                  </div>
-                  <div className="flex justify-between gap-4">
-                    <dt className="text-muted">Lưu hương</dt>
-                    <dd className="text-right">
-                      {product.scentProfile.longevity}
-                    </dd>
-                  </div>
-                </dl>
-              </Accordion>
+              {product.scentProfile && (
+                <Accordion title="Hương thơm">
+                  <dl className="space-y-2">
+                    <div className="flex justify-between gap-4">
+                      <dt className="text-muted">Độ tỏa hương</dt>
+                      <dd className="capitalize">
+                        {product.scentProfile.intensity}
+                      </dd>
+                    </div>
+                    <div className="flex justify-between gap-4">
+                      <dt className="text-muted">Tầng hương</dt>
+                      <dd className="text-right">
+                        {product.scentProfile.notes.join(", ")}
+                      </dd>
+                    </div>
+                    <div className="flex justify-between gap-4">
+                      <dt className="text-muted">Lưu hương</dt>
+                      <dd className="text-right">
+                        {product.scentProfile.longevity}
+                      </dd>
+                    </div>
+                  </dl>
+                </Accordion>
+              )}
 
               <Accordion title="Thông số & xuất xứ">
                 <dl className="space-y-2">
-                  <div className="flex justify-between gap-4">
-                    <dt className="text-muted">Xuất xứ</dt>
-                    <dd className="text-right">{product.origin}</dd>
-                  </div>
-                  <div className="flex justify-between gap-4">
-                    <dt className="text-muted">Thu hái</dt>
-                    <dd className="text-right">{product.harvestMethod}</dd>
-                  </div>
-                  {product.specifications.map((spec) => (
+                  {specRows.map((spec) => (
                     <div
                       key={spec.label}
                       className="flex justify-between gap-4"
@@ -333,6 +417,25 @@ export function ProductDetailView({
                     <dd>{selectedVariant.sku}</dd>
                   </div>
                 </dl>
+              </Accordion>
+
+              <Accordion title="Cách nhận biết trầm tự nhiên với trầm tẩm dầu">
+                <AuthenticitySigns variant="list" />
+                <Link
+                  href="/hieu-ve-tram"
+                  className="mt-5 inline-flex items-center gap-0.5 text-gold-dark hover:underline underline-offset-4"
+                >
+                  Xem đầy đủ trong “Hiểu về trầm”
+                  <ChevronRight className="w-4 h-4" aria-hidden="true" />
+                </Link>
+              </Accordion>
+
+              <Accordion title="Hướng dẫn sử dụng & bảo quản">
+                <ul className="list-disc pl-5 space-y-2">
+                  {careGuideFor(product.categorySlug).map((tip) => (
+                    <li key={tip}>{tip}</li>
+                  ))}
+                </ul>
               </Accordion>
 
               <Accordion title="Giao hàng & đổi trả">
@@ -389,6 +492,23 @@ export function ProductDetailView({
           </motion.div>
         </motion.div>
       </div>
+
+      {/* FAQ: answers are server-rendered as FAQPage JSON-LD by the page */}
+      <section aria-labelledby="faq-heading" className="max-w-3xl">
+        <h2
+          id="faq-heading"
+          className="text-2xl sm:text-3xl text-agarwood"
+        >
+          Câu hỏi thường gặp
+        </h2>
+        <div className="mt-4 border-b border-border-subtle">
+          {faq.map((item) => (
+            <Accordion key={item.question} title={item.question}>
+              <p>{item.answer}</p>
+            </Accordion>
+          ))}
+        </div>
+      </section>
 
       {relatedProducts.length > 0 && (
         <ProductCarousel
@@ -496,7 +616,7 @@ function Accordion({
         aria-expanded={isOpen}
         className="w-full flex items-center justify-between gap-4 py-6 text-lg font-medium text-charcoal cursor-pointer"
       >
-        <span>{title}</span>
+        <span className="text-left">{title}</span>
         <span className="flex items-center gap-3">
           {aside}
           <ChevronDown

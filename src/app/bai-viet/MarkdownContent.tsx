@@ -5,7 +5,7 @@ import Markdown, { type Components } from "react-markdown";
 // No typography plugin is installed, so each element is styled explicitly.
 const components: Components = {
   h2: ({ children }) => (
-    <h2 className="mt-12 mb-4 text-2xl sm:text-[28px] font-semibold text-charcoal leading-snug">
+    <h2 className="mt-12 mb-4 text-2xl sm:text-[28px] font-semibold text-agarwood leading-snug">
       {children}
     </h2>
   ),

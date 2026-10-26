@@ -6,9 +6,9 @@ export function AnnouncementBar() {
   return (
     <aside
       aria-label="Thông báo ưu đãi"
-      className="bg-espresso-dark text-white/85 text-xs py-2.5 px-4"
+      className="bg-mahogany text-white/85 text-xs py-2.5 px-4"
     >
-      <div className="max-w-7xl mx-auto flex items-center justify-center lg:justify-between gap-4">
+      <div className="max-w-site mx-auto flex items-center justify-center lg:justify-between gap-4">
         <span className="hidden lg:block text-white/60">
           Hotline{" "}
           <a

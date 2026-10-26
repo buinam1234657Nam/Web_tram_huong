@@ -46,7 +46,7 @@ export function OrderSuccessView() {
   if (!order) {
     return (
       <div className="py-16 text-center max-w-md mx-auto">
-        <h1 className="text-3xl font-semibold text-charcoal">
+        <h1 className="text-3xl font-semibold text-agarwood">
           Không tìm thấy đơn hàng
         </h1>
         <p className="mt-3 text-[15px] text-muted leading-relaxed">
@@ -75,7 +75,7 @@ export function OrderSuccessView() {
         <span className="mx-auto flex w-14 h-14 items-center justify-center rounded-full bg-espresso text-white">
           <Check className="w-7 h-7" />
         </span>
-        <h1 className="mt-6 text-3xl sm:text-4xl font-semibold text-charcoal">
+        <h1 className="mt-6 text-3xl sm:text-4xl font-semibold text-agarwood">
           Cảm ơn bạn, đơn hàng đã được ghi nhận
         </h1>
         <p className="mt-3 text-[15px] text-muted">
@@ -88,7 +88,7 @@ export function OrderSuccessView() {
 
       {order.paymentMethod === "bank_transfer" && (
         <section className="mt-12 rounded-2xl border border-charcoal p-6 sm:p-8">
-          <h2 className="text-lg font-semibold text-charcoal">
+          <h2 className="text-lg font-semibold text-agarwood">
             Chuyển khoản để hoàn tất
           </h2>
           <dl className="mt-4 grid grid-cols-[auto_1fr] gap-x-6 gap-y-2 text-[15px]">
@@ -113,7 +113,7 @@ export function OrderSuccessView() {
       )}
 
       <section className="mt-12 rounded-2xl bg-ivory p-6 sm:p-8">
-        <h2 className="text-lg font-semibold text-charcoal">
+        <h2 className="text-lg font-semibold text-agarwood">
           Chi tiết đơn hàng
         </h2>
         <ul className="mt-6 space-y-4">
@@ -185,7 +185,7 @@ export function OrderSuccessView() {
       </section>
 
       <section className="mt-12">
-        <h2 className="text-lg font-semibold text-charcoal">Tiếp theo</h2>
+        <h2 className="text-lg font-semibold text-agarwood">Tiếp theo</h2>
         <ol className="mt-4 space-y-3">
           {NEXT_STEPS.map((step, idx) => (
             <li key={step} className="flex gap-4 text-[15px] text-charcoal">

@@ -72,7 +72,7 @@ export function PolicyDetailView({
       </aside>
 
       <article className="lg:col-span-9">
-        <h1 className="text-3xl sm:text-5xl font-semibold text-charcoal leading-[1.15] tracking-tight max-w-3xl">
+        <h1 className="text-3xl sm:text-5xl font-semibold text-agarwood leading-[1.15] tracking-tight max-w-3xl">
           {policy.title}
         </h1>
         <p className="mt-5 text-lg text-muted leading-relaxed max-w-[60ch]">
