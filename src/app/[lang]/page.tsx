@@ -370,30 +370,42 @@ export default async function HomePage() {
       <section className="max-w-site mx-auto px-4 sm:px-6 lg:px-8">
         <FadeIn className="relative rounded-3xl bg-espresso text-white overflow-hidden grid grid-cols-1 lg:grid-cols-2">
           <div className="relative px-6 py-14 sm:px-12 sm:py-16">
-            <p className="text-sm font-medium text-gold-light">{t.showroomEyebrow}</p>
-            <h2 className="mt-3 text-3xl sm:text-4xl text-white">
-              {t.showroomTitle}
-            </h2>
-            <p className="mt-4 text-white/70 max-w-md leading-relaxed">
-              {brandConfig.contact.showroomAddress}
-              <br />
-              {brand.workingHours}
-            </p>
-            <div className="mt-8 flex flex-wrap gap-3">
-              <Button
-                href={showroomMapUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                variant="gold"
-              >
-                {t.directions}
-              </Button>
-              <Button
-                href={`tel:${brandConfig.contact.hotline}`}
-                variant="outline-light"
-              >
-                {t.call(brandConfig.contact.phoneFormatted)}
-              </Button>
+            {/* TODO: chủ shop thay bằng ảnh showroom thật. */}
+            <Image
+              src="/images/incense-sticks.jpg"
+              alt={t.showroomImageAlt}
+              fill
+              sizes="(max-width: 1024px) 100vw, 50vw"
+              className="object-cover"
+            />
+            {/* Darker on the text side so the address stays readable */}
+            <div className="absolute inset-0 bg-linear-to-r from-espresso-dark/95 via-espresso-dark/80 to-espresso-dark/40" />
+            <div className="relative">
+              <p className="text-sm font-medium text-gold-light">{t.showroomEyebrow}</p>
+              <h2 className="mt-3 text-3xl sm:text-4xl text-white">
+                {t.showroomTitle}
+              </h2>
+              <p className="mt-4 text-white/70 max-w-md leading-relaxed">
+                {brandConfig.contact.showroomAddress}
+                <br />
+                {brand.workingHours}
+              </p>
+              <div className="mt-8 flex flex-wrap gap-3">
+                <Button
+                  href={showroomMapUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  variant="gold"
+                >
+                  {t.directions}
+                </Button>
+                <Button
+                  href={`tel:${brandConfig.contact.hotline}`}
+                  variant="outline-light"
+                >
+                  {t.call(brandConfig.contact.phoneFormatted)}
+                </Button>
+              </div>
             </div>
           </div>
           <div className="px-6 py-14 sm:px-12 sm:py-16 bg-espresso-dark/60 border-t lg:border-t-0 lg:border-l border-white/10 flex flex-col justify-center">

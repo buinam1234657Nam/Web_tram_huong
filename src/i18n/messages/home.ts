@@ -65,6 +65,7 @@ export const homeMessages = defineMessages({
 
     showroomEyebrow: "Showroom",
     showroomTitle: "Ghé thử mùi trước khi chọn",
+    showroomImageAlt: "Nhang trầm đang toả khói trên khay gỗ",
     directions: "Xem đường đi",
     call: (phone: string) => `Gọi ${phone}`,
     newsletterTitle: "Nhận tin từ Vĩnh Trầm",
@@ -134,6 +135,7 @@ export const homeMessages = defineMessages({
 
     showroomEyebrow: "Showroom",
     showroomTitle: "Smell it before you choose",
+    showroomImageAlt: "Agarwood incense smoking on a wooden tray",
     directions: "Get directions",
     call: (phone: string) => `Call ${phone}`,
     newsletterTitle: "News from VĨNH TRẦM",
