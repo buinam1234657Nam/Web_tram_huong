@@ -11,6 +11,10 @@ import {
 } from "@/components/seo/JsonLd";
 import { toSummary } from "@/data/catalog/products";
 import { productFaq } from "@/data/content/product-guides";
+import { getLocale } from "@/i18n/server";
+import { localeAlternates, localizePath } from "@/i18n/config";
+import { productMessages } from "@/i18n/messages/product";
+import { categoryNameFor } from "@/i18n/messages/categories";
 import { ProductDetailView } from "./ProductDetailView";
 
 interface ProductPageProps {
@@ -26,13 +30,17 @@ export async function generateMetadata({
   params,
 }: ProductPageProps): Promise<Metadata> {
   const { slug } = await params;
-  const product = await catalogRepository.getProductBySlug(slug);
+  const [product, locale] = await Promise.all([
+    catalogRepository.getProductBySlug(slug),
+    getLocale(),
+  ]);
 
   if (!product) {
     return {
-      title: "Không tìm thấy sản phẩm",
+      title: productMessages[locale].notFoundTitle,
     };
   }
+  const path = `/san-pham/${product.slug}`;
 
   const pageTitle =
     product.seo.title.replace(/\s*\|\s*VĨNH TRẦM.*$/i, "").trim() ||
@@ -42,13 +50,12 @@ export async function generateMetadata({
     title: pageTitle,
     description: product.seo.description,
     keywords: product.seo.keywords,
-    alternates: {
-      canonical: `/san-pham/${product.slug}`,
-    },
+    // Product copy is Vietnamese-only for now, so the English page shares it.
+    alternates: localeAlternates(path, locale),
     openGraph: {
       title: product.seo.title,
       description: product.seo.description,
-      url: `/san-pham/${product.slug}`,
+      url: localizePath(path, locale),
       images: [
         {
           url: product.images[0],
@@ -81,22 +88,28 @@ async function ProductContent({ params }: ProductPageProps) {
     notFound();
   }
 
-  const [relatedProducts, reviews] = await Promise.all([
+  const [relatedProducts, reviews, locale] = await Promise.all([
     catalogRepository.getRelatedProducts(product.id, product.categorySlug, 6),
     catalogRepository.getReviewsByProductId(product.id),
+    getLocale(),
   ]);
 
-  const faq = productFaq(product.categorySlug);
+  const t = productMessages[locale];
+  const faq = productFaq(product.categorySlug, locale);
 
+  // Localized hrefs so the BreadcrumbList JSON-LD points at this language's pages too.
   const breadcrumbs = [
-    { label: "Sản phẩm", href: "/san-pham" },
-    { label: product.categoryName, href: `/danh-muc/${product.categorySlug}` },
-    { label: product.name, href: `/san-pham/${product.slug}` },
+    { label: t.breadcrumbProducts, href: localizePath("/san-pham", locale) },
+    {
+      label: categoryNameFor(product.categorySlug, product.categoryName, locale),
+      href: localizePath(`/danh-muc/${product.categorySlug}`, locale),
+    },
+    { label: product.name, href: localizePath(`/san-pham/${product.slug}`, locale) },
   ];
 
   return (
     <>
-      <ProductJsonLd product={product} />
+      <ProductJsonLd product={product} locale={locale} />
       <BreadcrumbJsonLd items={breadcrumbs} />
       <FaqJsonLd items={faq} />
       <Breadcrumbs items={breadcrumbs} />

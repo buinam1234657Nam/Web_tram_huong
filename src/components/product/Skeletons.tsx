@@ -1,11 +1,16 @@
+"use client";
+
 import React from "react";
+import { useMessages } from "@/i18n/client";
+import { commonMessages } from "@/i18n/messages/common";
 
 /** Placeholder shown while a catalog route resolves its URL params. */
 export function CatalogSkeleton() {
+  const t = useMessages(commonMessages);
   return (
     <div
       aria-busy="true"
-      aria-label="Đang tải sản phẩm"
+      aria-label={t.loadingProducts}
       className="animate-pulse"
     >
       <div className="h-4 w-40 bg-ivory rounded" />
@@ -25,10 +30,11 @@ export function CatalogSkeleton() {
 
 /** Placeholder shown while a product page resolves its URL params. */
 export function ProductDetailSkeleton() {
+  const t = useMessages(commonMessages);
   return (
     <div
       aria-busy="true"
-      aria-label="Đang tải sản phẩm"
+      aria-label={t.loadingProducts}
       className="animate-pulse"
     >
       <div className="h-4 w-56 bg-ivory rounded" />

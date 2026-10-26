@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import Link from "next/link";
+import Link from "@/components/i18n/Link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { ArrowRight, Search, X } from "lucide-react";
@@ -11,21 +11,9 @@ import type { ProductSummary } from "@/types/product";
 import { MOTION_EASE } from "@/components/motion/MotionPrimitives";
 import { useScrollLock } from "@/hooks/useScrollLock";
 import { useProductSearch } from "@/hooks/useProductSearch";
-
-const POPULAR_SEARCHES = [
-  "Vòng tay 108 hạt",
-  "Trầm nụ",
-  "Nhang không tăm",
-  "Trầm miếng Khánh Hòa",
-  "Bộ quà tặng",
-];
-
-const SHORTCUTS = [
-  { href: "/danh-muc/vong-tay-tram-huong", label: "Vòng tay trầm" },
-  { href: "/danh-muc/tram-nu-xong-nha", label: "Trầm nụ xông nhà" },
-  { href: "/danh-muc/nhang-tram-huong", label: "Nhang trầm" },
-  { href: "/danh-muc/bo-qua-tang", label: "Quà biếu" },
-];
+import { useLocalizePath, useMessages } from "@/i18n/client";
+import { layoutMessages } from "@/i18n/messages/layout";
+import { commonMessages } from "@/i18n/messages/common";
 
 const MAX_PREVIEW = 4;
 
@@ -39,6 +27,9 @@ export function SearchOverlay({
   const [query, setQuery] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
+  const localize = useLocalizePath();
+  const t = useMessages(layoutMessages).search;
+  const common = useMessages(commonMessages);
 
   const handleClose = () => {
     setQuery("");
@@ -77,7 +68,7 @@ export function SearchOverlay({
   const goToResults = () => {
     if (!trimmed) return;
     handleClose();
-    router.push(`/tim-kiem?q=${encodeURIComponent(trimmed)}`);
+    router.push(localize(`/tim-kiem?q=${encodeURIComponent(trimmed)}`));
   };
 
   const pickTerm = (term: string) => {
@@ -92,7 +83,7 @@ export function SearchOverlay({
           className="fixed inset-0 z-50"
           role="dialog"
           aria-modal="true"
-          aria-label="Tìm kiếm sản phẩm"
+          aria-label={t.dialogLabel}
         >
           <motion.div
             initial={{ opacity: 0 }}
@@ -126,7 +117,7 @@ export function SearchOverlay({
                   aria-hidden="true"
                 />
                 <label htmlFor="search-overlay-input" className="sr-only">
-                  Từ khóa tìm kiếm
+                  {t.inputLabel}
                 </label>
                 <input
                   id="search-overlay-input"
@@ -136,7 +127,7 @@ export function SearchOverlay({
                   autoComplete="off"
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
-                  placeholder="Tìm trên Vĩnh Trầm"
+                  placeholder={t.placeholder}
                   className="flex-1 min-w-0 bg-transparent text-lg sm:text-2xl text-charcoal placeholder:text-muted-light focus:outline-none [&::-webkit-search-cancel-button]:hidden"
                 />
                 {query && (
@@ -145,14 +136,14 @@ export function SearchOverlay({
                     onClick={() => pickTerm("")}
                     className="shrink-0 text-sm text-muted hover:text-charcoal transition-colors cursor-pointer"
                   >
-                    Xóa
+                    {common.clear}
                   </button>
                 )}
                 <button
                   type="button"
                   onClick={handleClose}
                   className="-mr-2 w-10 h-10 shrink-0 rounded-full flex items-center justify-center text-charcoal hover:bg-ivory transition-colors cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-espresso"
-                  aria-label="Đóng tìm kiếm"
+                  aria-label={t.close}
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -161,17 +152,17 @@ export function SearchOverlay({
 
             <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8 grid grid-cols-1 gap-8 md:grid-cols-[220px_1fr] md:gap-12">
               {/* Quick links: chips that scroll sideways on mobile, a list on desktop */}
-              <nav aria-label="Gợi ý tìm kiếm" className="min-w-0">
-                <p className="text-xs font-medium text-muted">Tìm nhiều</p>
+              <nav aria-label={t.suggestions} className="min-w-0">
+                <p className="text-xs font-medium text-muted">{t.popular}</p>
                 <ul className="mt-3 flex gap-2 overflow-x-auto no-scrollbar -mx-4 px-4 md:mx-0 md:px-0 md:block md:space-y-1">
-                  {POPULAR_SEARCHES.map((term) => (
-                    <li key={term} className="shrink-0">
+                  {t.popularTerms.map((term) => (
+                    <li key={term.query} className="shrink-0">
                       <button
                         type="button"
-                        onClick={() => pickTerm(term)}
+                        onClick={() => pickTerm(term.query)}
                         className="group inline-flex md:flex w-full items-center justify-between gap-2 rounded-full md:rounded-md border border-border-subtle md:border-0 px-3.5 py-1.5 md:px-2 md:-mx-2 md:py-2 text-sm md:text-[15px] text-charcoal hover:bg-ivory transition-colors cursor-pointer"
                       >
-                        {term}
+                        {term.label}
                         <ArrowRight
                           className="hidden md:block w-4 h-4 text-muted opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-200"
                           aria-hidden="true"
@@ -182,10 +173,10 @@ export function SearchOverlay({
                 </ul>
 
                 <p className="mt-8 text-xs font-medium text-muted hidden md:block">
-                  Lối tắt
+                  {t.shortcuts}
                 </p>
                 <ul className="mt-3 space-y-1 hidden md:block">
-                  {SHORTCUTS.map((link) => (
+                  {t.shortcutLinks.map((link) => (
                     <li key={link.href}>
                       <Link
                         href={link.href}
@@ -206,7 +197,7 @@ export function SearchOverlay({
               <section aria-live="polite" className="min-w-0">
                 {!trimmed ? (
                   <>
-                    <p className="text-xs font-medium text-muted">Bán chạy</p>
+                    <p className="text-xs font-medium text-muted">{t.bestsellers}</p>
                     <ProductTiles
                       products={search.query === "" ? search.products : []}
                       onSelect={handleClose}
@@ -217,15 +208,15 @@ export function SearchOverlay({
                     <div className="flex items-baseline justify-between gap-4">
                       <p className="text-xs font-medium text-muted">
                         {search.isLoading
-                          ? "Đang tìm…"
-                          : `${search.total} sản phẩm cho “${trimmed}”`}
+                          ? t.searching
+                          : t.resultCount(search.total, trimmed)}
                       </p>
                       <button
                         type="button"
                         onClick={goToResults}
                         className="shrink-0 inline-flex items-center gap-1 text-sm font-medium text-charcoal hover:text-gold-dark transition-colors cursor-pointer"
                       >
-                        Xem tất cả
+                        {common.viewAll}
                         <ArrowRight className="w-4 h-4" aria-hidden="true" />
                       </button>
                     </div>
@@ -238,10 +229,10 @@ export function SearchOverlay({
                 ) : (
                   <div className="py-10 md:py-16">
                     <p className="text-lg text-charcoal">
-                      Chưa có sản phẩm nào khớp “{trimmed}”.
+                      {t.noResults(trimmed)}
                     </p>
                     <p className="mt-2 text-[15px] text-muted">
-                      Thử một từ ngắn hơn, ví dụ “vòng”, “nụ” hay “nhang”.
+                      {t.noResultsHint}
                     </p>
                   </div>
                 )}

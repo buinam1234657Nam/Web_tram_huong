@@ -4,10 +4,13 @@ import { notFound } from "next/navigation";
 import { CatalogSkeleton } from "@/components/product/Skeletons";
 import { catalogRepository } from "@/data/repositories/catalog-repository";
 import { toSummary } from "@/data/catalog/products";
-import { RITUALS, ritualBySlug } from "@/data/content/rituals";
+import { RITUALS, ritualBySlugFor } from "@/data/content/rituals";
+import { localeAlternates, localizePath } from "@/i18n/config";
+import { getLocale } from "@/i18n/server";
+import { guideMessages } from "@/i18n/messages/guide";
 import { Breadcrumbs } from "@/components/ui/Breadcrumbs";
 import { BreadcrumbJsonLd } from "@/components/seo/JsonLd";
-import { CatalogView } from "@/app/san-pham/CatalogView";
+import { CatalogView } from "@/app/[lang]/san-pham/CatalogView";
 
 interface RitualPageProps {
   params: Promise<{ slug: string }>;
@@ -21,20 +24,23 @@ export async function generateMetadata({
   params,
 }: RitualPageProps): Promise<Metadata> {
   const { slug } = await params;
-  const ritual = ritualBySlug(slug);
+  const locale = await getLocale();
+  const t = guideMessages[locale];
+  const ritual = ritualBySlugFor(slug, locale);
 
   if (!ritual) {
-    return { title: "Không tìm thấy nhu cầu" };
+    return { title: t.ritualNotFound };
   }
 
+  const path = `/nhu-cau/${ritual.slug}`;
   return {
-    title: `${ritual.label} – Trầm hương theo nhu cầu`,
+    title: t.ritualMetaTitle(ritual.label),
     description: ritual.description,
-    alternates: { canonical: `/nhu-cau/${ritual.slug}` },
+    alternates: localeAlternates(path, locale),
     openGraph: {
       title: `${ritual.label} | VĨNH TRẦM`,
       description: ritual.description,
-      url: `/nhu-cau/${ritual.slug}`,
+      url: localizePath(path, locale),
       images: [{ url: ritual.image, alt: ritual.label }],
     },
   };
@@ -54,7 +60,8 @@ export default function RitualPage({ params }: RitualPageProps) {
 
 async function RitualContent({ params }: RitualPageProps) {
   const { slug } = await params;
-  const ritual = ritualBySlug(slug);
+  const locale = await getLocale();
+  const ritual = ritualBySlugFor(slug, locale);
 
   if (!ritual) {
     notFound();
@@ -66,7 +73,7 @@ async function RitualContent({ params }: RitualPageProps) {
   ]);
 
   const breadcrumbs = [
-    { label: "Sản phẩm", href: "/san-pham" },
+    { label: guideMessages[locale].productsBreadcrumb, href: "/san-pham" },
     { label: ritual.label, href: `/nhu-cau/${ritual.slug}` },
   ];
 

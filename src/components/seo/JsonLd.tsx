@@ -4,6 +4,7 @@ import { Article } from "@/types/article";
 import { BreadcrumbItem } from "@/components/ui/Breadcrumbs";
 import { brandConfig } from "@/lib/config/brand";
 import { absoluteUrl, siteUrl } from "@/lib/config/site";
+import { localizePath, type Locale } from "@/i18n/config";
 
 export function OrganizationJsonLd() {
   const schema = {
@@ -37,7 +38,13 @@ export function OrganizationJsonLd() {
   );
 }
 
-export function ProductJsonLd({ product }: { product: Product }) {
+export function ProductJsonLd({
+  product,
+  locale = "vi",
+}: {
+  product: Product;
+  locale?: Locale;
+}) {
   const schema = {
     "@context": "https://schema.org",
     "@type": "Product",
@@ -61,7 +68,7 @@ export function ProductJsonLd({ product }: { product: Product }) {
         product.inventoryStatus === "out_of_stock"
           ? "https://schema.org/OutOfStock"
           : "https://schema.org/InStock",
-      url: absoluteUrl(`/san-pham/${product.slug}`),
+      url: absoluteUrl(localizePath(`/san-pham/${product.slug}`, locale)),
     },
     // Google rejects an AggregateRating with zero reviews.
     ...(product.ratingCount > 0 && {

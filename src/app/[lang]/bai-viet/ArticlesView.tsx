@@ -2,18 +2,25 @@
 
 import React, { useMemo, useState } from "react";
 import Image from "next/image";
-import Link from "next/link";
+import Link from "@/components/i18n/Link";
 import { Article } from "@/types/article";
 import { FadeIn } from "@/components/motion/MotionPrimitives";
+import { useLocale } from "@/i18n/client";
+import { blogMessages } from "@/i18n/messages/blog";
 import { formatArticleDate } from "./formatArticleDate";
 
-const ALL = "Tất cả";
+/** Filter value for "all topics"; the label comes from the messages. */
+const ALL = "";
 
 export function ArticlesView({
   initialArticles,
 }: {
   initialArticles: Article[];
 }) {
+  const locale = useLocale();
+  const t = blogMessages[locale];
+  const categoryLabel = (category: string) =>
+    category === ALL ? t.all : (t.categories[category] ?? category);
   const [activeCategory, setActiveCategory] = useState(ALL);
 
   // Tabs come from the data so a new category shows up without code changes.
@@ -34,9 +41,12 @@ export function ArticlesView({
 
   return (
     <div>
+      {t.vietnameseOnly && (
+        <p className="mb-6 text-sm text-muted">{t.vietnameseOnly}</p>
+      )}
       <div
         role="tablist"
-        aria-label="Chuyên mục"
+        aria-label={t.tabsLabel}
         className="flex gap-6 overflow-x-auto no-scrollbar border-b border-border-subtle -mx-4 px-4 sm:mx-0 sm:px-0"
       >
         {categories.map((category) => {
@@ -54,7 +64,7 @@ export function ArticlesView({
                   : "text-muted hover:text-charcoal"
               }`}
             >
-              {category}
+              {categoryLabel(category)}
               <span
                 className={`absolute inset-x-0 -bottom-px h-px bg-espresso transition-transform duration-300 origin-left ${
                   isActive ? "scale-x-100" : "scale-x-0"
@@ -83,7 +93,8 @@ export function ArticlesView({
             </div>
             <div className="lg:col-span-5">
               <p className="text-sm text-muted">
-                {featured.category} · {featured.readingTimeMinutes} phút đọc
+                {categoryLabel(featured.category)} ·{" "}
+                {t.readingTime(featured.readingTimeMinutes)}
               </p>
               <h2 className="mt-2 text-2xl sm:text-4xl font-semibold text-agarwood leading-[1.2] tracking-tight group-hover:text-gold-dark transition-colors duration-300">
                 {featured.title}
@@ -93,7 +104,7 @@ export function ArticlesView({
               </p>
               <p className="mt-5 text-sm text-muted">
                 {featured.author.name} ·{" "}
-                {formatArticleDate(featured.publishedAt)}
+                {formatArticleDate(featured.publishedAt, locale)}
               </p>
             </div>
           </Link>
@@ -121,7 +132,8 @@ export function ArticlesView({
                 />
               </div>
               <p className="mt-4 text-sm text-muted">
-                {article.category} · {article.readingTimeMinutes} phút đọc
+                {categoryLabel(article.category)} ·{" "}
+                {t.readingTime(article.readingTimeMinutes)}
               </p>
               <h3 className="mt-1 text-xl font-medium text-charcoal leading-snug group-hover:text-gold-dark transition-colors duration-300">
                 {article.title}
@@ -136,7 +148,7 @@ export function ArticlesView({
 
       {articles.length === 0 && (
         <p className="py-24 text-center text-muted">
-          Chưa có bài viết trong chuyên mục này.
+          {t.empty}
         </p>
       )}
     </div>

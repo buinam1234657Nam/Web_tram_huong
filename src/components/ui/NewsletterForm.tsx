@@ -2,6 +2,8 @@
 
 import React, { useState } from "react";
 import { ArrowRight } from "lucide-react";
+import { useMessages } from "@/i18n/client";
+import { layoutMessages } from "@/i18n/messages/layout";
 
 /**
  * Email signup on a dark background. `line` is an underlined field with an
@@ -14,6 +16,7 @@ export function NewsletterForm({
   className?: string;
   variant?: "line" | "pill";
 }) {
+  const t = useMessages(layoutMessages).newsletter;
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [message, setMessage] = useState("");
@@ -35,15 +38,16 @@ export function NewsletterForm({
 
       if (data.success) {
         setStatus("success");
-        setMessage(data.message || "Đăng ký thành công!");
+        // The API answers in Vietnamese; show our own copy in the visitor's language.
+        setMessage(t.success);
         setEmail("");
       } else {
         setStatus("error");
-        setMessage(data.error || "Có lỗi xảy ra, vui lòng thử lại.");
+        setMessage(t.error);
       }
     } catch {
       setStatus("error");
-      setMessage("Không thể kết nối đến máy chủ, vui lòng thử lại sau.");
+      setMessage(t.offline);
     }
   };
 
@@ -62,9 +66,9 @@ export function NewsletterForm({
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            placeholder="Nhập email của bạn"
+            placeholder={t.placeholderPill}
             required
-            aria-label="Địa chỉ email"
+            aria-label={t.emailLabel}
             className="flex-1 min-w-0 bg-transparent py-2.5 text-white placeholder-white/40 focus:outline-none"
           />
           <button
@@ -72,7 +76,7 @@ export function NewsletterForm({
             disabled={status === "loading"}
             className="shrink-0 h-10 px-6 rounded-full bg-gold text-espresso-dark text-sm font-semibold hover:bg-gold-light transition-colors disabled:opacity-50 cursor-pointer"
           >
-            Đăng ký
+            {t.submit}
           </button>
         </div>
         {feedback}
@@ -87,16 +91,16 @@ export function NewsletterForm({
           type="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          placeholder="Địa chỉ email"
+          placeholder={t.placeholderLine}
           required
-          aria-label="Địa chỉ email"
+          aria-label={t.emailLabel}
           className="flex-1 min-w-0 bg-transparent py-3 text-white placeholder-white/40 focus:outline-none"
         />
         <button
           type="submit"
           disabled={status === "loading"}
           className="p-3 text-white hover:text-gold-light transition-colors disabled:opacity-50 cursor-pointer"
-          aria-label="Đăng ký nhận tin"
+          aria-label={t.submitLabel}
         >
           <ArrowRight className="w-5 h-5" />
         </button>

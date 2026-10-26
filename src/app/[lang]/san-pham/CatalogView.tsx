@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
-import Link from "next/link";
+import Link from "@/components/i18n/Link";
 import { ChevronDown, SlidersHorizontal, X } from "lucide-react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import {
@@ -13,34 +13,29 @@ import { AgarwoodGrade, ProductSummary } from "@/types/product";
 import { Category } from "@/types/category";
 import { ProductCard } from "@/components/product/ProductCard";
 import { Select } from "@/components/ui/Select";
-import { RITUALS } from "@/data/content/rituals";
-import { gradeLabel } from "@/lib/format/agarwood";
+import { ritualsFor } from "@/data/content/rituals";
+import { gradeLabel, originLabel } from "@/lib/format/agarwood";
+import { useLocale, useMessages } from "@/i18n/client";
+import { catalogMessages } from "@/i18n/messages/catalog";
+
+type CatalogText = (typeof catalogMessages)["vi"];
 
 const GRADE_ORDER: AgarwoodGrade[] = ["chìm", "bán chìm", "nổi", "tốc"];
 
+/** `label` is a key into catalogMessages. */
 const PRICE_OPTIONS = [
-  { value: "under-1m", label: "Dưới 1.000.000₫", min: 0, max: 1000000 },
-  {
-    value: "1m-3m",
-    label: "1.000.000₫ – 3.000.000₫",
-    min: 1000000,
-    max: 3000000,
-  },
-  {
-    value: "3m-5m",
-    label: "3.000.000₫ – 5.000.000₫",
-    min: 3000000,
-    max: 5000000,
-  },
-  { value: "over-5m", label: "Trên 5.000.000₫", min: 5000000, max: Infinity },
-];
+  { value: "under-1m", label: "priceUnder1m", min: 0, max: 1000000 },
+  { value: "1m-3m", label: "price1to3m", min: 1000000, max: 3000000 },
+  { value: "3m-5m", label: "price3to5m", min: 3000000, max: 5000000 },
+  { value: "over-5m", label: "priceOver5m", min: 5000000, max: Infinity },
+] as const satisfies ReadonlyArray<{ label: keyof CatalogText }>;
 
 const SORT_OPTIONS = [
-  { value: "bestseller", label: "Nổi bật" },
-  { value: "price_desc", label: "Giá: Cao - Thấp" },
-  { value: "price_asc", label: "Giá: Thấp - Cao" },
-  { value: "rating", label: "Đánh giá cao nhất" },
-];
+  { value: "bestseller", label: "sortFeatured" },
+  { value: "price_desc", label: "sortPriceDesc" },
+  { value: "price_asc", label: "sortPriceAsc" },
+  { value: "rating", label: "sortRating" },
+] as const satisfies ReadonlyArray<{ label: keyof CatalogText }>;
 
 /** Cards rendered per "Xem thêm" step; the full catalog is several hundred items. */
 const PAGE_SIZE = 24;
@@ -55,12 +50,13 @@ export function CatalogView({
   products,
   categories,
   activeCategory,
-  title = activeCategory ? activeCategory.name : "Tất cả sản phẩm",
+  title,
   hideRitualFilter = false,
 }: {
   /** Already scoped to the page (a category, a need, or everything). */
   products: ProductSummary[];
   categories: Category[];
+  /** Already localized by the server page. */
   activeCategory?: Category;
   title?: string;
   /** On /nhu-cau pages the need is the page itself. */
@@ -76,6 +72,11 @@ export function CatalogView({
   const [isFilterVisible, setIsFilterVisible] = useState(true);
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
   const reduceMotion = useReducedMotion();
+  const locale = useLocale();
+  const t = useMessages(catalogMessages);
+  const heading = title ?? activeCategory?.name ?? t.allProducts;
+  const priceOptions = PRICE_OPTIONS.map((o) => ({ ...o, label: t[o.label] }));
+  const sortOptions = SORT_OPTIONS.map((o) => ({ ...o, label: t[o.label] }));
 
   /** Any filter or sort change starts the list from the top again. */
   const withReset =
@@ -90,8 +91,8 @@ export function CatalogView({
     () =>
       GRADE_ORDER.filter((g) =>
         products.some((p) => p.agarwoodProfile.grade === g),
-      ).map((g) => ({ value: g, label: gradeLabel(g) })),
-    [products],
+      ).map((g) => ({ value: g, label: gradeLabel(g, locale) })),
+    [products, locale],
   );
 
   const originOptions = useMemo(() => {
@@ -102,15 +103,16 @@ export function CatalogView({
     });
     return [...counts.entries()]
       .sort((a, b) => b[1] - a[1])
-      .map(([origin]) => ({ value: origin, label: origin }));
-  }, [products]);
+      // Filter on the raw data value; only the label is translated.
+      .map(([origin]) => ({ value: origin, label: originLabel(origin, locale) }));
+  }, [products, locale]);
 
   const ritualOptions = useMemo(
     () =>
-      RITUALS.filter((r) => products.some((p) => p.ritual.includes(r.slug))).map(
-        (r) => ({ value: r.slug, label: r.label }),
-      ),
-    [products],
+      ritualsFor(locale)
+        .filter((r) => products.some((p) => p.ritual.includes(r.slug)))
+        .map((r) => ({ value: r.slug, label: r.label })),
+    [products, locale],
   );
 
   const filteredProducts = useMemo(() => {
@@ -192,11 +194,11 @@ export function CatalogView({
 
   const filterPanel = (
     <>
-      <nav aria-label="Danh mục sản phẩm" className="pb-6">
+      <nav aria-label={t.categoriesNav} className="pb-6">
         <ul className="space-y-2.5">
           <li>
             <CategoryLink href="/san-pham" active={!activeCategory}>
-              Tất cả sản phẩm
+              {t.allProducts}
             </CategoryLink>
           </li>
           {categories.map((c) => (
@@ -217,7 +219,7 @@ export function CatalogView({
 
       {!hideRitualFilter && ritualOptions.length > 0 && (
         <CheckboxGroup
-          title="Nhu cầu"
+          title={t.filterRitual}
           options={ritualOptions}
           selected={rituals}
           onChange={withReset(setRituals)}
@@ -226,7 +228,7 @@ export function CatalogView({
 
       {gradeOptions.length > 0 && (
         <CheckboxGroup
-          title="Loại trầm"
+          title={t.filterGrade}
           options={gradeOptions}
           selected={grades}
           onChange={withReset(setGrades)}
@@ -235,7 +237,7 @@ export function CatalogView({
 
       {originOptions.length > 0 && (
         <CheckboxGroup
-          title="Vùng nguồn gốc"
+          title={t.filterOrigin}
           options={originOptions}
           selected={origins}
           onChange={withReset(setOrigins)}
@@ -243,15 +245,15 @@ export function CatalogView({
       )}
 
       <CheckboxGroup
-        title="Khoảng giá"
-        options={PRICE_OPTIONS}
+        title={t.filterPrice}
+        options={priceOptions}
         selected={priceRanges}
         onChange={withReset(setPriceRanges)}
       />
 
-      <FilterGroup title="Tình trạng" count={inStockOnly ? 1 : 0}>
+      <FilterGroup title={t.filterStock} count={inStockOnly ? 1 : 0}>
         <Checkbox
-          label="Chỉ hiện sản phẩm còn hàng"
+          label={t.inStockOnly}
           checked={inStockOnly}
           onChange={() => withReset(setInStockOnly)(!inStockOnly)}
         />
@@ -264,7 +266,7 @@ export function CatalogView({
       {/* Title + controls bar */}
       <div className="sticky top-(--header-h) z-20 bg-cream/95 backdrop-blur-md -mx-4 px-4 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8 py-4 flex items-center justify-between gap-4">
         <h1 className="text-xl sm:text-2xl font-medium text-agarwood">
-          {title}{" "}
+          {heading}{" "}
           <span className="text-muted-light">({filteredProducts.length})</span>
         </h1>
 
@@ -274,15 +276,15 @@ export function CatalogView({
             onClick={() => setIsFilterVisible((v) => !v)}
             className="hidden lg:inline-flex items-center gap-2 text-charcoal hover:text-gold-dark cursor-pointer"
           >
-            {isFilterVisible ? "Ẩn bộ lọc" : "Hiện bộ lọc"}
+            {isFilterVisible ? t.hideFilters : t.showFilters}
             <SlidersHorizontal className="w-4 h-4" />
           </button>
 
           <div className="hidden sm:block">
             <Select
-              label="Sắp xếp theo"
+              label={t.sortBy}
               value={selectedSort}
-              options={SORT_OPTIONS}
+              options={sortOptions}
               onChange={withReset(setSelectedSort)}
             />
           </div>
@@ -292,7 +294,8 @@ export function CatalogView({
             onClick={() => setIsMobileFilterOpen(true)}
             className="lg:hidden shrink-0 whitespace-nowrap inline-flex items-center gap-2 h-11 px-4 rounded-full border border-border-subtle text-sm text-charcoal"
           >
-            Bộ lọc{activeFilterCount > 0 && ` (${activeFilterCount})`}
+            {t.filters}
+            {activeFilterCount > 0 && ` (${activeFilterCount})`}
             <SlidersHorizontal className="w-4 h-4" />
           </button>
         </div>
@@ -342,15 +345,14 @@ export function CatalogView({
               {visibleCount < filteredProducts.length && (
                 <div className="mt-14 text-center">
                   <p className="text-sm text-muted">
-                    Đang xem {visibleProducts.length} / {filteredProducts.length}{" "}
-                    sản phẩm
+                    {t.showing(visibleProducts.length, filteredProducts.length)}
                   </p>
                   <button
                     type="button"
                     onClick={() => setVisibleCount((n) => n + PAGE_SIZE)}
                     className="mt-4 h-12 px-8 rounded-full border border-charcoal/25 text-[15px] font-medium text-charcoal hover:border-charcoal transition-colors cursor-pointer"
                   >
-                    Xem thêm sản phẩm
+                    {t.loadMore}
                   </button>
                 </div>
               )}
@@ -358,17 +360,17 @@ export function CatalogView({
           ) : (
             <div className="py-24 text-center">
               <p className="text-lg font-medium text-charcoal">
-                Không tìm thấy sản phẩm phù hợp
+                {t.emptyTitle}
               </p>
               <p className="mt-2 text-muted">
-                Thử bỏ bớt bộ lọc hoặc chọn danh mục khác.
+                {t.emptyHint}
               </p>
               <button
                 type="button"
                 onClick={resetFilters}
                 className="mt-6 px-6 py-3 rounded-full bg-espresso text-white text-sm font-medium cursor-pointer"
               >
-                Xóa bộ lọc
+                {t.clearFilters}
               </button>
             </div>
           )}
@@ -386,15 +388,15 @@ export function CatalogView({
             className="fixed inset-0 z-50 bg-white flex flex-col lg:hidden"
             role="dialog"
             aria-modal="true"
-            aria-label="Bộ lọc"
+            aria-label={t.filters}
           >
             <div className="flex items-center justify-between px-4 h-16 border-b border-border-subtle">
-              <p className="text-lg font-medium text-charcoal">Bộ lọc</p>
+              <p className="text-lg font-medium text-charcoal">{t.filters}</p>
               <button
                 type="button"
                 onClick={() => setIsMobileFilterOpen(false)}
                 className="p-2 -mr-2 rounded-full bg-ivory"
-                aria-label="Đóng bộ lọc"
+                aria-label={t.closeFilters}
               >
                 <X className="w-5 h-5" />
               </button>
@@ -403,10 +405,10 @@ export function CatalogView({
             <div className="flex-1 overflow-y-auto px-4 py-6">
               <div className="pb-6 border-b border-border-subtle">
                 <p className="text-lg font-medium text-charcoal mb-4">
-                  Sắp xếp theo
+                  {t.sortBy}
                 </p>
                 <div className="space-y-3">
-                  {SORT_OPTIONS.map((o) => (
+                  {sortOptions.map((o) => (
                     <label
                       key={o.value}
                       className="flex items-center gap-3 text-charcoal cursor-pointer"
@@ -432,14 +434,14 @@ export function CatalogView({
                 onClick={resetFilters}
                 className="flex-1 py-3.5 rounded-full border border-border-subtle text-charcoal font-medium"
               >
-                Xóa bộ lọc
+                {t.clearFilters}
               </button>
               <button
                 type="button"
                 onClick={() => setIsMobileFilterOpen(false)}
                 className="flex-1 py-3.5 rounded-full bg-espresso text-white font-medium"
               >
-                Xem {filteredProducts.length} sản phẩm
+                {t.showResults(filteredProducts.length)}
               </button>
             </div>
           </motion.div>

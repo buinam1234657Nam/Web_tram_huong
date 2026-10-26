@@ -1,6 +1,8 @@
 import type { AgarwoodGrade } from "@/types/product";
+import type { Locale } from "@/i18n/config";
 
 // TODO: chủ shop duyệt nội dung chuyên môn – không tự khẳng định số liệu.
+// TODO: chủ shop duyệt cả bản tiếng Anh (guideContentFor("en") bên dưới).
 // Everything here is deliberately qualitative: no ages, prices, percentages or
 // rankings. Add figures only once the shop can stand behind them.
 
@@ -107,3 +109,114 @@ export const RESIN_AGE_NOTES: string[] = [
   "Trầm tích lâu thường có hương sâu, ấm và ít mùi gỗ sống; trầm tích ngắn hương thanh và nhẹ hơn.",
   "Vì cần nhiều năm và hiếm dần theo thời gian, tuổi tích trầm là một trong những yếu tố lớn nhất quyết định giá.",
 ];
+
+// ---------------------------------------------------------------- English
+
+const AUTHENTICITY_SIGNS_EN: typeof AUTHENTICITY_SIGNS = [
+  {
+    id: "mui",
+    title: "Scent before burning",
+    natural:
+      "Faint until you hold it close or warm it in your hand; sweet, with real depth.",
+    treated:
+      "Strong the moment the box opens, sharp and one-note like added fragrance; overwhelming after a while.",
+  },
+  {
+    id: "van-dau",
+    title: "Resin veins",
+    natural:
+      "Dark and light veins interlace and follow the grain; no two beads or pieces look alike.",
+    treated:
+      "Veins are faint or suspiciously even, with oil pooled in patches that ignore the grain.",
+  },
+  {
+    id: "mau-sac",
+    title: "Colour",
+    natural:
+      "Several shades on a single bead, from golden brown to deep brown; a white cloth stays clean.",
+    treated:
+      "An unnaturally even black or brown; a white cloth may pick up oil or colour.",
+  },
+  {
+    id: "khoi",
+    title: "Smoke when burned",
+    natural:
+      "Thin, blue-white smoke; a soft, sweet scent that shifts as it burns and doesn't sting the eyes.",
+    treated:
+      "Dark or heavy smoke with an acrid, burnt smell; oil may bubble where it burns.",
+  },
+  {
+    id: "be-mat",
+    title: "Feel of the surface",
+    natural:
+      "Dry and smooth; very resinous wood can feel faintly tacky but leaves no mark.",
+    treated:
+      "Greasy, sticky or waxy-shiny, and leaves an oil mark on white paper.",
+  },
+];
+
+const GRADE_GUIDE_EN: typeof GRADE_GUIDE = [
+  {
+    grade: "chìm",
+    title: "Sinking agarwood (trầm chìm)",
+    body: "Wood so saturated with resin it is heavier than water and sinks outright. The rarest grade, with a rich, deep scent, usually kept for collectors or for appreciation.",
+  },
+  {
+    grade: "bán chìm",
+    title: "Semi-sinking agarwood (trầm bán chìm)",
+    body: "Plenty of resin, though not enough to sink fully: it hangs in the water. A full scent that balances rarity and price.",
+  },
+  {
+    grade: "nổi",
+    title: "Floating agarwood (trầm nổi)",
+    body: "Resinous wood that is still lighter than water. The most common grade for bracelets, incense and cones, with a light, clean scent for everyday use.",
+  },
+  {
+    grade: "tốc",
+    title: "Insect-formed agarwood (trầm tốc)",
+    body: "Formed around insect bore holes in the aquilaria trunk, so the wood is full of small holes and interlaced veins. The scent is often sweet and very distinctive.",
+  },
+];
+
+const REGION_GUIDE_EN: typeof REGION_GUIDE = [
+  {
+    name: "Khanh Hoa",
+    body: "Van Ninh, Ninh Hoa and the hills around Nha Trang, where agarwood hunting has passed down through generations.",
+  },
+  {
+    name: "Quang Nam",
+    body: "Tien Phuoc, Que Son and the western Truong Son forests, known for sweet-scented agarwood.",
+  },
+  {
+    name: "Ha Tinh & Quang Binh",
+    body: "The forests of the North Central Coast, where aquilaria grows wild among old-growth trees.",
+  },
+  {
+    name: "Phu Yen & the Central Highlands",
+    body: "Midland forests where aquilaria trees are found scattered here and there.",
+  },
+];
+
+const RESIN_AGE_NOTES_EN: typeof RESIN_AGE_NOTES = [
+  "Resin age is how long the aquilaria tree has been producing resin to heal its wounds. The longer the resin builds up, the denser and heavier the wood.",
+  "Long-aged agarwood tends to smell deeper and warmer, with less raw-wood note; younger agarwood is lighter and cleaner.",
+  "Because it takes many years and grows scarcer over time, resin age is one of the biggest factors in price.",
+];
+
+/** All of the guide content above, in one locale. */
+export function guideContentFor(locale: Locale) {
+  if (locale === "en") {
+    return {
+      authenticitySigns: AUTHENTICITY_SIGNS_EN,
+      gradeGuide: GRADE_GUIDE_EN,
+      regionGuide: REGION_GUIDE_EN,
+      resinAgeNotes: RESIN_AGE_NOTES_EN,
+    };
+  }
+  return {
+    authenticitySigns: AUTHENTICITY_SIGNS,
+    gradeGuide: GRADE_GUIDE,
+    regionGuide: REGION_GUIDE,
+    resinAgeNotes: RESIN_AGE_NOTES,
+  };
+}

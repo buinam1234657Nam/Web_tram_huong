@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
+import { notFound } from "next/navigation";
 import { Be_Vietnam_Pro, Playfair_Display } from "next/font/google";
-import "./globals.css";
+import "../globals.css";
 import { AnnouncementBar } from "@/components/layout/AnnouncementBar";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
@@ -9,6 +10,10 @@ import { FloatingContactWidget } from "@/components/ui/FloatingContactWidget";
 import { OrganizationJsonLd } from "@/components/seo/JsonLd";
 import { SmoothScroll } from "@/components/motion/SmoothScroll";
 import { siteUrl } from "@/lib/config/site";
+import { LOCALES, LOCALE_TAGS, isLocale } from "@/i18n/config";
+import { getLocale } from "@/i18n/server";
+import { LocaleProvider } from "@/i18n/client";
+import { siteMessages } from "@/i18n/messages/site";
 
 const beVietnam = Be_Vietnam_Pro({
   variable: "--font-be-vietnam",
@@ -25,55 +30,63 @@ const playfair = Playfair_Display({
   display: "swap",
 });
 
-export const metadata: Metadata = {
-  title: {
-    template: "%s | VĨNH TRẦM",
-    default: "VĨNH TRẦM | Tinh Hoa Trầm Hương Tự Nhiên Đất Việt",
-  },
-  description:
-    "Thương hiệu trầm hương thượng hạng chế tác thủ công từ cây dó bầu Khánh Hòa & Quảng Nam. Vòng tay trầm hương, nhang trầm, trầm nụ, tinh dầu nguyên chất.",
-  // No site-wide canonical here: pages without their own would all claim "/".
-  metadataBase: new URL(siteUrl),
-  openGraph: {
-    title: "VĨNH TRẦM | Tinh Hoa Trầm Hương Tự Nhiên Đất Việt",
-    description:
-      "Kết nối thiên nhiên và tâm hồn qua hương trầm nguyên bản đất Việt.",
-    siteName: "VĨNH TRẦM",
-    locale: "vi_VN",
-    type: "website",
-    images: [
-      {
-        url: "/images/hero-agarwood.jpg",
-        width: 1376,
-        height: 768,
-        alt: "VĨNH TRẦM - Trầm Hương Tự Nhiên",
-      },
-    ],
-  },
-};
+export async function generateStaticParams() {
+  return LOCALES.map((lang) => ({ lang }));
+}
 
-export default function RootLayout({
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await getLocale();
+  const t = siteMessages[locale];
+  return {
+    title: {
+      template: "%s | VĨNH TRẦM",
+      default: t.defaultTitle,
+    },
+    description: t.defaultDescription,
+    // No site-wide canonical here: pages without their own would all claim "/".
+    metadataBase: new URL(siteUrl),
+    openGraph: {
+      title: t.defaultTitle,
+      description: t.ogDescription,
+      siteName: "VĨNH TRẦM",
+      locale: locale === "vi" ? "vi_VN" : "en_US",
+      type: "website",
+      images: [
+        {
+          url: "/images/hero-agarwood.jpg",
+          width: 1376,
+          height: 768,
+          alt: t.ogImageAlt,
+        },
+      ],
+    },
+  };
+}
+
+export default async function RootLayout({
   children,
-}: {
-  children: React.ReactNode;
-}) {
+  params,
+}: LayoutProps<"/[lang]">) {
+  const { lang } = await params;
+  if (!isLocale(lang)) notFound();
+
   return (
     <html
-      lang="vi"
+      lang={LOCALE_TAGS[lang]}
       className={`${beVietnam.variable} ${playfair.variable} h-full antialiased`}
     >
       {/* Warm cream canvas like the reference site; white is kept for cards on top of it */}
       <body className="min-h-full flex flex-col bg-cream text-charcoal font-sans">
-        <SmoothScroll />
-        <OrganizationJsonLd />
-        <AnnouncementBar />
-        <Header />
-        <main className="flex-1">{children}</main>
-        <Footer />
-
-        
-        <CartDrawer />
-        <FloatingContactWidget />
+        <LocaleProvider locale={lang}>
+          <SmoothScroll />
+          <OrganizationJsonLd />
+          <AnnouncementBar />
+          <Header />
+          <main className="flex-1">{children}</main>
+          <Footer />
+          <CartDrawer />
+          <FloatingContactWidget />
+        </LocaleProvider>
       </body>
     </html>
   );

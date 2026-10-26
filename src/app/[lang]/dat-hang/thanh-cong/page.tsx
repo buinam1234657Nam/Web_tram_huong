@@ -1,24 +1,30 @@
 import React, { Suspense } from "react";
 import { Metadata } from "next";
 import { Breadcrumbs } from "@/components/ui/Breadcrumbs";
+import { getLocale } from "@/i18n/server";
+import { localeAlternates } from "@/i18n/config";
+import { orderMessages } from "@/i18n/messages/order";
 import { OrderLoading, OrderSuccessView } from "./OrderSuccessView";
 
-export const metadata: Metadata = {
-  title: "Đặt Hàng Thành Công",
-  description: "Xác nhận đơn hàng tại VĨNH TRẦM.",
-  alternates: {
-    canonical: "/dat-hang/thanh-cong",
-  },
-  robots: {
-    index: false,
-    follow: true,
-  },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await getLocale();
+  const t = orderMessages[locale];
+  return {
+    title: t.metaTitle,
+    description: t.metaDescription,
+    alternates: localeAlternates("/dat-hang/thanh-cong", locale),
+    robots: {
+      index: false,
+      follow: true,
+    },
+  };
+}
 
-export default function OrderSuccessPage() {
+export default async function OrderSuccessPage() {
+  const t = orderMessages[await getLocale()];
   const breadcrumbs = [
-    { label: "Giỏ hàng", href: "/gio-hang" },
-    { label: "Đặt hàng thành công", href: "/dat-hang/thanh-cong" },
+    { label: t.breadcrumbCart, href: "/gio-hang" },
+    { label: t.breadcrumbSuccess, href: "/dat-hang/thanh-cong" },
   ];
 
   return (

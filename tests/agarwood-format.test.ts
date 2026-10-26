@@ -33,6 +33,18 @@ describe("agarwood profile formatting", () => {
     rows.forEach((r) => expect(r.value).not.toMatch(/null|undefined/));
   });
 
+  it("translates labels and known values for English pages", () => {
+    expect(
+      profileChips(
+        { ...EMPTY, grade: "chìm", origin: "Khánh Hòa, Việt Nam", resinAgeYears: "Trên 25 năm" },
+        "en",
+      ),
+    ).toEqual(["Sinking agarwood", "Khanh Hoa, Vietnam", "Over 25 years of resin"]);
+    expect(profileRows({ ...EMPTY, sinksInWater: true }, "en")).toEqual([
+      { label: "In water", value: "Sinks" },
+    ]);
+  });
+
   it("states sinking either way once it is known", () => {
     expect(profileRows({ ...EMPTY, sinksInWater: false })).toEqual([
       { label: "Thả nước", value: "Nổi" },

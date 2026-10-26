@@ -1,49 +1,45 @@
 import React from "react";
 import type { Metadata } from "next";
-import Link from "next/link";
+import Link from "@/components/i18n/Link";
 import Image from "next/image";
 import { ArrowRight, ChevronRight } from "lucide-react";
 import { catalogRepository } from "@/data/repositories/catalog-repository";
 import { brandConfig } from "@/lib/config/brand";
-import { HERO_SLIDES } from "@/data/content/home";
-import { RITUALS } from "@/data/content/rituals";
+import { heroSlidesFor } from "@/data/content/home";
+import { ritualsFor } from "@/data/content/rituals";
+import { localeAlternates } from "@/i18n/config";
+import { getLocale } from "@/i18n/server";
+import { homeMessages } from "@/i18n/messages/home";
+import { brandMessages } from "@/i18n/messages/brand";
 import { Button } from "@/components/ui/Button";
 import { NewsletterForm } from "@/components/ui/NewsletterForm";
-import { FadeIn } from "@/components/motion/MotionPrimitives";
+import { ReviewerAvatar } from "@/components/ui/ReviewerAvatar";
+import { CountUp, FadeIn } from "@/components/motion/MotionPrimitives";
 import { HeroSlider } from "@/components/home/HeroSlider";
 import { FeaturedShowcase } from "@/components/home/FeaturedShowcase";
 import { AuthenticitySigns } from "@/components/product/AuthenticitySigns";
 
-export const metadata: Metadata = {
-  alternates: { canonical: "/" },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await getLocale();
+  return {
+    description: homeMessages[locale].metaDescription,
+    alternates: localeAlternates("/", locale),
+  };
+}
 
-const BRAND_STATEMENT = {
-  eyebrow: "Vì sao chọn Vĩnh Trầm",
-  title: "Tinh túy từ rừng dó bầu Khánh Hòa",
-  body: "Mỗi chuỗi trầm bắt đầu từ cây dó bầu tích nhựa hàng chục năm. Chúng tôi chỉ giữ lại phần tinh túy nhất để trao đến tay bạn.",
-};
-
-/** The two cards beside the featured carousel. TODO: chủ shop thay ảnh bộ sưu tập thật. */
+/** The two cards beside the featured carousel (titles live in homeMessages.collections). TODO: chủ shop thay ảnh bộ sưu tập thật. */
 const SHOWCASE_COLLECTIONS = [
-  {
-    title: "Tuyển tập quà tặng",
-    subtitle: "Nghệ thuật trao gửi",
-    image: "/images/gift-set.jpg",
-    href: "/nhu-cau/qua-bieu",
-  },
-  {
-    title: "Trầm hương tự nhiên",
-    subtitle: "Giá trị nguyên bản",
-    image: "/images/raw-agarwood.jpg",
-    href: "/danh-muc/tram-huong-mieng",
-  },
+  { image: "/images/gift-set.jpg", href: "/nhu-cau/qua-bieu" },
+  { image: "/images/raw-agarwood.jpg", href: "/danh-muc/tram-huong-mieng" },
 ];
 
 /** Delay between siblings that reveal together (cards in a row, list items). */
 const STAGGER = 0.12;
 
 export default async function HomePage() {
+  const locale = await getLocale();
+  const t = homeMessages[locale];
+  const brand = brandMessages[locale];
   const [featured, allProducts, categories, reviews, articles] =
     await Promise.all([
       catalogRepository.getFeaturedProducts(4),
@@ -66,13 +62,10 @@ export default async function HomePage() {
   featuredReviews.forEach(({ product }) => product && shownProductIds.add(product.id));
 
   const brandFacts = [
-    { value: "100%", label: "Trầm tự nhiên, không tẩm ướp" },
-    { value: String(brandConfig.foundingYear), label: "Năm thành lập xưởng" },
-    { value: String(categories.length), label: "Dòng sản phẩm thủ công" },
-    {
-      value: `${brandConfig.policies.returnDays} ngày`,
-      label: "Đổi trả nếu sản phẩm lỗi",
-    },
+    { value: "100%", label: t.factNatural },
+    { value: String(brandConfig.foundingYear), label: t.factFounded },
+    { value: String(categories.length), label: t.factLines },
+    t.factReturns(brandConfig.policies.returnDays),
   ];
   const showroomMapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
     brandConfig.contact.showroomAddress,
@@ -82,7 +75,7 @@ export default async function HomePage() {
   return (
     <div className="space-y-20 sm:space-y-28 pb-24">
       {/* 1. Hero: one positioning line + one main button per banner */}
-      <HeroSlider slides={HERO_SLIDES} />
+      <HeroSlider slides={heroSlidesFor(locale)} />
 
       {/* 2. Tuyển tác phẩm: featured products in one large carousel card, beside two collections */}
       {featured.length > 0 && (
@@ -90,21 +83,20 @@ export default async function HomePage() {
           <FadeIn className="mb-8 sm:mb-10 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
             <div>
               <p className="text-xs font-medium tracking-[0.22em] uppercase text-gold-dark">
-                Tuyển chọn của Vĩnh Trầm
+                {t.showcaseEyebrow}
               </p>
               <h2 className="mt-2 font-serif text-4xl sm:text-5xl font-medium text-espresso tracking-normal">
-                Tuyển tác phẩm
+                {t.showcaseTitle}
               </h2>
               <p className="mt-3 max-w-md text-[15px] text-muted leading-relaxed">
-                Mỗi sản phẩm là một câu chuyện về thiên nhiên, về sự kiên nhẫn
-                và giá trị trường tồn.
+                {t.showcaseBody}
               </p>
             </div>
             <Link
               href="/san-pham"
               className="group self-start sm:self-auto inline-flex items-center gap-2 pb-1.5 pl-10 border-b border-gold/60 text-sm font-medium text-agarwood hover:text-gold-dark transition-colors"
             >
-              Xem tất cả
+              {t.viewAll}
               <ArrowRight
                 className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-0.5"
                 aria-hidden="true"
@@ -123,7 +115,7 @@ export default async function HomePage() {
                 fromPrice: p.variants.some((v) => v.price !== p.price),
                 bestseller: Boolean(p.bestseller),
               }))}
-              collections={SHOWCASE_COLLECTIONS}
+              collections={SHOWCASE_COLLECTIONS.map((c, i) => ({ ...c, ...t.collections[i] }))}
             />
           </FadeIn>
         </section>
@@ -132,12 +124,12 @@ export default async function HomePage() {
       {/* 3. Shop by need / ritual */}
       <section className="max-w-site mx-auto px-4 sm:px-6 lg:px-8">
         <SectionHeader
-          title="Mua theo nhu cầu"
+          title={t.ritualsTitle}
           href="/san-pham"
-          linkLabel="Xem tất cả sản phẩm"
+          linkLabel={t.ritualsLink}
         />
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {RITUALS.map((ritual, idx) => (
+          {ritualsFor(locale).map((ritual, idx) => (
             <FadeIn key={ritual.slug} delay={(idx % 4) * STAGGER}>
               <Link
                 href={`/nhu-cau/${ritual.slug}`}
@@ -162,7 +154,7 @@ export default async function HomePage() {
                     {ritual.description}
                   </p>
                   <span className="mt-4 inline-flex items-center gap-1 h-10 px-5 rounded-full bg-white text-espresso text-sm font-medium transition-colors duration-300 group-hover:bg-gold-light">
-                    Khám phá
+                    {t.explore}
                     <ChevronRight className="w-4 h-4" aria-hidden="true" />
                   </span>
                 </div>
@@ -177,17 +169,16 @@ export default async function HomePage() {
         <div className="relative max-w-site mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24">
           <FadeIn className="flex flex-col lg:flex-row lg:items-end justify-between gap-6">
             <div className="max-w-2xl">
-              <p className="text-sm font-medium text-gold-light">Hiểu về trầm</p>
+              <p className="text-sm font-medium text-gold-light">{t.guideEyebrow}</p>
               <h2 className="mt-3 text-3xl sm:text-4xl font-semibold text-white leading-[1.15] tracking-tight">
-                Năm dấu hiệu của trầm tự nhiên
+                {t.guideTitle}
               </h2>
               <p className="mt-4 text-[15px] sm:text-base text-white/70 leading-relaxed">
-                Trước khi chọn trầm, hãy biết cách phân biệt trầm tự nhiên với
-                trầm tẩm dầu, chỉ bằng mũi, mắt và tay.
+                {t.guideBody}
               </p>
             </div>
             <Button href="/hieu-ve-tram" variant="gold" className="self-start lg:self-auto shrink-0">
-              Xem đầy đủ
+              {t.guideCta}
             </Button>
           </FadeIn>
           <FadeIn className="mt-10">
@@ -195,7 +186,7 @@ export default async function HomePage() {
           </FadeIn>
           {latestArticle && (
             <p className="mt-10 text-[15px] text-white/60">
-              Đọc thêm:{" "}
+              {t.readMore}{" "}
               <Link
                 href={`/bai-viet/${latestArticle.slug}`}
                 className="text-gold-light hover:underline underline-offset-4"
@@ -207,7 +198,7 @@ export default async function HomePage() {
                 href="/bai-viet"
                 className="text-white/80 hover:text-white hover:underline underline-offset-4"
               >
-                Tất cả bài viết
+                {t.allArticles}
               </Link>
             </p>
           )}
@@ -223,7 +214,7 @@ export default async function HomePage() {
           >
             <Image
               src="/images/artisan-story.jpg"
-              alt="Nghệ nhân VĨNH TRẦM chế tác trầm hương thủ công"
+              alt={t.workshopImageAlt}
               fill
               sizes="100vw"
               className="object-cover"
@@ -231,17 +222,16 @@ export default async function HomePage() {
             <div className="absolute inset-0 bg-linear-to-r from-black/70 via-black/30 to-transparent" />
             <div className="absolute left-6 bottom-8 sm:left-12 sm:bottom-12 max-w-md text-white">
               <p className="text-[15px] font-medium text-gold-light">
-                Câu chuyện xưởng & nghệ nhân
+                {t.workshopEyebrow}
               </p>
               <p className="mt-1 text-3xl sm:text-5xl font-bold uppercase leading-[1.12] tracking-tight">
-                Từ đôi tay nghệ nhân
+                {t.workshopTitle}
               </p>
               <p className="mt-4 text-white/85">
-                Không tẩm hóa chất, không phủ bóng nhân tạo. Từng mảnh giác được
-                xỉa sạch để giữ nguyên thớ dầu.
+                {t.workshopBody}
               </p>
               <span className="mt-6 inline-flex px-5 py-2 rounded-full bg-white text-charcoal text-[15px] font-medium transition-colors duration-300 group-hover:bg-ivory-dark">
-                Ghé thăm xưởng
+                {t.workshopCta}
               </span>
             </div>
           </Link>
@@ -250,13 +240,13 @@ export default async function HomePage() {
         <div className="mt-14 sm:mt-20 grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-center">
           <FadeIn>
             <p className="text-sm font-medium text-gold-dark">
-              {BRAND_STATEMENT.eyebrow}
+              {t.whyEyebrow}
             </p>
             <h2 className="mt-3 text-3xl sm:text-4xl lg:text-5xl font-semibold leading-[1.15] tracking-tight">
-              {BRAND_STATEMENT.title}
+              {t.whyTitle}
             </h2>
             <p className="mt-5 text-[15px] sm:text-base text-muted leading-relaxed max-w-md">
-              {BRAND_STATEMENT.body}
+              {t.whyBody}
             </p>
           </FadeIn>
 
@@ -270,9 +260,10 @@ export default async function HomePage() {
               >
                 <dt className="sr-only">{fact.label}</dt>
                 <dd>
-                  <span className="block text-3xl sm:text-5xl font-bold text-agarwood tracking-tight">
-                    {fact.value}
-                  </span>
+                  <CountUp
+                    value={fact.value}
+                    className="block text-3xl sm:text-5xl font-bold text-agarwood tracking-tight"
+                  />
                   <span className="mt-2 block text-sm sm:text-[15px] text-muted leading-snug">
                     {fact.label}
                   </span>
@@ -285,71 +276,88 @@ export default async function HomePage() {
 
       {/* 6. Reviews (max 3; never re-shows a product from the sections above) */}
       {featuredReviews.length > 0 && (
-        <section className="bg-cream-dark py-20 sm:py-24">
+        <section className="bg-cream-dark py-14 sm:py-16">
           <div className="max-w-site mx-auto px-4 sm:px-6 lg:px-8">
-            <FadeIn>
-              <h2 className="text-3xl sm:text-4xl mb-12">Khách hàng nói gì</h2>
+            {/* Same header pattern as "Tuyển tác phẩm": eyebrow, serif title, summary underneath */}
+            <FadeIn className="mb-8 sm:mb-10">
+              <p className="inline-flex items-center gap-3 text-sm font-semibold tracking-[0.14em] uppercase text-agarwood">
+                <span aria-hidden="true" className="w-8 h-px bg-gold" />
+                {t.reviewsEyebrow}
+              </p>
+              <h2 className="mt-2 font-serif text-3xl sm:text-4xl font-medium text-espresso tracking-normal">
+                {t.reviewsTitle}
+              </h2>
+              <p className="mt-3 max-w-md text-[15px] text-charcoal/75 leading-relaxed">
+                {t.reviewsBody}
+              </p>
             </FadeIn>
             {/* Swipeable rail on mobile, 3-column grid from md up */}
-            <div className="flex md:grid md:grid-cols-3 overflow-x-auto md:overflow-visible snap-x snap-mandatory no-scrollbar -mx-4 px-4 sm:-mx-6 sm:px-6 md:mx-0 md:px-0 gap-4 lg:gap-6">
+            <div className="flex md:grid md:grid-cols-3 overflow-x-auto md:overflow-visible snap-x snap-mandatory no-scrollbar -mx-4 px-4 sm:-mx-6 sm:px-6 md:mx-0 md:px-0 gap-4">
               {featuredReviews.map(({ review, product }, idx) => (
                 <FadeIn
                   key={review.id}
                   delay={idx * STAGGER}
                   className="h-full shrink-0 basis-[85%] md:basis-auto snap-start"
                 >
-                  <figure className="group h-full flex flex-col bg-white overflow-hidden rounded-2xl border border-border-subtle">
-                    {/* No customer photos exist, so show the product they bought */}
+                  <figure className="relative h-full flex flex-col rounded-2xl border border-gold/25 bg-ivory p-5 sm:p-6">
+                    {/* Large decorative quote mark */}
+                    <span
+                      aria-hidden="true"
+                      className="absolute right-5 top-2 font-serif text-6xl leading-none text-gold/25 select-none"
+                    >
+                      “
+                    </span>
+
+                    <figcaption className="flex items-center gap-3">
+                      <ReviewerAvatar
+                        name={review.authorName}
+                        src={review.authorAvatar}
+                      />
+                      <span className="min-w-0">
+                        <span className="block text-[15px] font-semibold text-charcoal truncate">
+                          {review.authorName}
+                        </span>
+                        <span className="block text-xs text-muted">
+                          {review.authorLocation}
+                          {review.verifiedPurchase && (
+                            <span className="text-gold-dark"> · {t.verifiedPurchase}</span>
+                          )}
+                        </span>
+                      </span>
+                    </figcaption>
+
+                    <p
+                      className="mt-4 text-gold text-sm tracking-widest"
+                      aria-label={t.stars(review.rating)}
+                    >
+                      {"★".repeat(review.rating)}
+                    </p>
+                    <blockquote className="mt-2 flex-1 text-[15px] text-charcoal/85 leading-relaxed line-clamp-4">
+                      {review.content}
+                    </blockquote>
+
                     {product && (
                       <Link
                         href={`/san-pham/${product.slug}`}
-                        className="relative block aspect-4/3 bg-ivory overflow-hidden"
+                        className="group mt-4 pt-4 border-t border-gold/20 flex items-center gap-3"
                       >
-                        <Image
-                          src={product.images[0]}
-                          alt={product.name}
-                          fill
-                          sizes="(max-width: 768px) 100vw, 33vw"
-                          className="object-cover transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.04]"
-                        />
+                        <span className="relative w-10 h-10 shrink-0 overflow-hidden rounded-lg bg-cream">
+                          <Image
+                            src={product.images[0]}
+                            alt=""
+                            fill
+                            sizes="40px"
+                            className="object-cover"
+                          />
+                        </span>
+                        <span className="min-w-0 text-xs">
+                          <span className="block text-muted">{t.purchased}</span>
+                          <span className="block truncate font-medium text-agarwood group-hover:text-gold-dark transition-colors">
+                            {product.name}
+                          </span>
+                        </span>
                       </Link>
                     )}
-                    <div className="flex-1 flex flex-col p-6 sm:p-8">
-                      <p
-                        className="text-gold text-sm tracking-widest"
-                        aria-label={`${review.rating} trên 5 sao`}
-                      >
-                        {"★".repeat(review.rating)}
-                      </p>
-                      <blockquote className="mt-4 flex-1 text-[17px] text-charcoal leading-relaxed">
-                        “{review.content}”
-                      </blockquote>
-                      <figcaption className="mt-6 pt-6 border-t border-border-subtle flex items-center gap-3">
-                        <span
-                          aria-hidden="true"
-                          className="w-11 h-11 shrink-0 rounded-full bg-espresso text-gold-light flex items-center justify-center text-sm font-semibold"
-                        >
-                          {initialsOf(review.authorName)}
-                        </span>
-                        <span className="min-w-0 text-sm">
-                          <span className="block font-medium text-charcoal">
-                            {review.authorName}
-                            <span className="font-normal text-muted">
-                              {" · "}
-                              {review.authorLocation}
-                            </span>
-                          </span>
-                          {product && (
-                            <Link
-                              href={`/san-pham/${product.slug}`}
-                              className="block truncate text-muted hover:text-gold-dark transition-colors duration-300"
-                            >
-                              Đã mua: {product.name}
-                            </Link>
-                          )}
-                        </span>
-                      </figcaption>
-                    </div>
                   </figure>
                 </FadeIn>
               ))}
@@ -362,14 +370,14 @@ export default async function HomePage() {
       <section className="max-w-site mx-auto px-4 sm:px-6 lg:px-8">
         <FadeIn className="relative rounded-3xl bg-espresso text-white overflow-hidden grid grid-cols-1 lg:grid-cols-2">
           <div className="relative px-6 py-14 sm:px-12 sm:py-16">
-            <p className="text-sm font-medium text-gold-light">Showroom</p>
+            <p className="text-sm font-medium text-gold-light">{t.showroomEyebrow}</p>
             <h2 className="mt-3 text-3xl sm:text-4xl text-white">
-              Ghé thử mùi trước khi chọn
+              {t.showroomTitle}
             </h2>
             <p className="mt-4 text-white/70 max-w-md leading-relaxed">
               {brandConfig.contact.showroomAddress}
               <br />
-              {brandConfig.contact.workingHours}
+              {brand.workingHours}
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
               <Button
@@ -378,23 +386,22 @@ export default async function HomePage() {
                 rel="noopener noreferrer"
                 variant="gold"
               >
-                Xem đường đi
+                {t.directions}
               </Button>
               <Button
                 href={`tel:${brandConfig.contact.hotline}`}
                 variant="outline-light"
               >
-                Gọi {brandConfig.contact.phoneFormatted}
+                {t.call(brandConfig.contact.phoneFormatted)}
               </Button>
             </div>
           </div>
           <div className="px-6 py-14 sm:px-12 sm:py-16 bg-espresso-dark/60 border-t lg:border-t-0 lg:border-l border-white/10 flex flex-col justify-center">
             <h2 className="text-2xl sm:text-3xl text-white">
-              Nhận tin từ Vĩnh Trầm
+              {t.newsletterTitle}
             </h2>
             <p className="mt-2 text-white/60 max-w-md">
-              Kiến thức thưởng trầm, bộ sưu tập mới và ưu đãi dành riêng cho
-              thành viên.
+              {t.newsletterBody}
             </p>
             <NewsletterForm className="mt-6 max-w-md" />
           </div>
@@ -402,17 +409,6 @@ export default async function HomePage() {
       </section>
     </div>
   );
-}
-
-/** "Nguyễn Thùy Linh" → "TL": last two words, as Vietnamese names are addressed by the given name. */
-function initialsOf(name: string) {
-  return name
-    .trim()
-    .split(/\s+/)
-    .slice(-2)
-    .map((word) => word[0])
-    .join("")
-    .toUpperCase();
 }
 
 function SectionHeader({

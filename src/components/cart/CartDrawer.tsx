@@ -2,7 +2,7 @@
 
 import React, { useEffect, useRef } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import Link from "next/link";
+import Link from "@/components/i18n/Link";
 import Image from "next/image";
 import { X, Plus, Minus } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
@@ -13,10 +13,16 @@ import { formatVND } from "@/lib/format/currency";
 import { brandConfig } from "@/lib/config/brand";
 import { MOTION_EASE } from "@/components/motion/MotionPrimitives";
 import { Button } from "@/components/ui/Button";
+import { useLocalizePath, useMessages } from "@/i18n/client";
+import { layoutMessages } from "@/i18n/messages/layout";
+import { commonMessages } from "@/i18n/messages/common";
 
 export function CartDrawer() {
   const router = useRouter();
   const pathname = usePathname();
+  const localize = useLocalizePath();
+  const t = useMessages(layoutMessages).cart;
+  const common = useMessages(commonMessages);
   const {
     items,
     isOpen,
@@ -38,8 +44,8 @@ export function CartDrawer() {
 
   useEffect(() => {
     if (!isOpen) return;
-    router.prefetch("/gio-hang");
-    router.prefetch("/thanh-toan");
+    router.prefetch(localize("/gio-hang"));
+    router.prefetch(localize("/thanh-toan"));
     closeButtonRef.current?.focus();
 
     const onKeyDown = (e: KeyboardEvent) => {
@@ -47,7 +53,7 @@ export function CartDrawer() {
     };
     document.addEventListener("keydown", onKeyDown);
     return () => document.removeEventListener("keydown", onKeyDown);
-  }, [isOpen, router, closeCart]);
+  }, [isOpen, router, closeCart, localize]);
 
   useScrollLock(isOpen);
 
@@ -64,7 +70,7 @@ export function CartDrawer() {
 
   const navigate = (path: string) => {
     closeCart();
-    router.push(path);
+    router.push(localize(path));
   };
 
   return (
@@ -97,14 +103,14 @@ export function CartDrawer() {
                 id="cart-drawer-title"
                 className="text-lg font-semibold text-charcoal"
               >
-                Giỏ hàng{totalItems > 0 && ` (${totalItems})`}
+                {t.title}{totalItems > 0 && ` (${totalItems})`}
               </h2>
               <button
                 ref={closeButtonRef}
                 type="button"
                 onClick={closeCart}
                 className="p-2 -mr-2 rounded-full text-charcoal hover:bg-ivory transition-colors cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-espresso focus-visible:ring-offset-2"
-                aria-label="Đóng giỏ hàng"
+                aria-label={t.close}
               >
                 <X className="w-5 h-5" />
               </button>
@@ -113,17 +119,9 @@ export function CartDrawer() {
             {items.length > 0 && (
               <div className="px-6 py-4 border-b border-border-subtle">
                 <p className="text-sm text-charcoal">
-                  {remainingForFreeShipping > 0 ? (
-                    <>
-                      Mua thêm{" "}
-                      <span className="font-medium">
-                        {formatVND(remainingForFreeShipping)}
-                      </span>{" "}
-                      để được miễn phí vận chuyển.
-                    </>
-                  ) : (
-                    "Đơn hàng của bạn được miễn phí vận chuyển."
-                  )}
+                  {remainingForFreeShipping > 0
+                    ? t.freeShippingRemaining(formatVND(remainingForFreeShipping))
+                    : t.freeShippingReached}
                 </p>
                 <div className="mt-2.5 h-1 w-full rounded-full bg-ivory-dark overflow-hidden">
                   <div
@@ -138,16 +136,16 @@ export function CartDrawer() {
               {items.length === 0 ? (
                 <div className="h-full flex flex-col items-center justify-center text-center py-12">
                   <p className="text-lg font-medium text-charcoal">
-                    Giỏ hàng đang trống
+                    {t.emptyTitle}
                   </p>
                   <p className="mt-2 text-sm text-muted max-w-xs">
-                    Khám phá vòng tay, nhang và trầm nụ tự nhiên của Vĩnh Trầm.
+                    {t.emptyBody}
                   </p>
                   <Button
                     onClick={() => navigate("/san-pham")}
                     className="mt-6"
                   >
-                    Xem sản phẩm
+                    {common.viewProducts}
                   </Button>
                 </div>
               ) : (
@@ -191,9 +189,9 @@ export function CartDrawer() {
                           type="button"
                           onClick={() => removeItem(item.id)}
                           className="mt-2 text-sm text-muted underline underline-offset-4 hover:text-charcoal transition-colors cursor-pointer"
-                          aria-label={`Xóa ${item.name} khỏi giỏ`}
+                          aria-label={t.removeLabel(item.name)}
                         >
-                          Xóa
+                          {t.remove}
                         </button>
                       </div>
                     </li>
@@ -205,13 +203,13 @@ export function CartDrawer() {
             {items.length > 0 && (
               <div className="px-6 py-6 border-t border-border-subtle">
                 <div className="flex items-baseline justify-between">
-                  <span className="text-[15px] text-muted">Tạm tính</span>
+                  <span className="text-[15px] text-muted">{t.subtotal}</span>
                   <span className="text-xl font-semibold text-charcoal">
                     {formatVND(subtotal)}
                   </span>
                 </div>
                 <p className="mt-1 text-sm text-muted">
-                  Phí vận chuyển được tính ở bước thanh toán.
+                  {t.shippingNote}
                 </p>
                 <div className="mt-5 space-y-2.5">
                   <Button
@@ -219,7 +217,7 @@ export function CartDrawer() {
                     size="lg"
                     className="w-full"
                   >
-                    Thanh toán
+                    {t.checkout}
                   </Button>
                   <Button
                     onClick={() => navigate("/gio-hang")}
@@ -227,7 +225,7 @@ export function CartDrawer() {
                     size="lg"
                     className="w-full"
                   >
-                    Xem giỏ hàng
+                    {t.viewCart}
                   </Button>
                 </div>
               </div>
@@ -253,6 +251,7 @@ export function QuantityStepper({
   label: string;
   size?: "sm" | "md";
 }) {
+  const t = useMessages(layoutMessages).cart;
   const buttonSize = size === "sm" ? "w-8 h-8" : "w-10 h-10";
   return (
     <div className="inline-flex items-center rounded-full border border-border-subtle">
@@ -260,7 +259,7 @@ export function QuantityStepper({
         type="button"
         onClick={() => onChange(quantity - 1)}
         className={`${buttonSize} flex items-center justify-center rounded-full text-charcoal hover:bg-ivory transition-colors cursor-pointer`}
-        aria-label={`Giảm số lượng ${label}`}
+        aria-label={t.decrease(label)}
       >
         <Minus className="w-3.5 h-3.5" />
       </button>
@@ -275,7 +274,7 @@ export function QuantityStepper({
         onClick={() => onChange(quantity + 1)}
         disabled={quantity >= max}
         className={`${buttonSize} flex items-center justify-center rounded-full text-charcoal hover:bg-ivory transition-colors disabled:opacity-30 disabled:hover:bg-transparent cursor-pointer disabled:cursor-not-allowed`}
-        aria-label={`Tăng số lượng ${label}`}
+        aria-label={t.increase(label)}
       >
         <Plus className="w-3.5 h-3.5" />
       </button>

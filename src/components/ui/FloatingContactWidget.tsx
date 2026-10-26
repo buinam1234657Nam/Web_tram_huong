@@ -6,6 +6,9 @@ import { AnimatePresence, motion } from "motion/react";
 import { ArrowUp, MessageCircle, Phone } from "lucide-react";
 import { brandConfig } from "@/lib/config/brand";
 import { MOTION_EASE } from "@/components/motion/MotionPrimitives";
+import { splitLocale } from "@/i18n/config";
+import { useMessages } from "@/i18n/client";
+import { layoutMessages } from "@/i18n/messages/layout";
 
 /** Routes where a floating button would sit on top of the primary action. */
 const HIDDEN_ON = ["/gio-hang", "/thanh-toan"];
@@ -15,7 +18,8 @@ const RING_CIRCUMFERENCE = 2 * Math.PI * RING_RADIUS;
 
 /** Zalo and hotline buttons, plus a scroll-to-top button once the page is scrolled. */
 export function FloatingContactWidget() {
-  const pathname = usePathname();
+  const { path: pathname } = splitLocale(usePathname());
+  const t = useMessages(layoutMessages).contact;
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [scrollProgress, setScrollProgress] = useState(0);
 
@@ -52,21 +56,21 @@ export function FloatingContactWidget() {
         href={brandConfig.social.zalo}
         target="_blank"
         rel="noopener noreferrer"
-        aria-label="Tư vấn qua Zalo"
+        aria-label={t.zaloLabel}
         className={`${circleButton} bg-gold text-white hover:bg-gold-dark`}
       >
         <MessageCircle className="w-5 h-5" />
-        <span className={tooltip}>Tư vấn Zalo</span>
+        <span className={tooltip}>{t.zaloTooltip}</span>
       </a>
 
       <a
         href={`tel:${brandConfig.contact.hotline}`}
-        aria-label="Gọi hotline tư vấn"
+        aria-label={t.hotlineLabel}
         className={`${circleButton} bg-espresso text-white hover:bg-espresso-light`}
       >
         <Phone className="w-5 h-5" />
         <span className={tooltip}>
-          Hotline: {brandConfig.contact.phoneFormatted}
+          {t.hotlineTooltip(brandConfig.contact.phoneFormatted)}
         </span>
       </a>
 
@@ -75,7 +79,7 @@ export function FloatingContactWidget() {
           <motion.button
             type="button"
             onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-            aria-label="Cuộn lên đầu trang"
+            aria-label={t.scrollTop}
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 8 }}

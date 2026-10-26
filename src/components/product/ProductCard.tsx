@@ -2,11 +2,13 @@
 
 import React, { useState } from "react";
 import Image from "next/image";
-import Link from "next/link";
+import Link from "@/components/i18n/Link";
 import { BellRing, Check, ShoppingBag } from "lucide-react";
 import { ProductSummary } from "@/types/product";
 import { formatVND } from "@/lib/format/currency";
 import { useCartStore } from "@/features/cart/useCartStore";
+import { useMessages } from "@/i18n/client";
+import { productMessages } from "@/i18n/messages/product";
 import { AgarwoodChips, SinksBadge } from "./AgarwoodChips";
 
 export function ProductCard({
@@ -18,6 +20,7 @@ export function ProductCard({
   eager?: boolean;
 }) {
   const [justAdded, setJustAdded] = useState(false);
+  const t = useMessages(productMessages);
 
   const addItem = useCartStore((state) => state.addItem);
 
@@ -59,7 +62,7 @@ export function ProductCard({
           {hoverImage !== primaryImage && (
             <Image
               src={hoverImage}
-              alt={`${product.name} - góc chụp khác`}
+              alt={t.altAngle(product.name)}
               fill
               sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
               className="object-cover transition-opacity duration-700 ease-out opacity-0 group-hover:opacity-100"
@@ -76,7 +79,7 @@ export function ProductCard({
           <p
             className={`text-xs font-medium mb-1 ${isOutOfStock ? "text-muted" : "text-gold-dark"}`}
           >
-            {isOutOfStock ? "Tạm hết hàng" : "Bán chạy"}
+            {isOutOfStock ? t.outOfStock : t.bestseller}
           </p>
         )}
         <h3 className="text-[15px] font-medium text-charcoal leading-snug line-clamp-2">
@@ -100,14 +103,14 @@ export function ProductCard({
             href={href}
             className="flex-1 min-w-0 h-11 inline-flex items-center justify-center rounded-full bg-espresso px-3 text-[13px] sm:text-sm font-medium text-white hover:bg-espresso-light transition-colors"
           >
-            Xem chi tiết
+            {t.viewDetails}
           </Link>
           {isOutOfStock ? (
             <Link
               href={`${href}#bao-khi-co-hang`}
               className="w-11 h-11 shrink-0 rounded-full border border-gold/50 text-agarwood flex items-center justify-center hover:bg-ivory transition-colors"
-              aria-label={`Báo tôi khi có hàng: ${product.name}`}
-              title="Báo tôi khi có hàng"
+              aria-label={t.notifyMeLabel(product.name)}
+              title={t.notifyMe}
             >
               <BellRing className="w-4.5 h-4.5" />
             </Link>
@@ -116,8 +119,8 @@ export function ProductCard({
               type="button"
               onClick={handleQuickAdd}
               className="w-11 h-11 shrink-0 rounded-full border border-gold/50 text-agarwood flex items-center justify-center hover:bg-ivory transition-colors cursor-pointer"
-              aria-label={`Thêm vào giỏ: ${product.name}`}
-              title="Thêm vào giỏ"
+              aria-label={t.addToCartLabel(product.name)}
+              title={t.addToCart}
             >
               {justAdded ? (
                 <Check className="w-4.5 h-4.5" />

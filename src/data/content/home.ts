@@ -1,3 +1,5 @@
+import type { Locale } from "@/i18n/config";
+
 export interface HeroSlide {
   id: string;
   /** Desktop image. Client banners: 2048×768 (8:3), like the reference site. */
@@ -57,3 +59,36 @@ export const HERO_SLIDES: HeroSlide[] = [
     cta: { label: "Khám phá nhang trầm", href: "/nhu-cau/thien" },
   },
 ];
+
+/** English captions for the same slides, by id. */
+const HERO_SLIDES_EN: Record<string, Pick<HeroSlide, "alt" | "caption" | "cta">> = {
+  "nguyen-ban": {
+    alt: "Smoke rising from natural VĨNH TRẦM agarwood",
+    caption: {
+      eyebrow: "Natural Vietnamese agarwood",
+      title: "Vietnamese agarwood. As nature made it.",
+    },
+    cta: { label: "Explore the collection", href: "/san-pham" },
+  },
+  "vong-tay": {
+    alt: "VĨNH TRẦM agarwood bracelet",
+    caption: {
+      eyebrow: "Worn close",
+      title: "Warming with every pulse.",
+    },
+    cta: { label: "Explore bracelets", href: "/danh-muc/vong-tay-tram-huong" },
+  },
+  "nhang-nu": {
+    alt: "VĨNH TRẦM agarwood cones and incense",
+    caption: {
+      eyebrow: "Meditation & stillness",
+      title: "One stick for a quiet moment.",
+    },
+    cta: { label: "Explore incense", href: "/nhu-cau/thien" },
+  },
+};
+
+export function heroSlidesFor(locale: Locale): HeroSlide[] {
+  if (locale === "vi") return HERO_SLIDES;
+  return HERO_SLIDES.map((slide) => ({ ...slide, ...HERO_SLIDES_EN[slide.id] }));
+}

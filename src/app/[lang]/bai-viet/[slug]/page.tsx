@@ -2,7 +2,7 @@ import React, { Suspense } from "react";
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Image from "next/image";
-import Link from "next/link";
+import Link from "@/components/i18n/Link";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { catalogRepository } from "@/data/repositories/catalog-repository";
 import { Breadcrumbs } from "@/components/ui/Breadcrumbs";
@@ -10,6 +10,9 @@ import { ArticleJsonLd, BreadcrumbJsonLd } from "@/components/seo/JsonLd";
 import { Button } from "@/components/ui/Button";
 import { MarkdownContent } from "../MarkdownContent";
 import { formatArticleDate } from "../formatArticleDate";
+import { getLocale } from "@/i18n/server";
+import { localeAlternates, localizePath } from "@/i18n/config";
+import { blogMessages } from "@/i18n/messages/blog";
 
 interface ArticleDetailPageProps {
   params: Promise<{ slug: string }>;
@@ -24,24 +27,25 @@ export async function generateMetadata({
   params,
 }: ArticleDetailPageProps): Promise<Metadata> {
   const { slug } = await params;
-  const article = await catalogRepository.getArticleBySlug(slug);
+  const [article, locale] = await Promise.all([
+    catalogRepository.getArticleBySlug(slug),
+    getLocale(),
+  ]);
 
   if (!article) {
     return {
-      title: "Không tìm thấy bài viết",
+      title: blogMessages[locale].notFoundTitle,
     };
   }
 
   return {
     title: article.title,
     description: article.excerpt,
-    alternates: {
-      canonical: `/bai-viet/${article.slug}`,
-    },
+    alternates: localeAlternates(`/bai-viet/${article.slug}`, locale),
     openGraph: {
       title: article.title,
       description: article.excerpt,
-      url: `/bai-viet/${article.slug}`,
+      url: localizePath(`/bai-viet/${article.slug}`, locale),
       images: [{ url: article.coverImage, alt: article.title }],
       type: "article",
       publishedTime: article.publishedAt,
@@ -68,13 +72,19 @@ async function ArticleDetail({ params }: ArticleDetailPageProps) {
     notFound();
   }
 
-  const allArticles = await catalogRepository.getArticles();
+  const [allArticles, locale] = await Promise.all([
+    catalogRepository.getArticles(),
+    getLocale(),
+  ]);
+  const t = blogMessages[locale];
+  const categoryLabel = (category: string) =>
+    t.categories[category] ?? category;
   const relatedArticles = allArticles
     .filter((a) => a.id !== article.id)
     .slice(0, 3);
 
   const breadcrumbs = [
-    { label: "Tin tức", href: "/bai-viet" },
+    { label: t.breadcrumb, href: "/bai-viet" },
     { label: article.title, href: `/bai-viet/${article.slug}` },
   ];
 
@@ -87,7 +97,7 @@ async function ArticleDetail({ params }: ArticleDetailPageProps) {
 
         <header className="mt-10 sm:mt-14">
           <p className="text-sm font-medium text-gold-dark">
-            {article.category}
+            {categoryLabel(article.category)}
           </p>
           <h1 className="mt-3 text-3xl sm:text-5xl font-semibold text-agarwood leading-[1.15] tracking-tight">
             {article.title}
@@ -100,10 +110,15 @@ async function ArticleDetail({ params }: ArticleDetailPageProps) {
               {article.author.name}
             </span>
             {" · "}
-            {formatArticleDate(article.publishedAt)}
+            {formatArticleDate(article.publishedAt, locale)}
             {" · "}
-            {article.readingTimeMinutes} phút đọc
+            {t.readingTime(article.readingTimeMinutes)}
           </p>
+          {t.vietnameseOnly && (
+            <p className="mt-4 inline-block rounded-full bg-ivory px-4 py-1.5 text-sm text-muted">
+              {t.vietnameseOnly}
+            </p>
+          )}
         </header>
       </article>
 
@@ -125,7 +140,7 @@ async function ArticleDetail({ params }: ArticleDetailPageProps) {
 
         {article.tags.length > 0 && (
           <p className="mt-12 pt-6 border-t border-border-subtle text-sm text-muted">
-            Chủ đề: {article.tags.join(" · ")}
+            {t.topics} {article.tags.join(" · ")}
           </p>
         )}
 
@@ -134,7 +149,7 @@ async function ArticleDetail({ params }: ArticleDetailPageProps) {
           className="mt-6 inline-flex items-center gap-0.5 text-[15px] text-gold-dark hover:underline underline-offset-4"
         >
           <ChevronLeft className="w-4 h-4" />
-          Tất cả bài viết
+          {t.allArticles}
         </Link>
       </div>
 
@@ -142,14 +157,13 @@ async function ArticleDetail({ params }: ArticleDetailPageProps) {
       <section className="max-w-5xl mx-auto px-4 sm:px-6 mt-20">
         <div className="bg-ivory px-6 py-12 sm:py-14 text-center">
           <h2 className="text-2xl sm:text-3xl font-semibold text-agarwood">
-            Trải nghiệm trầm hương tự nhiên
+            {t.ctaTitle}
           </h2>
           <p className="mt-3 text-muted max-w-lg mx-auto">
-            Bảo hành dây và đánh bóng trọn đời. Được mở hộp kiểm tra trước khi
-            thanh toán.
+            {t.ctaBody}
           </p>
           <div className="mt-7">
-            <Button href="/san-pham">Xem sản phẩm</Button>
+            <Button href="/san-pham">{t.ctaButton}</Button>
           </div>
         </div>
       </section>
@@ -158,13 +172,13 @@ async function ArticleDetail({ params }: ArticleDetailPageProps) {
         <section className="max-w-site mx-auto px-4 sm:px-6 lg:px-8 mt-20">
           <div className="flex items-end justify-between gap-4 mb-8">
             <h2 className="text-2xl sm:text-3xl font-semibold text-agarwood">
-              Đọc tiếp
+              {t.readNext}
             </h2>
             <Link
               href="/bai-viet"
               className="inline-flex items-center gap-0.5 text-[15px] text-gold-dark hover:underline underline-offset-4"
             >
-              Tất cả bài viết
+              {t.allArticles}
               <ChevronRight className="w-4 h-4" />
             </Link>
           </div>
@@ -185,7 +199,8 @@ async function ArticleDetail({ params }: ArticleDetailPageProps) {
                   />
                 </div>
                 <p className="mt-4 text-sm text-muted">
-                  {rel.category} · {rel.readingTimeMinutes} phút đọc
+                  {categoryLabel(rel.category)} ·{" "}
+                  {t.readingTime(rel.readingTimeMinutes)}
                 </p>
                 <h3 className="mt-1 text-lg font-medium text-charcoal leading-snug group-hover:text-gold-dark transition-colors duration-300">
                   {rel.title}

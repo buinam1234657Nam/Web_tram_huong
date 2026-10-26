@@ -1,16 +1,29 @@
+"use client";
+
 import React from "react";
-import { AUTHENTICITY_SIGNS } from "@/data/content/nhan-biet-tram";
+import { guideContentFor } from "@/data/content/nhan-biet-tram";
+import { useLocale } from "@/i18n/client";
+
+const LABELS = {
+  vi: { natural: "Tự nhiên:", treated: "Tẩm dầu:", naturalCol: "Trầm tự nhiên", treatedCol: "Trầm tẩm dầu" },
+  en: { natural: "Natural:", treated: "Oil-treated:", naturalCol: "Natural agarwood", treatedCol: "Oil-treated agarwood" },
+};
 
 /**
  * "Cách nhận biết trầm tự nhiên với trầm tẩm dầu". `compact` shows only the
  * natural-agarwood side (home page teaser); `list` is the product accordion;
  * `cards` is the full side-by-side comparison on /hieu-ve-tram.
+ * A client component so the product page (a client tree) can render it too.
  */
 export function AuthenticitySigns({
   variant,
 }: {
   variant: "compact" | "list" | "cards";
 }) {
+  const locale = useLocale();
+  const AUTHENTICITY_SIGNS = guideContentFor(locale).authenticitySigns;
+  const t = LABELS[locale];
+
   if (variant === "compact") {
     return (
       <ol className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
@@ -43,11 +56,11 @@ export function AuthenticitySigns({
               {idx + 1}. {sign.title}
             </p>
             <p className="mt-1">
-              <span className="text-agarwood font-medium">Tự nhiên:</span>{" "}
+              <span className="text-agarwood font-medium">{t.natural}</span>{" "}
               {sign.natural}
             </p>
             <p className="mt-0.5">
-              <span className="text-muted font-medium">Tẩm dầu:</span>{" "}
+              <span className="text-muted font-medium">{t.treated}</span>{" "}
               {sign.treated}
             </p>
           </li>
@@ -68,13 +81,13 @@ export function AuthenticitySigns({
           </p>
           <p className="text-[15px] text-charcoal leading-relaxed">
             <span className="block text-xs font-medium uppercase tracking-wider text-gold-dark mb-1">
-              Trầm tự nhiên
+              {t.naturalCol}
             </span>
             {sign.natural}
           </p>
           <p className="text-[15px] text-muted leading-relaxed">
             <span className="block text-xs font-medium uppercase tracking-wider text-muted-light mb-1">
-              Trầm tẩm dầu
+              {t.treatedCol}
             </span>
             {sign.treated}
           </p>

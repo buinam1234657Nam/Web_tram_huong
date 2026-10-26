@@ -6,6 +6,7 @@ export const mockReviews: Review[] = [
     productId: "prod-1",
     authorName: "Trần Anh Quân",
     authorLocation: "Hà Nội",
+    // TODO: chủ shop bổ sung ảnh thật của khách (có sự đồng ý), ví dụ "/images/reviews/rev-1.jpg"
     verifiedPurchase: true,
     rating: 5,
     date: "14/09/2026",
@@ -19,6 +20,7 @@ export const mockReviews: Review[] = [
     productId: "prod-2",
     authorName: "Nguyễn Thùy Linh",
     authorLocation: "TP. Hồ Chí Minh",
+    // TODO: chủ shop bổ sung ảnh thật của khách (có sự đồng ý), ví dụ "/images/reviews/rev-1.jpg"
     verifiedPurchase: true,
     rating: 5,
     date: "02/10/2026",
@@ -32,6 +34,7 @@ export const mockReviews: Review[] = [
     productId: "prod-3",
     authorName: "Lê Minh Tuấn",
     authorLocation: "Đà Nẵng",
+    // TODO: chủ shop bổ sung ảnh thật của khách (có sự đồng ý), ví dụ "/images/reviews/rev-1.jpg"
     verifiedPurchase: true,
     rating: 5,
     date: "28/08/2026",
@@ -45,6 +48,7 @@ export const mockReviews: Review[] = [
     productId: "prod-6",
     authorName: "Vũ Hoàng Nam",
     authorLocation: "Hải Phòng",
+    // TODO: chủ shop bổ sung ảnh thật của khách (có sự đồng ý), ví dụ "/images/reviews/rev-1.jpg"
     verifiedPurchase: true,
     rating: 5,
     date: "20/09/2026",
@@ -58,6 +62,7 @@ export const mockReviews: Review[] = [
     productId: "prod-7",
     authorName: "Phạm Quốc Dũng",
     authorLocation: "Cần Thơ",
+    // TODO: chủ shop bổ sung ảnh thật của khách (có sự đồng ý), ví dụ "/images/reviews/rev-1.jpg"
     verifiedPurchase: true,
     rating: 5,
     date: "11/10/2026",

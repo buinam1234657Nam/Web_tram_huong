@@ -3,6 +3,9 @@
 import React, { useEffect } from "react";
 import { Button } from "@/components/ui/Button";
 import { brandConfig } from "@/lib/config/brand";
+import { useMessages } from "@/i18n/client";
+import { layoutMessages } from "@/i18n/messages/layout";
+import { commonMessages } from "@/i18n/messages/common";
 
 export default function GlobalError({
   error,
@@ -11,31 +14,34 @@ export default function GlobalError({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
+  const t = useMessages(layoutMessages).error;
+  const common = useMessages(commonMessages);
+
   useEffect(() => {
     console.error("App boundary error caught:", error);
   }, [error]);
 
   return (
     <div className="max-w-2xl mx-auto px-4 sm:px-6 py-24 sm:py-32 text-center">
-      <p className="text-sm font-medium text-gold-dark">Đã có lỗi</p>
+      <p className="text-sm font-medium text-gold-dark">{t.eyebrow}</p>
       <h1 className="mt-3 text-3xl sm:text-5xl font-semibold text-agarwood tracking-tight">
-        Trang chưa tải được
+        {t.title}
       </h1>
       <p className="mt-4 text-[15px] sm:text-base text-muted leading-relaxed">
-        Có sự cố ngoài dự kiến. Bạn thử tải lại trang, hoặc gọi{" "}
+        {t.bodyBefore}{" "}
         <a
           href={`tel:${brandConfig.contact.hotline}`}
           className="text-charcoal underline underline-offset-4"
         >
           {brandConfig.contact.phoneFormatted}
         </a>{" "}
-        nếu cần hỗ trợ.
+        {t.bodyAfter}
       </p>
 
       <div className="mt-10 flex flex-wrap justify-center gap-3">
-        <Button onClick={() => reset()}>Thử lại</Button>
+        <Button onClick={() => reset()}>{t.retry}</Button>
         <Button href="/" variant="outline">
-          Về trang chủ
+          {common.backHome}
         </Button>
       </div>
     </div>

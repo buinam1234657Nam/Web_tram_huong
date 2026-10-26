@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import Link from "next/link";
+import Link from "@/components/i18n/Link";
 import {
   Check,
   ChevronDown,
@@ -31,6 +31,9 @@ import { BackInStockForm } from "@/components/product/BackInStockForm";
 import { brandConfig } from "@/lib/config/brand";
 import { AuthenticitySigns } from "@/components/product/AuthenticitySigns";
 import { careGuideFor } from "@/data/content/product-guides";
+import { useLocale, useLocalizePath, useMessages } from "@/i18n/client";
+import { productMessages } from "@/i18n/messages/product";
+import { categoryNameFor } from "@/i18n/messages/categories";
 
 /** From this price up, offer a one-to-one Zalo consultation next to the cart buttons. */
 const CONSULT_MIN_PRICE = 5_000_000;
@@ -56,6 +59,9 @@ export function ProductDetailView({
   faq: Array<{ question: string; answer: string }>;
 }) {
   const router = useRouter();
+  const locale = useLocale();
+  const localize = useLocalizePath();
+  const t = useMessages(productMessages);
   const [selectedVariant, setSelectedVariant] = useState<ProductVariant>(
     product.variants[0],
   );
@@ -74,10 +80,11 @@ export function ProductDetailView({
     product.images.length > 0 ? product.images : ["/images/hero-agarwood.jpg"];
   const isBracelet = product.categorySlug === "vong-tay-tram-huong";
   const profile = product.agarwoodProfile;
-  const profileTable = profileRows(profile);
+  const profileTable = profileRows(profile, locale);
+  // Spec labels come from the (Vietnamese) product data; only the two fixed rows are translated.
   const specRows = [
-    { label: "Xuất xứ", value: product.origin },
-    { label: "Thu hái", value: product.harvestMethod },
+    { label: t.specOrigin, value: product.origin },
+    { label: t.specHarvest, value: product.harvestMethod },
     ...product.specifications,
   ].filter((row) => row.value);
 
@@ -92,7 +99,7 @@ export function ProductDetailView({
 
   const handleBuyNow = () => {
     addItem(product, selectedVariant, 1);
-    router.push("/thanh-toan");
+    router.push(localize("/thanh-toan"));
   };
 
   return (
@@ -118,7 +125,7 @@ export function ProductDetailView({
                       ? "opacity-100"
                       : "opacity-60 hover:opacity-100"
                   }`}
-                  aria-label={`Xem ảnh ${idx + 1}`}
+                  aria-label={t.viewImage(idx + 1)}
                   aria-current={activeImageIndex === idx}
                 >
                   <Image
@@ -149,7 +156,7 @@ export function ProductDetailView({
               >
                 <Image
                   src={images[activeImageIndex]}
-                  alt={`${product.name} - ảnh ${activeImageIndex + 1}`}
+                  alt={t.imageAlt(product.name, activeImageIndex + 1)}
                   fill
                   loading="eager"
                   fetchPriority="high"
@@ -164,7 +171,7 @@ export function ProductDetailView({
                   type="button"
                   onClick={() => showImage(activeImageIndex - 1)}
                   className="w-9 h-9 rounded-full bg-white flex items-center justify-center text-charcoal hover:bg-ivory cursor-pointer"
-                  aria-label="Ảnh trước"
+                  aria-label={t.prevImage}
                 >
                   <ChevronLeft className="w-5 h-5" />
                 </button>
@@ -172,7 +179,7 @@ export function ProductDetailView({
                   type="button"
                   onClick={() => showImage(activeImageIndex + 1)}
                   className="w-9 h-9 rounded-full bg-white flex items-center justify-center text-charcoal hover:bg-ivory cursor-pointer"
-                  aria-label="Ảnh tiếp theo"
+                  aria-label={t.nextImage}
                 >
                   <ChevronRight className="w-5 h-5" />
                 </button>
@@ -194,14 +201,14 @@ export function ProductDetailView({
           <motion.div variants={STAGGER_ITEM}>
             {product.bestseller && (
               <p className="text-[15px] font-medium text-gold-dark mb-1">
-                Bán chạy
+                {t.bestseller}
               </p>
             )}
             <h1 className="text-2xl sm:text-3xl font-medium text-espresso leading-tight">
               {product.name}
             </h1>
             <p className="mt-1 text-[15px] text-muted">
-              {product.categoryName}
+              {categoryNameFor(product.categorySlug, product.categoryName, locale)}
             </p>
           </motion.div>
 
@@ -216,7 +223,7 @@ export function ProductDetailView({
             </p>
             {discount && (
               <p className="mt-1 text-[15px] font-medium text-agarwood">
-                Giảm {discount}%
+                {t.discount(discount)}
               </p>
             )}
           </motion.div>
@@ -233,7 +240,7 @@ export function ProductDetailView({
                   id="ho-so-tram"
                   className="text-[15px] font-semibold text-agarwood"
                 >
-                  Hồ sơ trầm
+                  {t.profileTitle}
                 </h2>
                 {profile.sinksInWater && <SinksBadge />}
               </div>
@@ -254,7 +261,7 @@ export function ProductDetailView({
                     aria-hidden="true"
                   />
                   <span>
-                    <span className="font-medium">Cam kết:</span>{" "}
+                    <span className="font-medium">{t.commitment}</span>{" "}
                     {profile.treatment}
                   </span>
                 </p>
@@ -266,7 +273,7 @@ export function ProductDetailView({
             <motion.div variants={STAGGER_ITEM} className="mt-8">
               <div className="flex items-center justify-between mb-3">
                 <p className="text-[15px] font-medium text-charcoal">
-                  Chọn quy cách
+                  {t.chooseVariant}
                 </p>
                 {isBracelet && (
                   <button
@@ -274,7 +281,7 @@ export function ProductDetailView({
                     onClick={() => setIsSizeGuideOpen(true)}
                     className="text-[15px] text-muted hover:text-charcoal cursor-pointer"
                   >
-                    Hướng dẫn chọn size
+                    {t.sizeGuide}
                   </button>
                 )}
               </div>
@@ -302,7 +309,7 @@ export function ProductDetailView({
                           {v.name}
                         </span>
                         <span className="text-muted shrink-0">
-                          {soldOut ? "Hết hàng" : formatVND(v.price)}
+                          {soldOut ? t.soldOut : formatVND(v.price)}
                         </span>
                       </span>
                     </button>
@@ -340,7 +347,7 @@ export function ProductDetailView({
                       className="absolute inset-0 flex items-center justify-center gap-2"
                     >
                       {isAdded && <Check className="w-4 h-4" />}
-                      {isAdded ? "Đã thêm vào giỏ" : "Thêm vào giỏ"}
+                      {isAdded ? t.added : t.addToCart}
                     </motion.span>
                   </AnimatePresence>
                 </button>
@@ -349,7 +356,7 @@ export function ProductDetailView({
                   onClick={handleBuyNow}
                   className="w-full h-14 rounded-full border border-charcoal/25 text-[15px] font-medium text-charcoal hover:border-charcoal transition-colors cursor-pointer"
                 >
-                  Mua ngay
+                  {t.buyNow}
                 </button>
               </>
             )}
@@ -361,7 +368,7 @@ export function ProductDetailView({
                 className="w-full h-12 rounded-full bg-ivory text-[15px] font-medium text-agarwood-dark hover:bg-ivory-dark transition-colors inline-flex items-center justify-center gap-2"
               >
                 <MessageCircle className="w-4 h-4" aria-hidden="true" />
-                Tư vấn chọn trầm qua Zalo
+                {t.zaloConsult}
               </a>
             )}
           </motion.div>
@@ -372,27 +379,27 @@ export function ProductDetailView({
             </p>
 
             <div className="mt-8 border-b border-border-subtle">
-              <Accordion title="Mô tả sản phẩm" defaultOpen>
+              <Accordion title={t.description} defaultOpen>
                 <p className="whitespace-pre-line">{product.description}</p>
               </Accordion>
 
               {product.scentProfile && (
-                <Accordion title="Hương thơm">
+                <Accordion title={t.scent}>
                   <dl className="space-y-2">
                     <div className="flex justify-between gap-4">
-                      <dt className="text-muted">Độ tỏa hương</dt>
+                      <dt className="text-muted">{t.scentIntensity}</dt>
                       <dd className="capitalize">
                         {product.scentProfile.intensity}
                       </dd>
                     </div>
                     <div className="flex justify-between gap-4">
-                      <dt className="text-muted">Tầng hương</dt>
+                      <dt className="text-muted">{t.scentNotes}</dt>
                       <dd className="text-right">
                         {product.scentProfile.notes.join(", ")}
                       </dd>
                     </div>
                     <div className="flex justify-between gap-4">
-                      <dt className="text-muted">Lưu hương</dt>
+                      <dt className="text-muted">{t.scentLongevity}</dt>
                       <dd className="text-right">
                         {product.scentProfile.longevity}
                       </dd>
@@ -401,7 +408,7 @@ export function ProductDetailView({
                 </Accordion>
               )}
 
-              <Accordion title="Thông số & xuất xứ">
+              <Accordion title={t.specs}>
                 <dl className="space-y-2">
                   {specRows.map((spec) => (
                     <div
@@ -413,48 +420,46 @@ export function ProductDetailView({
                     </div>
                   ))}
                   <div className="flex justify-between gap-4">
-                    <dt className="text-muted">Mã sản phẩm</dt>
+                    <dt className="text-muted">{t.sku}</dt>
                     <dd>{selectedVariant.sku}</dd>
                   </div>
                 </dl>
               </Accordion>
 
-              <Accordion title="Cách nhận biết trầm tự nhiên với trầm tẩm dầu">
+              <Accordion title={t.authenticity}>
                 <AuthenticitySigns variant="list" />
                 <Link
                   href="/hieu-ve-tram"
                   className="mt-5 inline-flex items-center gap-0.5 text-gold-dark hover:underline underline-offset-4"
                 >
-                  Xem đầy đủ trong “Hiểu về trầm”
+                  {t.authenticityMore}
                   <ChevronRight className="w-4 h-4" aria-hidden="true" />
                 </Link>
               </Accordion>
 
-              <Accordion title="Hướng dẫn sử dụng & bảo quản">
+              <Accordion title={t.care}>
                 <ul className="list-disc pl-5 space-y-2">
-                  {careGuideFor(product.categorySlug).map((tip) => (
+                  {careGuideFor(product.categorySlug, locale).map((tip) => (
                     <li key={tip}>{tip}</li>
                   ))}
                 </ul>
               </Accordion>
 
-              <Accordion title="Giao hàng & đổi trả">
+              <Accordion title={t.shipping}>
                 <ul className="space-y-2">
                   <li>
-                    Miễn phí vận chuyển cho đơn từ{" "}
-                    {formatVND(brandConfig.policies.freeShippingThreshold)}.
+                    {t.shippingFree(
+                      formatVND(brandConfig.policies.freeShippingThreshold),
+                    )}
                   </li>
-                  <li>Được mở hộp đồng kiểm trước khi thanh toán.</li>
-                  <li>
-                    Đổi trả trong {brandConfig.policies.returnDays} ngày nếu sản
-                    phẩm lỗi.
-                  </li>
-                  <li>Bảo hành thay dây, đánh bóng hạt trọn đời.</li>
+                  <li>{t.shippingInspect}</li>
+                  <li>{t.shippingReturns(brandConfig.policies.returnDays)}</li>
+                  <li>{t.shippingWarranty}</li>
                 </ul>
               </Accordion>
 
               <Accordion
-                title={`Đánh giá (${reviews.length})`}
+                title={t.reviews(reviews.length)}
                 aside={
                   <StarRating
                     rating={product.ratingAverage}
@@ -484,7 +489,7 @@ export function ProductDetailView({
                   </div>
                 ) : (
                   <p className="text-muted">
-                    Chưa có đánh giá nào cho sản phẩm này.
+                    {t.noReviews}
                   </p>
                 )}
               </Accordion>
@@ -499,7 +504,7 @@ export function ProductDetailView({
           id="faq-heading"
           className="text-2xl sm:text-3xl text-agarwood"
         >
-          Câu hỏi thường gặp
+          {t.faq}
         </h2>
         <div className="mt-4 border-b border-border-subtle">
           {faq.map((item) => (
@@ -512,7 +517,7 @@ export function ProductDetailView({
 
       {relatedProducts.length > 0 && (
         <ProductCarousel
-          title="Có thể bạn cũng thích"
+          title={t.related}
           products={relatedProducts}
           contained={false}
         />
@@ -524,7 +529,7 @@ export function ProductDetailView({
             className="fixed inset-0 z-50 flex items-center justify-center p-4"
             role="dialog"
             aria-modal="true"
-            aria-label="Hướng dẫn chọn size"
+            aria-label={t.sizeGuide}
           >
             <motion.div
               initial={{ opacity: 0 }}
@@ -542,50 +547,48 @@ export function ProductDetailView({
             >
               <div className="flex items-start justify-between gap-4">
                 <h3 className="text-xl font-medium text-charcoal">
-                  Hướng dẫn chọn size
+                  {t.sizeGuide}
                 </h3>
                 <button
                   type="button"
                   onClick={() => setIsSizeGuideOpen(false)}
                   className="p-2 -m-2 rounded-full hover:bg-ivory cursor-pointer"
-                  aria-label="Đóng"
+                  aria-label={t.close}
                 >
                   <X className="w-5 h-5" />
                 </button>
               </div>
               <p className="mt-4 text-[15px] text-charcoal/80 leading-relaxed">
-                Quấn một sợi dây mềm quanh cổ tay ở vị trí muốn đeo, đánh dấu
-                điểm giao nhau rồi đo trên thước (cm).
+                {t.sizeGuideIntro}
               </p>
               <table className="mt-6 w-full text-[15px] text-left">
                 <thead>
                   <tr className="border-b border-border-subtle text-muted">
-                    <th className="py-2 font-normal">Hạt</th>
-                    <th className="py-2 font-normal">Cổ tay</th>
-                    <th className="py-2 font-normal">Phù hợp</th>
+                    <th className="py-2 font-normal">{t.sizeBead}</th>
+                    <th className="py-2 font-normal">{t.sizeWrist}</th>
+                    <th className="py-2 font-normal">{t.sizeFit}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border-subtle text-charcoal">
                   <tr>
                     <td className="py-3">6mm</td>
                     <td className="py-3">14 – 15,5 cm</td>
-                    <td className="py-3">Cổ tay nhỏ</td>
+                    <td className="py-3">{t.sizeSmall}</td>
                   </tr>
                   <tr>
                     <td className="py-3">8mm</td>
                     <td className="py-3">16 – 17,5 cm</td>
-                    <td className="py-3">Cổ tay vừa</td>
+                    <td className="py-3">{t.sizeMedium}</td>
                   </tr>
                   <tr>
                     <td className="py-3">10 – 12mm</td>
                     <td className="py-3">17,5 – 19,5 cm</td>
-                    <td className="py-3">Cổ tay lớn</td>
+                    <td className="py-3">{t.sizeLarge}</td>
                   </tr>
                 </tbody>
               </table>
               <p className="mt-6 text-sm text-muted">
-                Vĩnh Trầm hỗ trợ thêm hoặc bớt hạt miễn phí để vòng vừa vặn
-                nhất.
+                {t.sizeNote}
               </p>
             </motion.div>
           </div>

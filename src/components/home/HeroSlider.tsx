@@ -2,12 +2,14 @@
 
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import Image from "next/image";
-import Link from "next/link";
+import Link from "@/components/i18n/Link";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { motion, useReducedMotion } from "motion/react";
 import { MOTION_EASE } from "@/components/motion/MotionPrimitives";
 import type { HeroSlide } from "@/data/content/home";
 import { HeroVideo } from "./HeroVideo";
+import { useMessages } from "@/i18n/client";
+import { homeMessages } from "@/i18n/messages/home";
 
 const AUTOPLAY_MS = 6000;
 /** Horizontal drag (px) that counts as a swipe rather than a tap. */
@@ -19,6 +21,7 @@ const SWIPE_PX = 40;
  * rendered so search engines and no-JS visitors still get all the links.
  */
 export function HeroSlider({ slides }: { slides: HeroSlide[] }) {
+  const t = useMessages(homeMessages);
   const [index, setIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
   const reduceMotion = useReducedMotion();
@@ -41,7 +44,7 @@ export function HeroSlider({ slides }: { slides: HeroSlide[] }) {
   return (
     <section
       aria-roledescription="carousel"
-      aria-label="Banner Vĩnh Trầm"
+      aria-label={t.heroLabel}
       className="relative w-full aspect-4/5 sm:aspect-video lg:aspect-8/3 bg-espresso-dark overflow-hidden"
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
@@ -154,7 +157,7 @@ export function HeroSlider({ slides }: { slides: HeroSlide[] }) {
                 key={slide.id}
                 type="button"
                 onClick={() => go(idx)}
-                aria-label={`Xem banner ${idx + 1}`}
+                aria-label={t.heroGoTo(idx + 1)}
                 aria-current={idx === index}
                 // 44px tall hit area around a thin bar
                 className="group h-11 px-1 flex items-center cursor-pointer"
@@ -195,12 +198,13 @@ function SlideArrow({
   onClick: () => void;
   className: string;
 }) {
+  const t = useMessages(homeMessages);
   const Icon = direction === "prev" ? ChevronLeft : ChevronRight;
   return (
     <button
       type="button"
       onClick={onClick}
-      aria-label={direction === "prev" ? "Banner trước" : "Banner tiếp theo"}
+      aria-label={direction === "prev" ? t.heroPrev : t.heroNext}
       className={`hidden sm:flex absolute z-20 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full border border-white/40 bg-espresso-dark/25 backdrop-blur-sm text-white items-center justify-center hover:bg-white/20 transition-colors cursor-pointer ${className}`}
     >
       <Icon className="w-5 h-5" />

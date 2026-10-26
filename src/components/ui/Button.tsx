@@ -1,5 +1,5 @@
 import React, { forwardRef } from "react";
-import Link from "next/link";
+import Link from "@/components/i18n/Link";
 import { Loader2 } from "lucide-react";
 
 export interface ButtonProps

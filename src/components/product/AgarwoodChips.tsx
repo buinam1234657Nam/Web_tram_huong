@@ -1,6 +1,10 @@
+"use client";
+
 import React from "react";
 import type { AgarwoodProfile } from "@/types/product";
 import { profileChips } from "@/lib/format/agarwood";
+import { useLocale, useMessages } from "@/i18n/client";
+import { productMessages } from "@/i18n/messages/product";
 
 /** Loại trầm · vùng · tuổi trầm. Renders nothing when the profile is empty. */
 export function AgarwoodChips({
@@ -10,7 +14,7 @@ export function AgarwoodChips({
   profile: AgarwoodProfile;
   className?: string;
 }) {
-  const chips = profileChips(profile);
+  const chips = profileChips(profile, useLocale());
   if (chips.length === 0) return null;
 
   return (
@@ -29,11 +33,12 @@ export function AgarwoodChips({
 }
 
 export function SinksBadge({ className = "" }: { className?: string }) {
+  const t = useMessages(productMessages);
   return (
     <span
       className={`inline-flex items-center rounded-full bg-espresso px-2.5 py-1 text-[11px] font-medium leading-none text-gold-light ${className}`}
     >
-      Chìm nước
+      {t.sinksBadge}
     </span>
   );
 }

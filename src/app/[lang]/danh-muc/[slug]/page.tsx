@@ -6,7 +6,7 @@ import { catalogRepository } from "@/data/repositories/catalog-repository";
 import { Breadcrumbs } from "@/components/ui/Breadcrumbs";
 import { BreadcrumbJsonLd } from "@/components/seo/JsonLd";
 import { toSummary } from "@/data/catalog/products";
-import { CatalogView } from "@/app/san-pham/CatalogView";
+import { CatalogView } from "@/app/[lang]/san-pham/CatalogView";
 
 interface CategoryPageProps {
   params: Promise<{ slug: string }>;

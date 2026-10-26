@@ -10,23 +10,15 @@ import { formatVND } from "@/lib/format/currency";
 import { brandConfig } from "@/lib/config/brand";
 import { Button } from "@/components/ui/Button";
 import { FadeIn } from "@/components/motion/MotionPrimitives";
-
-const NEXT_STEPS = [
-  "Vĩnh Trầm gọi điện xác nhận đơn và kích cỡ trong giờ làm việc.",
-  "Sản phẩm được đóng hộp và gửi đi trong 1–2 ngày.",
-  "Bạn mở hộp kiểm tra cùng bưu tá trước khi nhận hàng.",
-];
-
-const PAYMENT_LABELS = {
-  cod: "Thanh toán khi nhận hàng",
-  bank_transfer: "Chuyển khoản ngân hàng",
-} as const;
+import { useMessages } from "@/i18n/client";
+import { orderMessages } from "@/i18n/messages/order";
 
 /** Placeholder while the order is read from the browser; keeps a heading for every state. */
 export function OrderLoading() {
+  const t = useMessages(orderMessages);
   return (
     <div className="py-24" aria-busy="true">
-      <h1 className="sr-only">Đơn hàng của bạn</h1>
+      <h1 className="sr-only">{t.yourOrder}</h1>
     </div>
   );
 }
@@ -34,6 +26,7 @@ export function OrderLoading() {
 export function OrderSuccessView() {
   const searchParams = useSearchParams();
   const mounted = useIsMounted();
+  const t = useMessages(orderMessages);
   const orderCode = searchParams.get("orderCode");
 
   // sessionStorage only exists in the browser; render nothing until mounted.
@@ -47,11 +40,10 @@ export function OrderSuccessView() {
     return (
       <div className="py-16 text-center max-w-md mx-auto">
         <h1 className="text-3xl font-semibold text-agarwood">
-          Không tìm thấy đơn hàng
+          {t.notFoundTitle}
         </h1>
         <p className="mt-3 text-[15px] text-muted leading-relaxed">
-          Thông tin đơn chỉ được lưu trong phiên trình duyệt vừa đặt hàng. Nếu
-          cần hỗ trợ, hãy gọi{" "}
+          {t.notFoundBody}{" "}
           <a
             href={`tel:${brandConfig.contact.hotline}`}
             className="text-charcoal underline underline-offset-4"
@@ -61,7 +53,7 @@ export function OrderSuccessView() {
           .
         </p>
         <div className="mt-8">
-          <Button href="/san-pham">Xem sản phẩm</Button>
+          <Button href="/san-pham">{t.browseProducts}</Button>
         </div>
       </div>
     );
@@ -76,10 +68,10 @@ export function OrderSuccessView() {
           <Check className="w-7 h-7" />
         </span>
         <h1 className="mt-6 text-3xl sm:text-4xl font-semibold text-agarwood">
-          Cảm ơn bạn, đơn hàng đã được ghi nhận
+          {t.thanks}
         </h1>
         <p className="mt-3 text-[15px] text-muted">
-          Mã đơn hàng{" "}
+          {t.orderCode}{" "}
           <span className="font-medium text-charcoal tracking-wide">
             {order.code}
           </span>
@@ -89,22 +81,22 @@ export function OrderSuccessView() {
       {order.paymentMethod === "bank_transfer" && (
         <section className="mt-12 rounded-2xl border border-charcoal p-6 sm:p-8">
           <h2 className="text-lg font-semibold text-agarwood">
-            Chuyển khoản để hoàn tất
+            {t.transferTitle}
           </h2>
           <dl className="mt-4 grid grid-cols-[auto_1fr] gap-x-6 gap-y-2 text-[15px]">
-            <dt className="text-muted">Ngân hàng</dt>
+            <dt className="text-muted">{t.bank}</dt>
             <dd className="text-charcoal">Vietcombank</dd>
-            <dt className="text-muted">Số tài khoản</dt>
+            <dt className="text-muted">{t.accountNumber}</dt>
             <dd className="text-charcoal font-medium tracking-wide">
               0123 456 789
             </dd>
-            <dt className="text-muted">Chủ tài khoản</dt>
+            <dt className="text-muted">{t.accountHolder}</dt>
             <dd className="text-charcoal">VĨNH TRẦM</dd>
-            <dt className="text-muted">Số tiền</dt>
+            <dt className="text-muted">{t.amount}</dt>
             <dd className="text-charcoal font-medium">
               {formatVND(order.total)}
             </dd>
-            <dt className="text-muted">Nội dung</dt>
+            <dt className="text-muted">{t.transferNote}</dt>
             <dd className="text-charcoal font-medium tracking-wide">
               {order.code}
             </dd>
@@ -114,7 +106,7 @@ export function OrderSuccessView() {
 
       <section className="mt-12 rounded-2xl bg-ivory p-6 sm:p-8">
         <h2 className="text-lg font-semibold text-agarwood">
-          Chi tiết đơn hàng
+          {t.detailsTitle}
         </h2>
         <ul className="mt-6 space-y-4">
           {order.items.map((item) => (
@@ -133,7 +125,7 @@ export function OrderSuccessView() {
                   {item.name}
                 </p>
                 <p className="text-sm text-muted truncate">
-                  {item.variantName} · SL {item.quantity}
+                  {item.variantName} · {t.quantityShort(item.quantity)}
                 </p>
               </div>
               <p className="text-[15px] text-charcoal shrink-0">
@@ -145,19 +137,19 @@ export function OrderSuccessView() {
 
         <dl className="mt-6 pt-6 border-t border-border-dark/10 space-y-2 text-[15px]">
           <div className="flex justify-between">
-            <dt className="text-muted">Tạm tính</dt>
+            <dt className="text-muted">{t.subtotal}</dt>
             <dd className="text-charcoal">{formatVND(order.subtotal)}</dd>
           </div>
           <div className="flex justify-between">
-            <dt className="text-muted">Vận chuyển</dt>
+            <dt className="text-muted">{t.shipping}</dt>
             <dd className="text-charcoal">
               {order.shippingFee === 0
-                ? "Miễn phí"
+                ? t.free
                 : formatVND(order.shippingFee)}
             </dd>
           </div>
           <div className="flex justify-between items-baseline pt-4 mt-2 border-t border-border-dark/10">
-            <dt className="font-medium text-charcoal">Tổng cộng</dt>
+            <dt className="font-medium text-charcoal">{t.total}</dt>
             <dd className="text-2xl font-semibold text-charcoal">
               {formatVND(order.total)}
             </dd>
@@ -166,7 +158,7 @@ export function OrderSuccessView() {
 
         <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-6 text-[15px]">
           <div>
-            <h3 className="text-sm text-muted">Giao đến</h3>
+            <h3 className="text-sm text-muted">{t.shipTo}</h3>
             <p className="mt-1 text-charcoal">
               {address.fullName} · {address.phone}
             </p>
@@ -176,18 +168,18 @@ export function OrderSuccessView() {
             </p>
           </div>
           <div>
-            <h3 className="text-sm text-muted">Thanh toán</h3>
+            <h3 className="text-sm text-muted">{t.payment}</h3>
             <p className="mt-1 text-charcoal">
-              {PAYMENT_LABELS[order.paymentMethod]}
+              {t.paymentLabels[order.paymentMethod]}
             </p>
           </div>
         </div>
       </section>
 
       <section className="mt-12">
-        <h2 className="text-lg font-semibold text-agarwood">Tiếp theo</h2>
+        <h2 className="text-lg font-semibold text-agarwood">{t.nextTitle}</h2>
         <ol className="mt-4 space-y-3">
-          {NEXT_STEPS.map((step, idx) => (
+          {t.nextSteps.map((step, idx) => (
             <li key={step} className="flex gap-4 text-[15px] text-charcoal">
               <span className="w-6 shrink-0 text-muted">{idx + 1}.</span>
               {step}
@@ -198,7 +190,7 @@ export function OrderSuccessView() {
 
       <div className="mt-12 flex flex-col sm:flex-row items-center justify-between gap-4 pt-8 border-t border-border-subtle">
         <p className="text-[15px] text-muted">
-          Cần hỗ trợ? Gọi{" "}
+          {t.needHelp}{" "}
           <a
             href={`tel:${brandConfig.contact.hotline}`}
             className="text-charcoal underline underline-offset-4"
@@ -206,7 +198,7 @@ export function OrderSuccessView() {
             {brandConfig.contact.phoneFormatted}
           </a>
         </p>
-        <Button href="/san-pham">Tiếp tục mua sắm</Button>
+        <Button href="/san-pham">{t.continueShopping}</Button>
       </div>
     </div>
   );

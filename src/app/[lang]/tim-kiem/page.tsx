@@ -2,23 +2,28 @@ import React, { Suspense } from "react";
 import { Metadata } from "next";
 import { Breadcrumbs } from "@/components/ui/Breadcrumbs";
 import { BreadcrumbJsonLd } from "@/components/seo/JsonLd";
+import { getLocale } from "@/i18n/server";
+import { localeAlternates } from "@/i18n/config";
+import { searchMessages } from "@/i18n/messages/search";
 import { SearchView } from "./SearchView";
 
-export const metadata: Metadata = {
-  title: "Tìm Kiếm",
-  description:
-    "Tìm nhanh vòng tay, nhang trầm, trầm nụ và tinh dầu trầm hương tự nhiên của VĨNH TRẦM.",
-  alternates: {
-    canonical: "/tim-kiem",
-  },
-  robots: {
-    index: false,
-    follow: true,
-  },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await getLocale();
+  const t = searchMessages[locale];
+  return {
+    title: t.metaTitle,
+    description: t.metaDescription,
+    alternates: localeAlternates("/tim-kiem", locale),
+    robots: {
+      index: false,
+      follow: true,
+    },
+  };
+}
 
-export default function SearchPage() {
-  const breadcrumbs = [{ label: "Tìm kiếm", href: "/tim-kiem" }];
+export default async function SearchPage() {
+  const t = searchMessages[await getLocale()];
+  const breadcrumbs = [{ label: t.breadcrumb, href: "/tim-kiem" }];
 
   return (
     <div className="max-w-site mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-24">
@@ -26,7 +31,7 @@ export default function SearchPage() {
       <Breadcrumbs items={breadcrumbs} />
 
       <h1 className="mt-10 text-center text-3xl sm:text-4xl font-semibold text-agarwood">
-        Tìm kiếm
+        {t.heading}
       </h1>
 
       {/* The query comes from searchParams, so it must render inside Suspense. */}

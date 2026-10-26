@@ -1,8 +1,8 @@
 import React from "react";
-import Link from "next/link";
+import Link from "@/components/i18n/Link";
 import { ChevronRight } from "lucide-react";
 import { brandConfig } from "@/lib/config/brand";
-import { MarkdownContent } from "@/app/bai-viet/MarkdownContent";
+import { MarkdownContent } from "@/app/[lang]/bai-viet/MarkdownContent";
 
 export interface PolicyData {
   slug: string;

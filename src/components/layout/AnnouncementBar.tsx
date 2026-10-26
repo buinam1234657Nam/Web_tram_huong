@@ -1,11 +1,15 @@
 import React from "react";
-import Link from "next/link";
+import Link from "@/components/i18n/Link";
 import { brandConfig } from "@/lib/config/brand";
+import { formatVND } from "@/lib/format/currency";
+import { getLocale } from "@/i18n/server";
+import { layoutMessages } from "@/i18n/messages/layout";
 
-export function AnnouncementBar() {
+export async function AnnouncementBar() {
+  const t = layoutMessages[await getLocale()].announcement;
   return (
     <aside
-      aria-label="Thông báo ưu đãi"
+      aria-label={t.label}
       className="bg-mahogany text-white/85 text-xs py-2.5 px-4"
     >
       <div className="max-w-site mx-auto flex items-center justify-center lg:justify-between gap-4">
@@ -20,12 +24,12 @@ export function AnnouncementBar() {
         </span>
 
         <p className="text-center">
-          Miễn phí vận chuyển cho đơn từ 1.000.000đ.{" "}
+          {t.freeShipping(formatVND(brandConfig.policies.freeShippingThreshold))}{" "}
           <Link
             href="/chinh-sach/chinh-sach-giao-hang"
             className="text-gold-light underline underline-offset-2 hover:text-white transition-colors"
           >
-            Tìm hiểu thêm
+            {t.learnMore}
           </Link>
         </p>
 
@@ -33,7 +37,7 @@ export function AnnouncementBar() {
           href="/chinh-sach/chinh-sach-bao-hanh"
           className="hidden lg:block text-white/60 hover:text-white transition-colors"
         >
-          Bảo hành dây trọn đời
+          {t.warranty}
         </Link>
       </div>
     </aside>

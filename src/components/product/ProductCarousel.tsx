@@ -1,26 +1,30 @@
 "use client";
 
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import Link from "next/link";
+import Link from "@/components/i18n/Link";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { FadeIn } from "@/components/motion/MotionPrimitives";
 import { ProductSummary } from "@/types/product";
+import { useMessages } from "@/i18n/client";
+import { productMessages } from "@/i18n/messages/product";
 import { ProductCard } from "./ProductCard";
 
 export function ProductCarousel({
   title,
   products,
   href,
-  linkLabel = "Xem tất cả",
+  linkLabel,
   contained = true,
 }: {
   title: string;
   products: ProductSummary[];
   href?: string;
+  /** Defaults to "Xem tất cả" / "View all". */
   linkLabel?: string;
   /** Wrap in the page-width container; false when the parent already provides it. */
   contained?: boolean;
 }) {
+  const t = useMessages(productMessages);
   const trackRef = useRef<HTMLDivElement>(null);
   const [canPrev, setCanPrev] = useState(false);
   const [canNext, setCanNext] = useState(false);
@@ -56,7 +60,7 @@ export function ProductCarousel({
               href={href}
               className="text-[15px] font-medium text-charcoal hover:text-gold-dark mr-2"
             >
-              {linkLabel}
+              {linkLabel ?? t.viewAll}
             </Link>
           )}
           <ArrowButton
@@ -100,15 +104,14 @@ function ArrowButton({
   disabled: boolean;
   onClick: () => void;
 }) {
+  const t = useMessages(productMessages);
   const Icon = direction === "prev" ? ChevronLeft : ChevronRight;
   return (
     <button
       type="button"
       onClick={onClick}
       disabled={disabled}
-      aria-label={
-        direction === "prev" ? "Xem sản phẩm trước" : "Xem sản phẩm tiếp theo"
-      }
+      aria-label={direction === "prev" ? t.prevProducts : t.nextProducts}
       className="hidden sm:flex w-11 h-11 rounded-full bg-ivory items-center justify-center text-charcoal hover:bg-ivory-dark disabled:opacity-40 disabled:hover:bg-ivory cursor-pointer disabled:cursor-default transition-colors"
     >
       <Icon className="w-5 h-5" />

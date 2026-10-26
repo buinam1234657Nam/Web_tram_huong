@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
-import Link from "next/link";
+import React, { Suspense, useEffect, useRef, useState } from "react";
+import Link from "@/components/i18n/Link";
 import { usePathname } from "next/navigation";
 import { Search, ShoppingBag, Menu, X } from "lucide-react";
 import { useCartStore } from "@/features/cart/useCartStore";
@@ -9,74 +9,94 @@ import { useIsMounted } from "@/hooks/useIsMounted";
 import { mockCategories } from "@/data/mock/categories";
 import { MOTION_EASE } from "@/components/motion/MotionPrimitives";
 import { RITUALS } from "@/data/content/rituals";
+import { LOCALE_LABELS, splitLocale, type Locale } from "@/i18n/config";
+import { useLocale, useMessages } from "@/i18n/client";
+import { layoutMessages } from "@/i18n/messages/layout";
+import { brandMessages } from "@/i18n/messages/brand";
+import { localizeCategory } from "@/i18n/messages/categories";
+import { LanguageSwitcher } from "@/components/i18n/LanguageSwitcher";
 import { SearchOverlay } from "./SearchOverlay";
 import { motion, AnimatePresence } from "motion/react";
 
-const NAV_LINKS = [
-  { href: "/san-pham", label: "Sản Phẩm", match: ["/san-pham"] },
-  { href: "/danh-muc/vong-tay-tram-huong", label: "Vòng Tay", match: [] },
-  { href: "/danh-muc/nhang-tram-huong", label: "Nhang Trầm", match: [] },
-  { href: "/nhu-cau/qua-bieu", label: "Quà Biếu", match: [] },
-  { href: "/hieu-ve-tram", label: "Hiểu Về Trầm", match: ["/hieu-ve-tram"] },
-  { href: "/ve-chung-toi", label: "Về Chúng Tôi", match: ["/ve-chung-toi"] },
-  { href: "/bai-viet", label: "Tin Tức", match: ["/bai-viet"] },
-];
+type HeaderText = (typeof layoutMessages)["vi"]["header"];
 
-const categoryLink = (slug: string) => {
-  const category = mockCategories.find((c) => c.slug === slug);
-  return { href: `/danh-muc/${slug}`, label: category?.name ?? slug };
-};
+function navLinks(t: HeaderText) {
+  return [
+    { href: "/san-pham", label: t.nav.products, match: ["/san-pham"] },
+    { href: "/danh-muc/vong-tay-tram-huong", label: t.nav.bracelets, match: [] },
+    { href: "/danh-muc/nhang-tram-huong", label: t.nav.incense, match: [] },
+    { href: "/nhu-cau/qua-bieu", label: t.nav.gifts, match: [] },
+    { href: "/hieu-ve-tram", label: t.nav.guide, match: ["/hieu-ve-tram"] },
+    { href: "/ve-chung-toi", label: t.nav.about, match: ["/ve-chung-toi"] },
+    { href: "/bai-viet", label: t.nav.news, match: ["/bai-viet"] },
+  ];
+}
 
-const MEGA_COLUMNS = [
-  {
-    title: "Theo nhu cầu",
-    links: [
-      { href: "/san-pham", label: "Tất cả sản phẩm" },
-      ...RITUALS.map((r) => ({ href: `/nhu-cau/${r.slug}`, label: r.label })),
-    ],
-  },
-  {
-    title: "Trầm đeo",
-    links: [
-      categoryLink("vong-tay-tram-huong"),
-      categoryLink("trang-suc-tram-huong"),
-    ],
-  },
-  {
-    title: "Trầm xông",
-    links: [
-      categoryLink("tram-nu-xong-nha"),
-      categoryLink("nhang-tram-huong"),
-      categoryLink("tram-huong-mieng"),
-      categoryLink("tinh-dau-tram"),
-      categoryLink("phu-kien-xong-tram"),
-    ],
-  },
-  {
-    title: "Quà & mỹ nghệ",
-    links: [
-      categoryLink("bo-qua-tang"),
-      categoryLink("my-nghe-tram-huong"),
-      {
-        href: "/chinh-sach/chinh-sach-bao-hanh",
-        label: "Bảo hành & đánh bóng",
-      },
-    ],
-  },
-  {
-    title: "Tìm hiểu",
-    links: [
-      { href: "/hieu-ve-tram", label: "Hiểu về trầm" },
-      { href: "/ve-chung-toi", label: "Câu chuyện thương hiệu" },
-      { href: "/bai-viet", label: "Kiến thức trầm hương" },
-      { href: "/chinh-sach/chinh-sach-doi-tra", label: "Chính sách đổi trả" },
-      {
-        href: "/chinh-sach/chinh-sach-giao-hang",
-        label: "Giao hàng & đồng kiểm",
-      },
-    ],
-  },
-];
+function megaColumns(t: HeaderText, locale: Locale) {
+  const categoryLink = (slug: string) => {
+    const category = mockCategories.find((c) => c.slug === slug);
+    return {
+      href: `/danh-muc/${slug}`,
+      label: category ? localizeCategory(category, locale).name : slug,
+    };
+  };
+  return [
+    {
+      title: t.mega.byNeed,
+      links: [
+        { href: "/san-pham", label: t.mega.allProducts },
+        ...RITUALS.map((r) => ({
+          href: `/nhu-cau/${r.slug}`,
+          label: t.rituals[r.slug] ?? r.label,
+        })),
+      ],
+    },
+    {
+      title: t.mega.wear,
+      links: [
+        categoryLink("vong-tay-tram-huong"),
+        categoryLink("trang-suc-tram-huong"),
+      ],
+    },
+    {
+      title: t.mega.burn,
+      links: [
+        categoryLink("tram-nu-xong-nha"),
+        categoryLink("nhang-tram-huong"),
+        categoryLink("tram-huong-mieng"),
+        categoryLink("tinh-dau-tram"),
+        categoryLink("phu-kien-xong-tram"),
+      ],
+    },
+    {
+      title: t.mega.giftsArt,
+      links: [
+        categoryLink("bo-qua-tang"),
+        categoryLink("my-nghe-tram-huong"),
+        { href: "/chinh-sach/chinh-sach-bao-hanh", label: t.mega.warranty },
+      ],
+    },
+    {
+      title: t.mega.learn,
+      links: [
+        { href: "/hieu-ve-tram", label: t.mega.guide },
+        { href: "/ve-chung-toi", label: t.mega.story },
+        { href: "/bai-viet", label: t.mega.knowledge },
+        { href: "/chinh-sach/chinh-sach-doi-tra", label: t.mega.returns },
+        { href: "/chinh-sach/chinh-sach-giao-hang", label: t.mega.shipping },
+      ],
+    },
+  ];
+}
+
+/** Stand-in while LanguageSwitcher (which reads search params) streams in. */
+function LanguagePill({ locale }: { locale: Locale }) {
+  return (
+    <span className="h-9 px-3 rounded-full border border-gold/40 text-mahogany text-xs font-semibold inline-flex items-center">
+      {LOCALE_LABELS[locale].short}
+    </span>
+  );
+}
 
 /** Index of the nav item that owns the mega menu. */
 const MEGA_INDEX = 0;
@@ -85,7 +105,13 @@ const OPEN_DELAY_MS = 120;
 const CLOSE_DELAY_MS = 180;
 
 export function Header() {
-  const pathname = usePathname();
+  // Prerender sees the internal "/vi/..." path, the browser sees "/" or "/en/..."; compare bare paths.
+  const { path: pathname } = splitLocale(usePathname());
+  const locale = useLocale();
+  const t = useMessages(layoutMessages).header;
+  const brand = useMessages(brandMessages);
+  const NAV_LINKS = navLinks(t);
+  const MEGA_COLUMNS = megaColumns(t, locale);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isMegaOpen, setIsMegaOpen] = useState(false);
@@ -146,7 +172,7 @@ export function Header() {
                 type="button"
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
                 className="p-2 -ml-2 text-mahogany"
-                aria-label="Mở menu điều hướng"
+                aria-label={t.openMenu}
                 aria-expanded={isMobileMenuOpen}
               >
                 {isMobileMenuOpen ? (
@@ -159,7 +185,7 @@ export function Header() {
                 type="button"
                 onClick={() => setIsSearchOpen(true)}
                 className="p-2 text-mahogany"
-                aria-label="Tìm kiếm sản phẩm"
+                aria-label={t.searchProducts}
               >
                 <Search className="w-5 h-5" />
               </button>
@@ -171,7 +197,7 @@ export function Header() {
                 VĨNH TRẦM
               </span>
               <span className="block mt-1 text-[9px] uppercase tracking-[0.34em] text-gold-dark">
-                Trầm Hương Việt
+                {brand.wordmarkSubtitle}
               </span>
             </Link>
 
@@ -217,11 +243,14 @@ export function Header() {
 
             {/* Actions */}
             <div className="flex items-center justify-end gap-1">
+              <Suspense fallback={<LanguagePill locale={locale} />}>
+                <LanguageSwitcher className="hidden lg:block mr-1" />
+              </Suspense>
               <button
                 type="button"
                 onClick={() => setIsSearchOpen(true)}
                 className="hidden lg:inline-flex p-2 text-mahogany hover:text-gold-dark transition-colors cursor-pointer"
-                aria-label="Tìm kiếm sản phẩm"
+                aria-label={t.searchProducts}
               >
                 <Search className="w-5 h-5" />
               </button>
@@ -229,7 +258,7 @@ export function Header() {
                 type="button"
                 onClick={openCart}
                 className="relative p-2 -mr-2 text-mahogany hover:text-gold-dark transition-colors cursor-pointer"
-                aria-label={`Giỏ hàng có ${totalItems} sản phẩm`}
+                aria-label={t.cartWithCount(totalItems)}
               >
                 <ShoppingBag className="w-5 h-5" />
                 <AnimatePresence>
@@ -331,7 +360,7 @@ export function Header() {
                   ))}
                 </ul>
                 <p className="mt-6 mb-3 text-base font-medium text-charcoal">
-                  Danh mục
+                  {t.categories}
                 </p>
                 <ul className="space-y-2.5">
                   {mockCategories.map((c) => (
@@ -341,11 +370,17 @@ export function Header() {
                         onClick={() => setIsMobileMenuOpen(false)}
                         className="block text-[15px] font-medium text-muted"
                       >
-                        {c.name}
+                        {localizeCategory(c, locale).name}
                       </Link>
                     </li>
                   ))}
                 </ul>
+                <p className="mt-8 mb-3 text-base font-medium text-charcoal">
+                  {t.language}
+                </p>
+                <Suspense fallback={<LanguagePill locale={locale} />}>
+                  <LanguageSwitcher variant="row" />
+                </Suspense>
               </div>
             </motion.nav>
           )}

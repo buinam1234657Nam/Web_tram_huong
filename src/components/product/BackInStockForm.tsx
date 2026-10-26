@@ -2,6 +2,8 @@
 
 import React, { useState } from "react";
 import { BellRing } from "lucide-react";
+import { useMessages } from "@/i18n/client";
+import { productMessages } from "@/i18n/messages/product";
 
 /**
  * Replaces the disabled "Hết hàng" button: the shopper leaves a phone number
@@ -14,6 +16,7 @@ export function BackInStockForm({
   productId: string;
   variantId: string;
 }) {
+  const t = useMessages(productMessages);
   const [isOpen, setIsOpen] = useState(false);
   const [contact, setContact] = useState("");
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
@@ -31,11 +34,12 @@ export function BackInStockForm({
         body: JSON.stringify({ productId, variantId, contact }),
       });
       const data = await res.json();
+      // The API answers in Vietnamese; show our own copy in the visitor's language.
       setStatus(data.success ? "success" : "error");
-      setMessage(data.success ? data.message : data.error);
+      setMessage(data.success ? t.bisSuccess : res.status >= 500 ? t.bisNetworkError : t.bisInvalid);
     } catch {
       setStatus("error");
-      setMessage("Không thể kết nối đến máy chủ, vui lòng thử lại sau.");
+      setMessage(t.bisNetworkError);
     }
   };
 
@@ -58,7 +62,7 @@ export function BackInStockForm({
         className="w-full h-14 rounded-full bg-espresso text-white text-[15px] font-medium hover:bg-espresso-light transition-colors cursor-pointer inline-flex items-center justify-center gap-2"
       >
         <BellRing className="w-4 h-4" />
-        Báo tôi khi có hàng
+        {t.notifyMe}
       </button>
     );
   }
@@ -72,10 +76,10 @@ export function BackInStockForm({
         htmlFor="back-in-stock-contact"
         className="block text-[15px] font-medium text-charcoal"
       >
-        Số điện thoại hoặc email
+        {t.bisContactLabel}
       </label>
       <p className="mt-1 text-sm text-muted">
-        Sản phẩm tạm hết. Để lại liên hệ, chúng tôi sẽ báo ngay khi có hàng.
+        {t.bisIntro}
       </p>
       <div className="mt-3 flex flex-col sm:flex-row gap-2">
         <input
@@ -86,7 +90,7 @@ export function BackInStockForm({
           required
           value={contact}
           onChange={(e) => setContact(e.target.value)}
-          placeholder="0908 xxx xxx hoặc ten@email.com"
+          placeholder={t.bisPlaceholder}
           className="flex-1 min-w-0 h-12 rounded-full border border-border-subtle px-5 text-[15px] text-charcoal placeholder:text-muted-light focus:outline-none focus:border-charcoal"
         />
         <button
@@ -94,7 +98,7 @@ export function BackInStockForm({
           disabled={status === "loading"}
           className="h-12 px-6 rounded-full bg-espresso text-white text-[15px] font-medium hover:bg-espresso-light transition-colors disabled:opacity-50 cursor-pointer"
         >
-          Gửi
+          {t.bisSubmit}
         </button>
       </div>
       {status === "error" && (

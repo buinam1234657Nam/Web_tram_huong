@@ -1,6 +1,10 @@
+"use client";
+
 import React from "react";
-import Link from "next/link";
+import Link from "@/components/i18n/Link";
 import { ChevronRight, Home } from "lucide-react";
+import { useMessages } from "@/i18n/client";
+import { commonMessages } from "@/i18n/messages/common";
 
 export interface BreadcrumbItem {
   label: string;
@@ -8,6 +12,7 @@ export interface BreadcrumbItem {
 }
 
 export function Breadcrumbs({ items }: { items: BreadcrumbItem[] }) {
+  const t = useMessages(commonMessages);
   return (
     <nav aria-label="Breadcrumb" className="py-3">
       <ol className="flex items-center flex-wrap gap-1.5 text-xs text-muted">
@@ -15,10 +20,10 @@ export function Breadcrumbs({ items }: { items: BreadcrumbItem[] }) {
           <Link
             href="/"
             className="flex items-center gap-1 hover:text-espresso transition-colors"
-            title="Trang chủ"
+            title={t.home}
           >
             <Home className="w-3.5 h-3.5" />
-            <span className="sr-only">Trang chủ</span>
+            <span className="sr-only">{t.home}</span>
           </Link>
         </li>
 

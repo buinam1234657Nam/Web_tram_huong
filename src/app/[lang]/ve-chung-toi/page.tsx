@@ -1,44 +1,58 @@
 import React from "react";
 import { Metadata } from "next";
 import Image from "next/image";
-import Link from "next/link";
+import Link from "@/components/i18n/Link";
 import { ChevronRight } from "lucide-react";
 import { brandConfig } from "@/lib/config/brand";
-import { ABOUT_INTRO, PHILOSOPHY, TEAM, TIMELINE } from "@/data/content/about";
+import { ABOUT_INTRO, aboutContentFor } from "@/data/content/about";
+import { localeAlternates, localizePath, type Locale } from "@/i18n/config";
+import { getLocale } from "@/i18n/server";
+import { aboutMessages } from "@/i18n/messages/about";
+import { brandMessages } from "@/i18n/messages/brand";
 import { Breadcrumbs } from "@/components/ui/Breadcrumbs";
 import { BreadcrumbJsonLd } from "@/components/seo/JsonLd";
 import { Button } from "@/components/ui/Button";
 import { FadeIn } from "@/components/motion/MotionPrimitives";
 
-export const metadata: Metadata = {
-  title: "Về xưởng Vĩnh Trầm",
-  description:
-    "Xưởng trầm nhỏ ở Vạn Giã, Khánh Hòa: ai chọn phôi, ai tiện hạt, ai ủ hũ, và showroom ở Quận 1 để thử mùi trước khi mua.",
-  alternates: {
-    canonical: "/ve-chung-toi",
-  },
-  openGraph: {
-    title: "Về xưởng Vĩnh Trầm",
-    description: "Xưởng trầm nhỏ ở Vạn Giã, Khánh Hòa và showroom ở Quận 1.",
-    url: "/ve-chung-toi",
-    images: [
-      {
-        url: ABOUT_INTRO.image,
-        width: 1376,
-        height: 768,
-        alt: ABOUT_INTRO.shot,
-      },
-    ],
-  },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await getLocale();
+  const t = aboutMessages[locale];
+  const { intro } = aboutContentFor(locale);
+  return {
+    title: t.metaTitle,
+    description: t.metaDescription,
+    alternates: localeAlternates("/ve-chung-toi", locale),
+    openGraph: {
+      title: t.metaTitle,
+      description: t.ogDescription,
+      url: localizePath("/ve-chung-toi", locale),
+      images: [
+        {
+          url: ABOUT_INTRO.image,
+          width: 1376,
+          height: 768,
+          alt: intro.shot,
+        },
+      ],
+    },
+  };
+}
 
 const CONTAINER = "max-w-site mx-auto px-4 sm:px-6 lg:px-8";
 
 const mapLink = (address: string) =>
   `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`;
 
-export default function AboutUsPage() {
-  const breadcrumbs = [{ label: "Về chúng tôi", href: "/ve-chung-toi" }];
+export default async function AboutUsPage() {
+  const locale = await getLocale();
+  const t = aboutMessages[locale];
+  const {
+    intro: ABOUT_INTRO,
+    philosophy: PHILOSOPHY,
+    timeline: TIMELINE,
+    team: TEAM,
+  } = aboutContentFor(locale);
+  const breadcrumbs = [{ label: t.breadcrumb, href: "/ve-chung-toi" }];
   const { contact } = brandConfig;
 
   return (
@@ -63,12 +77,12 @@ export default function AboutUsPage() {
             {ABOUT_INTRO.body}
           </p>
           <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-3">
-            <Button href="/san-pham">Xem sản phẩm</Button>
+            <Button href="/san-pham">{t.viewProducts}</Button>
             <Link
               href="#xuong"
               className="inline-flex items-center gap-0.5 text-[15px] text-gold-dark hover:underline underline-offset-4"
             >
-              Ghé xưởng & showroom
+              {t.visitLink}
               <ChevronRight className="w-4 h-4" aria-hidden="true" />
             </Link>
           </div>
@@ -129,13 +143,13 @@ export default function AboutUsPage() {
         className={`${CONTAINER} mt-20 sm:mt-28`}
       >
         <p className="text-sm font-medium text-gold-dark">
-          Từ rừng dó tới showroom
+          {t.timelineEyebrow}
         </p>
         <h2
           id="timeline-title"
           className="mt-3 text-3xl sm:text-4xl font-semibold text-charcoal tracking-tight"
         >
-          Xưởng đã đi qua những năm nào
+          {t.timelineTitle}
         </h2>
         <FadeIn>
           <ol className="mt-10 border-t border-border-subtle">
@@ -179,7 +193,7 @@ export default function AboutUsPage() {
           id="team-title"
           className="text-3xl sm:text-4xl font-semibold text-charcoal tracking-tight"
         >
-          Năm người làm ra mỗi chuỗi vòng
+          {t.teamTitle}
         </h2>
         <FadeIn>
           <ul className="mt-10 grid grid-cols-2 gap-x-4 gap-y-10 sm:grid-cols-3 lg:grid-cols-5">
@@ -217,29 +231,31 @@ export default function AboutUsPage() {
           id="places-title"
           className="text-3xl sm:text-4xl font-semibold text-charcoal tracking-tight"
         >
-          Ghé xưởng hoặc showroom
+          {t.placesTitle}
         </h2>
         <div className="mt-8 grid grid-cols-1 gap-4 md:grid-cols-2">
           <Place
-            title="Xưởng Khánh Hòa"
+            title={t.workshopTitle}
             address={contact.address}
-            note="Xưởng đang làm việc, nên gọi trước khi ghé để có người tiếp."
+            note={t.workshopNote}
+            locale={locale}
           />
           <Place
-            title="Showroom Quận 1"
+            title={t.showroomTitle}
             address={contact.showroomAddress}
-            note={`Mở cửa ${contact.workingHours}. Ghé uống trà, thử mùi, không cần đặt lịch.`}
+            note={t.showroomNote(brandMessages[locale].workingHours)}
+            locale={locale}
           />
         </div>
         <p className="mt-6 text-[15px] text-muted">
-          Hoặc gọi{" "}
+          {t.callBefore}{" "}
           <a
             href={`tel:${contact.hotline}`}
             className="font-medium text-charcoal underline underline-offset-4 hover:text-gold-dark"
           >
             {contact.phoneFormatted}
           </a>{" "}
-          để hỏi trước.
+          {t.callAfter}
         </p>
       </section>
     </div>
@@ -250,10 +266,12 @@ function Place({
   title,
   address,
   note,
+  locale,
 }: {
   title: string;
   address: string;
   note: string;
+  locale: Locale;
 }) {
   return (
     <div className="rounded-md border border-border-subtle p-6 sm:p-8">
@@ -266,7 +284,7 @@ function Place({
         rel="noopener noreferrer"
         className="mt-5 inline-flex items-center gap-0.5 text-[15px] text-gold-dark hover:underline underline-offset-4"
       >
-        Xem đường đi
+        {aboutMessages[locale].directions}
         <ChevronRight className="w-4 h-4" aria-hidden="true" />
       </Link>
     </div>

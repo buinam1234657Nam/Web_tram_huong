@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import Link from "next/link";
+import Link from "@/components/i18n/Link";
 import Image from "next/image";
 import { useCartStore } from "@/features/cart/useCartStore";
 import { useIsMounted } from "@/hooks/useIsMounted";
@@ -9,6 +9,8 @@ import { formatVND } from "@/lib/format/currency";
 import { brandConfig } from "@/lib/config/brand";
 import { Button } from "@/components/ui/Button";
 import { QuantityStepper } from "@/components/cart/CartDrawer";
+import { useMessages } from "@/i18n/client";
+import { cartMessages } from "@/i18n/messages/cart";
 
 export function CartPageView() {
   const {
@@ -21,6 +23,7 @@ export function CartPageView() {
   } = useCartStore();
 
   const mounted = useIsMounted();
+  const t = useMessages(cartMessages);
 
   if (!mounted) {
     return <div className="py-24" aria-busy="true" />;
@@ -44,13 +47,13 @@ export function CartPageView() {
     return (
       <div className="py-16 text-center max-w-md mx-auto">
         <h2 className="text-2xl font-semibold text-agarwood">
-          Giỏ hàng của bạn đang trống
+          {t.emptyTitle}
         </h2>
         <p className="mt-3 text-[15px] text-muted leading-relaxed">
-          Khám phá vòng tay, nhang và trầm nụ tự nhiên của Vĩnh Trầm.
+          {t.emptyBody}
         </p>
         <div className="mt-8">
-          <Button href="/san-pham">Xem sản phẩm</Button>
+          <Button href="/san-pham">{t.browseProducts}</Button>
         </div>
       </div>
     );
@@ -62,14 +65,14 @@ export function CartPageView() {
         <div>
           <p className="text-[15px] text-charcoal">
             {isFreeShipping ? (
-              "Đơn hàng của bạn được miễn phí vận chuyển."
+              t.freeShippingReached
             ) : (
               <>
-                Mua thêm{" "}
+                {t.freeShippingBefore}{" "}
                 <span className="font-medium">
                   {formatVND(remainingForFree)}
                 </span>{" "}
-                để được miễn phí vận chuyển.
+                {t.freeShippingAfter}
               </>
             )}
           </p>
@@ -79,7 +82,7 @@ export function CartPageView() {
             aria-valuenow={progressPercent}
             aria-valuemin={0}
             aria-valuemax={100}
-            aria-label="Tiến độ miễn phí vận chuyển"
+            aria-label={t.freeShippingProgress}
           >
             <div
               className="h-full rounded-full bg-espresso transition-[width] duration-500"
@@ -133,9 +136,9 @@ export function CartPageView() {
                     type="button"
                     onClick={() => removeItem(item.id)}
                     className="text-sm text-muted underline underline-offset-4 hover:text-charcoal transition-colors cursor-pointer"
-                    aria-label={`Xóa ${item.name} khỏi giỏ`}
+                    aria-label={t.removeItem(item.name)}
                   >
-                    Xóa
+                    {t.remove}
                   </button>
                 </div>
               </div>
@@ -148,33 +151,33 @@ export function CartPageView() {
             href="/san-pham"
             className="text-charcoal underline underline-offset-4 hover:text-gold-dark transition-colors"
           >
-            Tiếp tục mua sắm
+            {t.continueShopping}
           </Link>
           <button
             type="button"
             onClick={clearCart}
             className="text-muted hover:text-charcoal transition-colors cursor-pointer"
           >
-            Xóa tất cả
+            {t.clearAll}
           </button>
         </div>
       </div>
 
       <aside className="lg:col-span-4 lg:sticky lg:top-[calc(var(--header-h)+2rem)] rounded-2xl bg-ivory p-6 sm:p-8">
-        <h2 className="text-xl font-semibold text-agarwood">Tóm tắt</h2>
+        <h2 className="text-xl font-semibold text-agarwood">{t.summary}</h2>
         <dl className="mt-6 space-y-2 text-[15px]">
           <div className="flex justify-between">
-            <dt className="text-muted">Tạm tính ({totalItems} sản phẩm)</dt>
+            <dt className="text-muted">{t.subtotal(totalItems)}</dt>
             <dd className="text-charcoal">{formatVND(subtotal)}</dd>
           </div>
           <div className="flex justify-between">
-            <dt className="text-muted">Vận chuyển</dt>
+            <dt className="text-muted">{t.shipping}</dt>
             <dd className="text-charcoal">
-              {isFreeShipping ? "Miễn phí" : formatVND(shippingFee)}
+              {isFreeShipping ? t.free : formatVND(shippingFee)}
             </dd>
           </div>
           <div className="flex justify-between items-baseline pt-4 mt-2 border-t border-border-dark/10">
-            <dt className="font-medium text-charcoal">Tổng cộng</dt>
+            <dt className="font-medium text-charcoal">{t.total}</dt>
             <dd className="text-2xl font-semibold text-charcoal">
               {formatVND(total)}
             </dd>
@@ -182,10 +185,10 @@ export function CartPageView() {
         </dl>
 
         <Button href="/thanh-toan" size="lg" className="mt-8 w-full">
-          Thanh toán
+          {t.checkout}
         </Button>
         <p className="mt-4 text-sm text-muted text-center leading-relaxed">
-          Giá đã gồm thuế và đóng gói. Bạn được kiểm tra hàng trước khi nhận.
+          {t.taxNote}
         </p>
       </aside>
     </div>

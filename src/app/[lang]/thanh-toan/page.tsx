@@ -1,25 +1,30 @@
 import React from "react";
 import { Metadata } from "next";
 import { Breadcrumbs } from "@/components/ui/Breadcrumbs";
+import { getLocale } from "@/i18n/server";
+import { localeAlternates } from "@/i18n/config";
+import { checkoutMessages } from "@/i18n/messages/checkout";
 import { CheckoutForm } from "./CheckoutForm";
 
-export const metadata: Metadata = {
-  title: "Thanh Toán",
-  description:
-    "Hoàn tất thông tin giao nhận và phương thức thanh toán cho đơn hàng trầm hương tại VĨNH TRẦM.",
-  alternates: {
-    canonical: "/thanh-toan",
-  },
-  robots: {
-    index: false,
-    follow: true,
-  },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await getLocale();
+  const t = checkoutMessages[locale];
+  return {
+    title: t.metaTitle,
+    description: t.metaDescription,
+    alternates: localeAlternates("/thanh-toan", locale),
+    robots: {
+      index: false,
+      follow: true,
+    },
+  };
+}
 
-export default function CheckoutPage() {
+export default async function CheckoutPage() {
+  const t = checkoutMessages[await getLocale()];
   const breadcrumbs = [
-    { label: "Giỏ hàng", href: "/gio-hang" },
-    { label: "Thanh toán", href: "/thanh-toan" },
+    { label: t.breadcrumbCart, href: "/gio-hang" },
+    { label: t.breadcrumbCheckout, href: "/thanh-toan" },
   ];
 
   return (
@@ -27,7 +32,7 @@ export default function CheckoutPage() {
       <Breadcrumbs items={breadcrumbs} />
 
       <h1 className="mt-6 mb-10 text-3xl sm:text-4xl font-semibold text-agarwood">
-        Thanh toán
+        {t.heading}
       </h1>
 
       <CheckoutForm />

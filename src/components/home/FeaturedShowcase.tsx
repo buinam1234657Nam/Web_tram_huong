@@ -2,10 +2,12 @@
 
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import Image from "next/image";
-import Link from "next/link";
+import Link from "@/components/i18n/Link";
 import { ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
 import { useReducedMotion } from "motion/react";
 import { formatVND } from "@/lib/format/currency";
+import { useMessages } from "@/i18n/client";
+import { homeMessages } from "@/i18n/messages/home";
 
 export interface ShowcaseProduct {
   id: string;
@@ -41,6 +43,7 @@ export function FeaturedShowcase({
   products: ShowcaseProduct[];
   collections: ShowcaseCollection[];
 }) {
+  const t = useMessages(homeMessages);
   const [index, setIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
   const reduceMotion = useReducedMotion();
@@ -72,7 +75,7 @@ export function FeaturedShowcase({
       >
         <div
           aria-roledescription="carousel"
-          aria-label="Sản phẩm tuyển chọn"
+          aria-label={t.showcaseLabel}
           className="relative flex-1"
           onPointerDown={(e) => {
             dragStartX.current = e.clientX;
@@ -112,7 +115,7 @@ export function FeaturedShowcase({
                   <div className="absolute inset-x-0 bottom-0 sm:inset-y-0 sm:right-auto flex flex-col justify-end sm:justify-center p-6 sm:p-10 sm:max-w-[60%]">
                     {product.bestseller && (
                       <span className="self-start rounded-full border border-gold-light/60 bg-white/10 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-gold-light backdrop-blur-sm">
-                        Bán chạy
+                        {t.bestseller}
                       </span>
                     )}
                     <h3 className="mt-4 font-serif text-2xl sm:text-3xl font-medium text-white leading-snug text-balance">
@@ -123,7 +126,7 @@ export function FeaturedShowcase({
                     </p>
                     <p className="mt-4 text-lg font-semibold text-white">
                       {product.fromPrice && (
-                        <span className="text-sm font-normal text-white/60">Từ </span>
+                        <span className="text-sm font-normal text-white/60">{t.from} </span>
                       )}
                       {formatVND(product.price)}
                     </p>
@@ -132,7 +135,7 @@ export function FeaturedShowcase({
                       tabIndex={isActive ? 0 : -1}
                       className="mt-6 self-start inline-flex items-center gap-2 h-12 px-7 rounded-full bg-linear-to-r from-gold-light to-gold text-[15px] font-medium text-espresso-dark shadow-lg shadow-black/20 hover:from-gold hover:to-gold-dark hover:text-white transition-colors"
                     >
-                      Xem chi tiết
+                      {t.viewDetails}
                       <ArrowRight className="w-4 h-4" aria-hidden="true" />
                     </Link>
                   </div>
@@ -164,7 +167,7 @@ export function FeaturedShowcase({
                 key={product.id}
                 type="button"
                 onClick={() => go(idx)}
-                aria-label={`Xem sản phẩm ${idx + 1}`}
+                aria-label={t.showcaseGoTo(idx + 1)}
                 aria-current={idx === index}
                 className="group h-8 px-1.5 flex items-center cursor-pointer"
               >
@@ -201,7 +204,7 @@ export function FeaturedShowcase({
             </h3>
             <p className="mt-1 text-sm text-muted">{c.subtitle}</p>
             <span className="mt-3 inline-flex items-center gap-1.5 text-sm font-medium text-agarwood group-hover:text-gold-dark transition-colors">
-              Khám phá
+              {t.explore}
               <ArrowRight
                 className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-0.5"
                 aria-hidden="true"
@@ -223,12 +226,13 @@ function CarouselArrow({
   onClick: () => void;
   className: string;
 }) {
+  const t = useMessages(homeMessages);
   const Icon = direction === "prev" ? ChevronLeft : ChevronRight;
   return (
     <button
       type="button"
       onClick={onClick}
-      aria-label={direction === "prev" ? "Sản phẩm trước" : "Sản phẩm tiếp theo"}
+      aria-label={direction === "prev" ? t.showcasePrev : t.showcaseNext}
       className={`absolute z-20 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-white text-espresso shadow-md shadow-black/15 flex items-center justify-center hover:bg-cream transition-colors cursor-pointer ${className}`}
     >
       <Icon className="w-5 h-5" />

@@ -1,13 +1,17 @@
 import type { Ritual } from "@/types/product";
+import type { Locale } from "@/i18n/config";
 
 /** "Mua theo nhu cầu / nghi thức": home tiles, /nhu-cau/[slug] pages and the catalog filter. */
-export const RITUALS: Array<{
+export interface RitualInfo {
   slug: Ritual;
   label: string;
   title: string;
   description: string;
   image: string;
-}> = [
+}
+
+/** Vietnamese (default). Use ritualsFor(locale) on localized pages. */
+export const RITUALS: RitualInfo[] = [
   {
     slug: "deo-ho-than",
     label: "Đeo hộ thân",
@@ -44,3 +48,38 @@ export const RITUALS: Array<{
 ];
 
 export const ritualBySlug = (slug: string) => RITUALS.find((r) => r.slug === slug);
+
+const RITUALS_EN: Record<Ritual, Pick<RitualInfo, "label" | "title" | "description">> = {
+  "deo-ho-than": {
+    label: "Worn for protection",
+    title: "With you every day",
+    description:
+      "Agarwood bracelets, necklaces and pendants that warm up and release their scent with your body heat.",
+  },
+  thien: {
+    label: "Meditation & stillness",
+    title: "One stick for a quiet moment",
+    description:
+      "Fine-smoke agarwood incense and cones with a gentle scent, for the meditation corner, the altar and reading hours.",
+  },
+  "ban-tra": {
+    label: "Agarwood at the tea table",
+    title: "A scent to match your tea",
+    description:
+      "Agarwood chips, oud oil and burners for savouring the scent slowly with friends over tea.",
+  },
+  "qua-bieu": {
+    label: "Gifts",
+    title: "Wishes of peace, given",
+    description:
+      "Gift boxes, statues and agarwood sculptures for Tet, housewarmings and thanking the people you love.",
+  },
+};
+
+export function ritualsFor(locale: Locale): RitualInfo[] {
+  if (locale === "vi") return RITUALS;
+  return RITUALS.map((r) => ({ ...r, ...RITUALS_EN[r.slug] }));
+}
+
+export const ritualBySlugFor = (slug: string, locale: Locale) =>
+  ritualsFor(locale).find((r) => r.slug === slug);
