@@ -85,7 +85,7 @@ export function ProductCarousel({
           <FadeIn
             key={product.id}
             delay={Math.min(idx, 3) * 0.12}
-            className="snap-start shrink-0 basis-[72%] sm:basis-[calc((100%-1rem)/2)] lg:basis-[calc((100%-2rem)/3)]"
+            className="snap-start shrink-0 basis-[46%] sm:basis-[calc((100%-2rem)/3)] lg:basis-[calc((100%-3rem)/4)]"
           >
             <ProductCard product={product} />
           </FadeIn>

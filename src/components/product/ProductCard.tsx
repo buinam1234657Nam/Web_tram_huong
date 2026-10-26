@@ -42,8 +42,9 @@ export function ProductCard({
   const hoverImage = product.images[1] || primaryImage;
 
   return (
-    <article className="group relative flex flex-col h-full">
-      <div className="relative aspect-square w-full bg-ivory overflow-hidden rounded-xl">
+    // White panel: the studio photos have pale grey backdrops that clash with the cream canvas.
+    <article className="group relative flex flex-col h-full rounded-2xl bg-white p-2 sm:p-2.5 shadow-[0_1px_2px_rgba(45,30,25,0.04)] transition-shadow duration-500 hover:shadow-[0_12px_32px_-12px_rgba(45,30,25,0.18)]">
+      <div className="relative aspect-square w-full bg-mist overflow-hidden rounded-xl">
         {/* Gentle zoom on hover; both stacked images scale together so the crossfade stays aligned */}
         <Link
           href={href}
@@ -74,7 +75,7 @@ export function ProductCard({
         )}
       </div>
 
-      <div className="pt-3.5 flex-1 flex flex-col">
+      <div className="px-1.5 pt-3 pb-1 flex-1 flex flex-col">
         {(product.bestseller || isOutOfStock) && (
           <p
             className={`text-xs font-medium mb-1 ${isOutOfStock ? "text-muted" : "text-gold-dark"}`}
@@ -88,27 +89,21 @@ export function ProductCard({
           </Link>
         </h3>
         <AgarwoodChips profile={product.agarwoodProfile} className="mt-2" />
-        <p className="mt-2 flex flex-wrap items-baseline gap-x-2 text-[15px] font-semibold text-agarwood">
-          <span>{formatVND(price)}</span>
-          {compareAtPrice && compareAtPrice > price && (
-            <span className="text-sm font-normal text-muted-light line-through">
-              {formatVND(compareAtPrice)}
-            </span>
-          )}
-        </p>
 
-        {/* mt-auto pins the actions to the bottom so buttons line up across a row */}
-        <div className="mt-auto pt-3 flex gap-2">
-          <Link
-            href={href}
-            className="flex-1 min-w-0 h-11 inline-flex items-center justify-center rounded-full bg-espresso px-3 text-[13px] sm:text-sm font-medium text-white hover:bg-espresso-light transition-colors"
-          >
-            {t.viewDetails}
-          </Link>
+        {/* mt-auto pins price + cart to the bottom so they line up across a row */}
+        <div className="mt-auto pt-3 flex items-center justify-between gap-2">
+          <p className="min-w-0 flex flex-wrap items-baseline gap-x-2 text-[15px] font-semibold text-agarwood">
+            <span>{formatVND(price)}</span>
+            {compareAtPrice && compareAtPrice > price && (
+              <span className="text-xs font-normal text-muted-light line-through">
+                {formatVND(compareAtPrice)}
+              </span>
+            )}
+          </p>
           {isOutOfStock ? (
             <Link
               href={`${href}#bao-khi-co-hang`}
-              className="w-11 h-11 shrink-0 rounded-full border border-gold/50 text-agarwood flex items-center justify-center hover:bg-ivory transition-colors"
+              className="w-10 h-10 shrink-0 rounded-full border border-gold/50 text-agarwood flex items-center justify-center hover:bg-ivory transition-colors"
               aria-label={t.notifyMeLabel(product.name)}
               title={t.notifyMe}
             >
@@ -118,7 +113,7 @@ export function ProductCard({
             <button
               type="button"
               onClick={handleQuickAdd}
-              className="w-11 h-11 shrink-0 rounded-full border border-gold/50 text-agarwood flex items-center justify-center hover:bg-ivory transition-colors cursor-pointer"
+              className="w-10 h-10 shrink-0 rounded-full border border-gold/50 text-agarwood flex items-center justify-center hover:bg-espresso hover:border-espresso hover:text-white transition-colors cursor-pointer"
               aria-label={t.addToCartLabel(product.name)}
               title={t.addToCart}
             >

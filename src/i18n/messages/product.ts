@@ -6,7 +6,6 @@ export const productMessages = defineMessages({
     // Card
     bestseller: "Bán chạy",
     outOfStock: "Tạm hết hàng",
-    viewDetails: "Xem chi tiết",
     addToCart: "Thêm vào giỏ",
     addToCartLabel: (name: string) => `Thêm vào giỏ: ${name}`,
     notifyMe: "Báo tôi khi có hàng",
@@ -36,7 +35,8 @@ export const productMessages = defineMessages({
     buyNow: "Mua ngay",
     zaloConsult: "Tư vấn chọn trầm qua Zalo",
 
-    // Accordions
+    // Detail tabs
+    detailsLabel: "Thông tin sản phẩm",
     description: "Mô tả sản phẩm",
     scent: "Hương thơm",
     scentIntensity: "Độ tỏa hương",
@@ -46,10 +46,9 @@ export const productMessages = defineMessages({
     specOrigin: "Xuất xứ",
     specHarvest: "Thu hái",
     sku: "Mã sản phẩm",
-    authenticity: "Cách nhận biết trầm tự nhiên với trầm tẩm dầu",
+    authenticity: "Cách nhận biết trầm thật",
     authenticityMore: "Xem đầy đủ trong “Hiểu về trầm”",
-    care: "Hướng dẫn sử dụng & bảo quản",
-    shipping: "Giao hàng & đổi trả",
+    care: "Sử dụng & bảo quản",
     shippingFree: (amount: string) => `Miễn phí vận chuyển cho đơn từ ${amount}.`,
     shippingInspect: "Được mở hộp đồng kiểm trước khi thanh toán.",
     shippingReturns: (days: number) => `Đổi trả trong ${days} ngày nếu sản phẩm lỗi.`,
@@ -87,7 +86,6 @@ export const productMessages = defineMessages({
   en: {
     bestseller: "Bestseller",
     outOfStock: "Out of stock",
-    viewDetails: "View details",
     addToCart: "Add to bag",
     addToCartLabel: (name: string) => `Add to bag: ${name}`,
     notifyMe: "Notify me when available",
@@ -114,6 +112,7 @@ export const productMessages = defineMessages({
     buyNow: "Buy now",
     zaloConsult: "Ask our agarwood advisor on Zalo",
 
+    detailsLabel: "Product details",
     description: "Description",
     scent: "Scent",
     scentIntensity: "Intensity",
@@ -123,10 +122,9 @@ export const productMessages = defineMessages({
     specOrigin: "Origin",
     specHarvest: "Harvest",
     sku: "SKU",
-    authenticity: "How to tell natural agarwood from oil-treated wood",
+    authenticity: "Spotting real agarwood",
     authenticityMore: "Read the full guide in “Understanding agarwood”",
     care: "Use & care",
-    shipping: "Shipping & returns",
     shippingFree: (amount: string) => `Free shipping on orders from ${amount}.`,
     shippingInspect: "Open and inspect your parcel before you pay.",
     shippingReturns: (days: number) => `Returns within ${days} days for defective items.`,

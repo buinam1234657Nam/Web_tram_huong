@@ -72,8 +72,14 @@ export async function generateMetadata({
 // inside Suspense (see "Move URL data behind Suspense" in the Next.js docs).
 export default function ProductDetailPage({ params }: ProductPageProps) {
   return (
-    <div className="max-w-site mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-24">
-      <Suspense fallback={<ProductDetailSkeleton />}>
+    <div className="pt-6 pb-24">
+      <Suspense
+        fallback={
+          <div className="max-w-site mx-auto px-4 sm:px-6 lg:px-8">
+            <ProductDetailSkeleton />
+          </div>
+        }
+      >
         <ProductContent params={params} />
       </Suspense>
     </div>
@@ -112,7 +118,10 @@ async function ProductContent({ params }: ProductPageProps) {
       <ProductJsonLd product={product} locale={locale} />
       <BreadcrumbJsonLd items={breadcrumbs} />
       <FaqJsonLd items={faq} />
-      <Breadcrumbs items={breadcrumbs} />
+      {/* The view lays out its own containers so the details band can run full width */}
+      <div className="max-w-site mx-auto px-4 sm:px-6 lg:px-8">
+        <Breadcrumbs items={breadcrumbs} />
+      </div>
 
       <div className="pt-4">
         <ProductDetailView

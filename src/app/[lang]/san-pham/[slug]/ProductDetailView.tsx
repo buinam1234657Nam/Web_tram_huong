@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "@/components/i18n/Link";
@@ -33,7 +33,6 @@ import { AuthenticitySigns } from "@/components/product/AuthenticitySigns";
 import { careGuideFor } from "@/data/content/product-guides";
 import { useLocale, useLocalizePath, useMessages } from "@/i18n/client";
 import { productMessages } from "@/i18n/messages/product";
-import { categoryNameFor } from "@/i18n/messages/categories";
 
 /** From this price up, offer a one-to-one Zalo consultation next to the cart buttons. */
 const CONSULT_MIN_PRICE = 5_000_000;
@@ -102,9 +101,128 @@ export function ProductDetailView({
     router.push(localize("/thanh-toan"));
   };
 
+  const trustPoints = [
+    t.shippingFree(formatVND(brandConfig.policies.freeShippingThreshold)),
+    t.shippingInspect,
+    t.shippingReturns(brandConfig.policies.returnDays),
+    t.shippingWarranty,
+  ];
+
+  // The second photo sits beside the description; one-photo products skip it.
+  const detailImage = images[1];
+  const tabs: ProductTab[] = [
+    {
+      id: "mo-ta",
+      label: t.description,
+      content: (
+        <div
+          className={
+            detailImage
+              ? "grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-start"
+              : "max-w-3xl"
+          }
+        >
+          <div>
+            {product.storyLine && (
+              <h2 className="mb-5 text-2xl sm:text-3xl font-semibold text-espresso leading-snug">
+                {product.storyLine}
+              </h2>
+            )}
+            <p className="whitespace-pre-line">{product.description}</p>
+          </div>
+          {detailImage && (
+            <div className="relative aspect-4/3 overflow-hidden rounded-2xl bg-ivory lg:sticky lg:top-[calc(var(--header-h)+2rem)]">
+              <Image
+                src={detailImage}
+                alt={t.imageAlt(product.name, 2)}
+                fill
+                sizes="(max-width: 1024px) 100vw, 50vw"
+                className="object-cover"
+              />
+            </div>
+          )}
+        </div>
+      ),
+    },
+  ];
+  if (product.scentProfile) {
+    tabs.push({
+      id: "huong-thom",
+      label: t.scent,
+      content: (
+        <DetailList
+          rows={[
+            { label: t.scentIntensity, value: product.scentProfile.intensity },
+            { label: t.scentNotes, value: product.scentProfile.notes.join(", ") },
+            { label: t.scentLongevity, value: product.scentProfile.longevity },
+          ]}
+        />
+      ),
+    });
+  }
+  tabs.push(
+    {
+      id: "thong-so",
+      label: t.specs,
+      content: (
+        <DetailList
+          rows={[...specRows, { label: t.sku, value: selectedVariant.sku }]}
+        />
+      ),
+    },
+    {
+      id: "nhan-biet",
+      label: t.authenticity,
+      content: (
+        <div className="max-w-3xl">
+          <AuthenticitySigns variant="list" />
+          <Link
+            href="/hieu-ve-tram"
+            className="mt-6 inline-flex items-center gap-0.5 text-gold-dark hover:underline underline-offset-4"
+          >
+            {t.authenticityMore}
+            <ChevronRight className="w-4 h-4" aria-hidden="true" />
+          </Link>
+        </div>
+      ),
+    },
+    {
+      id: "bao-quan",
+      label: t.care,
+      content: (
+        <ul className="max-w-3xl list-disc pl-5 space-y-2">
+          {careGuideFor(product.categorySlug, locale).map((tip) => (
+            <li key={tip}>{tip}</li>
+          ))}
+        </ul>
+      ),
+    },
+    {
+      id: "danh-gia",
+      label: t.reviews(reviews.length),
+      content:
+        reviews.length > 0 ? (
+          <div className="max-w-3xl divide-y divide-border-subtle">
+            {reviews.map((rev) => (
+              <div key={rev.id} className="py-6 first:pt-0">
+                <StarRating rating={rev.rating} showScore={false} size="sm" />
+                <p className="mt-2 font-medium text-charcoal">{rev.title}</p>
+                <p className="mt-1 text-sm text-muted">
+                  {rev.authorName} · {rev.date}
+                </p>
+                <p className="mt-2">{rev.content}</p>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="text-muted">{t.noReviews}</p>
+        ),
+    },
+  );
+
   return (
-    <div className="space-y-24">
-      <div className="grid grid-cols-1 lg:grid-cols-[1fr_400px] gap-8 lg:gap-14 items-start">
+    <div>
+      <div className="max-w-site mx-auto px-4 sm:px-6 lg:px-8 pb-14 sm:pb-20 grid grid-cols-1 lg:grid-cols-[minmax(0,800px)_minmax(0,440px)] lg:justify-center gap-8 lg:gap-14 xl:gap-20 items-start">
         {/* Gallery: vertical thumbnails + main image */}
         <motion.div
           initial={{ opacity: 0, y: reduceMotion ? 0 : MOTION_RISE }}
@@ -113,17 +231,17 @@ export function ProductDetailView({
           className="lg:sticky lg:top-[calc(var(--header-h)+2rem)] flex flex-col-reverse sm:flex-row gap-3"
         >
           {images.length > 1 && (
-            <div className="flex sm:flex-col gap-2 shrink-0">
+            <div className="flex sm:flex-col gap-2.5 shrink-0">
               {images.map((img, idx) => (
                 <button
                   key={img}
                   type="button"
                   onMouseEnter={() => showImage(idx)}
                   onClick={() => showImage(idx)}
-                  className={`relative w-16 h-16 overflow-hidden rounded-lg bg-ivory cursor-pointer transition-opacity duration-300 ${
+                  className={`relative w-16 h-16 sm:w-18 sm:h-18 overflow-hidden rounded-xl border-2 bg-ivory cursor-pointer transition-all duration-300 ${
                     activeImageIndex === idx
-                      ? "opacity-100"
-                      : "opacity-60 hover:opacity-100"
+                      ? "border-espresso"
+                      : "border-transparent opacity-70 hover:opacity-100"
                   }`}
                   aria-label={t.viewImage(idx + 1)}
                   aria-current={activeImageIndex === idx}
@@ -132,18 +250,15 @@ export function ProductDetailView({
                     src={img}
                     alt=""
                     fill
-                    sizes="64px"
+                    sizes="72px"
                     className="object-cover"
                   />
-                  {activeImageIndex === idx && (
-                    <span className="absolute inset-x-0 bottom-0 h-0.5 bg-espresso" />
-                  )}
                 </button>
               ))}
             </div>
           )}
 
-          <div className="relative flex-1 aspect-square bg-ivory overflow-hidden rounded-2xl">
+          <div className="relative flex-1 aspect-square bg-mist overflow-hidden rounded-2xl">
             {/* Plain crossfade between gallery images */}
             <AnimatePresence initial={false}>
               <motion.div
@@ -160,11 +275,14 @@ export function ProductDetailView({
                   fill
                   loading="eager"
                   fetchPriority="high"
-                  sizes="(max-width: 1024px) 100vw, 60vw"
+                  sizes="(max-width: 1024px) 100vw, 720px"
                   className="object-cover"
                 />
               </motion.div>
             </AnimatePresence>
+            {profile.sinksInWater && (
+              <SinksBadge className="absolute left-4 top-4" />
+            )}
             {images.length > 1 && (
               <div className="absolute right-4 bottom-4 flex gap-2">
                 <button
@@ -200,33 +318,43 @@ export function ProductDetailView({
         >
           <motion.div variants={STAGGER_ITEM}>
             {product.bestseller && (
-              <p className="text-[15px] font-medium text-gold-dark mb-1">
+              <p className="text-[15px] font-medium text-gold-dark mb-2">
                 {t.bestseller}
               </p>
             )}
-            <h1 className="text-2xl sm:text-3xl font-medium text-espresso leading-tight">
+            <h1 className="text-3xl sm:text-4xl font-semibold text-espresso leading-tight tracking-tight">
               {product.name}
             </h1>
-            <p className="mt-1 text-[15px] text-muted">
-              {categoryNameFor(product.categorySlug, product.categoryName, locale)}
-            </p>
           </motion.div>
 
-          <motion.div variants={STAGGER_ITEM}>
-            <p className="mt-5 text-xl font-semibold text-agarwood">
+          <motion.div
+            variants={STAGGER_ITEM}
+            className="mt-5 flex flex-wrap items-center gap-x-3 gap-y-1"
+          >
+            <p className="text-3xl font-bold text-agarwood tracking-tight">
               {formatVND(price)}
-              {compareAtPrice && compareAtPrice > price && (
-                <span className="ml-3 text-base font-normal text-muted-light line-through">
-                  {formatVND(compareAtPrice)}
-                </span>
-              )}
             </p>
+            {compareAtPrice && compareAtPrice > price && (
+              <p className="text-base text-muted-light line-through">
+                {formatVND(compareAtPrice)}
+              </p>
+            )}
             {discount && (
-              <p className="mt-1 text-[15px] font-medium text-agarwood">
-                {t.discount(discount)}
+              <p
+                className="px-2 py-0.5 rounded-md bg-mahogany text-xs font-semibold text-white"
+                aria-label={t.discount(discount)}
+              >
+                -{discount}%
               </p>
             )}
           </motion.div>
+
+          <motion.p
+            variants={STAGGER_ITEM}
+            className="mt-5 text-[15px] text-charcoal/80 leading-relaxed"
+          >
+            {product.shortDescription}
+          </motion.p>
 
           {/* Hồ sơ trầm: only confirmed facts; the whole block hides when none are */}
           {(profileTable.length > 0 || profile.treatment) && (
@@ -235,15 +363,12 @@ export function ProductDetailView({
               aria-labelledby="ho-so-tram"
               className="mt-6 rounded-2xl border border-gold/30 bg-ivory-light p-5"
             >
-              <div className="flex items-center justify-between gap-3">
-                <h2
-                  id="ho-so-tram"
-                  className="text-[15px] font-semibold text-agarwood"
-                >
-                  {t.profileTitle}
-                </h2>
-                {profile.sinksInWater && <SinksBadge />}
-              </div>
+              <h2
+                id="ho-so-tram"
+                className="text-[15px] font-semibold text-agarwood"
+              >
+                {t.profileTitle}
+              </h2>
               {profileTable.length > 0 && (
                 <dl className="mt-3 grid grid-cols-[auto_1fr] gap-x-6 gap-y-2 text-[15px]">
                   {profileTable.map((row) => (
@@ -270,49 +395,65 @@ export function ProductDetailView({
           )}
 
           {product.variants.length > 0 && (
-            <motion.div variants={STAGGER_ITEM} className="mt-8">
+            <motion.div variants={STAGGER_ITEM} className="mt-7">
               <div className="flex items-center justify-between mb-3">
-                <p className="text-[15px] font-medium text-charcoal">
+                <p
+                  id="chon-quy-cach"
+                  className="text-[15px] font-semibold text-charcoal"
+                >
                   {t.chooseVariant}
                 </p>
                 {isBracelet && (
                   <button
                     type="button"
                     onClick={() => setIsSizeGuideOpen(true)}
-                    className="text-[15px] text-muted hover:text-charcoal cursor-pointer"
+                    className="text-[15px] text-muted underline underline-offset-4 hover:text-charcoal cursor-pointer"
                   >
                     {t.sizeGuide}
                   </button>
                 )}
               </div>
-              <div className="grid grid-cols-1 gap-2">
+              <div
+                role="radiogroup"
+                aria-labelledby="chon-quy-cach"
+                className="grid grid-cols-1 gap-2.5"
+              >
                 {product.variants.map((v) => {
                   const isSelected = selectedVariant.id === v.id;
                   const soldOut = v.inventoryStatus === "out_of_stock";
                   return (
                     // Sold-out sizes stay selectable so the shopper can ask to be notified.
-                    <button
+                    <label
                       key={v.id}
-                      type="button"
-                      onClick={() => setSelectedVariant(v)}
-                      aria-pressed={isSelected}
-                      className={`px-4 py-3.5 rounded-xl border text-left text-[15px] transition-colors duration-300 cursor-pointer ${
-                        soldOut ? "bg-ivory-light" : ""
+                      className={`flex items-center gap-3 px-4 py-3.5 rounded-xl border text-[15px] cursor-pointer transition-colors duration-300 ${
+                        soldOut ? "bg-ivory" : "bg-ivory-light"
                       } ${
                         isSelected
                           ? "border-espresso ring-1 ring-espresso"
-                          : "border-border-subtle hover:border-charcoal/40"
+                          : "border-gold/30 hover:border-charcoal/40"
                       }`}
                     >
-                      <span className="flex items-center justify-between gap-4">
-                        <span className={soldOut ? "text-muted" : "text-charcoal"}>
-                          {v.name}
-                        </span>
-                        <span className="text-muted shrink-0">
-                          {soldOut ? t.soldOut : formatVND(v.price)}
-                        </span>
+                      <input
+                        type="radio"
+                        name={`variant-${product.id}`}
+                        value={v.id}
+                        checked={isSelected}
+                        onChange={() => setSelectedVariant(v)}
+                        className="w-4 h-4 shrink-0 accent-espresso cursor-pointer"
+                      />
+                      <span
+                        className={`flex-1 min-w-0 ${soldOut ? "text-muted" : "text-charcoal"}`}
+                      >
+                        {v.name}
                       </span>
-                    </button>
+                      <span
+                        className={`shrink-0 whitespace-nowrap ${
+                          soldOut ? "text-muted" : "font-semibold text-charcoal"
+                        }`}
+                      >
+                        {soldOut ? t.soldOut : formatVND(v.price)}
+                      </span>
+                    </label>
                   );
                 })}
               </div>
@@ -322,7 +463,7 @@ export function ProductDetailView({
           <motion.div
             variants={STAGGER_ITEM}
             id="bao-khi-co-hang"
-            className="mt-8 space-y-3 scroll-mt-[calc(var(--header-h)+1.5rem)]"
+            className="mt-7 space-y-3 scroll-mt-[calc(var(--header-h)+1.5rem)]"
           >
             {isOutOfStock ? (
               <BackInStockForm
@@ -331,11 +472,11 @@ export function ProductDetailView({
                 variantId={selectedVariant.id}
               />
             ) : (
-              <>
+              <div className="grid grid-cols-2 gap-3">
                 <button
                   type="button"
                   onClick={handleAddToCart}
-                  className="relative w-full h-14 overflow-hidden rounded-full bg-espresso text-white text-[15px] font-medium hover:bg-espresso-light transition-colors duration-300 cursor-pointer"
+                  className="relative h-14 overflow-hidden rounded-full bg-espresso text-white text-[15px] font-semibold hover:bg-espresso-light transition-colors duration-300 cursor-pointer"
                 >
                   <AnimatePresence mode="wait" initial={false}>
                     <motion.span
@@ -354,11 +495,11 @@ export function ProductDetailView({
                 <button
                   type="button"
                   onClick={handleBuyNow}
-                  className="w-full h-14 rounded-full border border-charcoal/25 text-[15px] font-medium text-charcoal hover:border-charcoal transition-colors cursor-pointer"
+                  className="h-14 rounded-full border border-espresso text-[15px] font-semibold text-espresso hover:bg-espresso hover:text-white transition-colors duration-300 cursor-pointer"
                 >
                   {t.buyNow}
                 </button>
-              </>
+              </div>
             )}
             {price >= CONSULT_MIN_PRICE && (
               <a
@@ -373,155 +514,56 @@ export function ProductDetailView({
             )}
           </motion.div>
 
-          <motion.div variants={STAGGER_ITEM}>
-            <p className="mt-6 text-[15px] text-charcoal/80 leading-relaxed">
-              {product.shortDescription}
-            </p>
-
-            <div className="mt-8 border-b border-border-subtle">
-              <Accordion title={t.description} defaultOpen>
-                <p className="whitespace-pre-line">{product.description}</p>
-              </Accordion>
-
-              {product.scentProfile && (
-                <Accordion title={t.scent}>
-                  <dl className="space-y-2">
-                    <div className="flex justify-between gap-4">
-                      <dt className="text-muted">{t.scentIntensity}</dt>
-                      <dd className="capitalize">
-                        {product.scentProfile.intensity}
-                      </dd>
-                    </div>
-                    <div className="flex justify-between gap-4">
-                      <dt className="text-muted">{t.scentNotes}</dt>
-                      <dd className="text-right">
-                        {product.scentProfile.notes.join(", ")}
-                      </dd>
-                    </div>
-                    <div className="flex justify-between gap-4">
-                      <dt className="text-muted">{t.scentLongevity}</dt>
-                      <dd className="text-right">
-                        {product.scentProfile.longevity}
-                      </dd>
-                    </div>
-                  </dl>
-                </Accordion>
-              )}
-
-              <Accordion title={t.specs}>
-                <dl className="space-y-2">
-                  {specRows.map((spec) => (
-                    <div
-                      key={spec.label}
-                      className="flex justify-between gap-4"
-                    >
-                      <dt className="text-muted shrink-0">{spec.label}</dt>
-                      <dd className="text-right">{spec.value}</dd>
-                    </div>
-                  ))}
-                  <div className="flex justify-between gap-4">
-                    <dt className="text-muted">{t.sku}</dt>
-                    <dd>{selectedVariant.sku}</dd>
-                  </div>
-                </dl>
-              </Accordion>
-
-              <Accordion title={t.authenticity}>
-                <AuthenticitySigns variant="list" />
-                <Link
-                  href="/hieu-ve-tram"
-                  className="mt-5 inline-flex items-center gap-0.5 text-gold-dark hover:underline underline-offset-4"
-                >
-                  {t.authenticityMore}
-                  <ChevronRight className="w-4 h-4" aria-hidden="true" />
-                </Link>
-              </Accordion>
-
-              <Accordion title={t.care}>
-                <ul className="list-disc pl-5 space-y-2">
-                  {careGuideFor(product.categorySlug, locale).map((tip) => (
-                    <li key={tip}>{tip}</li>
-                  ))}
-                </ul>
-              </Accordion>
-
-              <Accordion title={t.shipping}>
-                <ul className="space-y-2">
-                  <li>
-                    {t.shippingFree(
-                      formatVND(brandConfig.policies.freeShippingThreshold),
-                    )}
-                  </li>
-                  <li>{t.shippingInspect}</li>
-                  <li>{t.shippingReturns(brandConfig.policies.returnDays)}</li>
-                  <li>{t.shippingWarranty}</li>
-                </ul>
-              </Accordion>
-
-              <Accordion
-                title={t.reviews(reviews.length)}
-                aside={
-                  <StarRating
-                    rating={product.ratingAverage}
-                    showScore={false}
-                    size="sm"
-                  />
-                }
-              >
-                {reviews.length > 0 ? (
-                  <div className="space-y-6">
-                    {reviews.map((rev) => (
-                      <div key={rev.id}>
-                        <StarRating
-                          rating={rev.rating}
-                          showScore={false}
-                          size="sm"
-                        />
-                        <p className="mt-2 font-medium text-charcoal">
-                          {rev.title}
-                        </p>
-                        <p className="mt-1 text-sm text-muted">
-                          {rev.authorName} · {rev.date}
-                        </p>
-                        <p className="mt-2">{rev.content}</p>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-muted">
-                    {t.noReviews}
-                  </p>
-                )}
-              </Accordion>
-            </div>
-          </motion.div>
+          <motion.ul
+            variants={STAGGER_ITEM}
+            className="mt-7 pt-6 border-t border-gold/25 space-y-2.5 text-sm text-charcoal/80"
+          >
+            {trustPoints.map((point) => (
+              <li key={point} className="flex gap-2">
+                <Check
+                  className="w-4 h-4 mt-0.5 shrink-0 text-gold-dark"
+                  aria-hidden="true"
+                />
+                {point}
+              </li>
+            ))}
+          </motion.ul>
         </motion.div>
       </div>
 
-      {/* FAQ: answers are server-rendered as FAQPage JSON-LD by the page */}
-      <section aria-labelledby="faq-heading" className="max-w-3xl">
-        <h2
-          id="faq-heading"
-          className="text-2xl sm:text-3xl text-agarwood"
-        >
-          {t.faq}
-        </h2>
-        <div className="mt-4 border-b border-border-subtle">
-          {faq.map((item) => (
-            <Accordion key={item.question} title={item.question}>
-              <p>{item.answer}</p>
-            </Accordion>
-          ))}
+      {/* Details: full-width paper band with tabs, below the cream buy area */}
+      <section className="bg-ivory-light border-t border-border-subtle">
+        <div className="max-w-site mx-auto px-4 sm:px-6 lg:px-8">
+          <ProductTabs label={t.detailsLabel} tabs={tabs} />
         </div>
       </section>
 
-      {relatedProducts.length > 0 && (
-        <ProductCarousel
-          title={t.related}
-          products={relatedProducts}
-          contained={false}
-        />
-      )}
+      <div className="max-w-site mx-auto px-4 sm:px-6 lg:px-8 pt-20 space-y-24">
+        {/* FAQ: answers are server-rendered as FAQPage JSON-LD by the page */}
+        <section aria-labelledby="faq-heading" className="max-w-3xl">
+          <h2
+            id="faq-heading"
+            className="text-2xl sm:text-3xl text-agarwood"
+          >
+            {t.faq}
+          </h2>
+          <div className="mt-4 border-b border-border-subtle">
+            {faq.map((item) => (
+              <Accordion key={item.question} title={item.question}>
+                <p>{item.answer}</p>
+              </Accordion>
+            ))}
+          </div>
+        </section>
+
+        {relatedProducts.length > 0 && (
+          <ProductCarousel
+            title={t.related}
+            products={relatedProducts}
+            contained={false}
+          />
+        )}
+      </div>
 
       <AnimatePresence>
         {isSizeGuideOpen && (
@@ -595,6 +637,101 @@ export function ProductDetailView({
         )}
       </AnimatePresence>
     </div>
+  );
+}
+
+interface ProductTab {
+  id: string;
+  label: string;
+  content: React.ReactNode;
+}
+
+/** Tabs in the WAI-ARIA pattern; every panel stays in the HTML so search engines read it all. */
+function ProductTabs({ label, tabs }: { label: string; tabs: ProductTab[] }) {
+  const [activeId, setActiveId] = useState(tabs[0].id);
+  const tabRefs = useRef<(HTMLButtonElement | null)[]>([]);
+
+  const focusTab = (idx: number) => {
+    const next = (idx + tabs.length) % tabs.length;
+    setActiveId(tabs[next].id);
+    tabRefs.current[next]?.focus();
+  };
+
+  return (
+    <>
+      <div
+        role="tablist"
+        aria-label={label}
+        className="flex gap-7 sm:gap-10 overflow-x-auto no-scrollbar border-b border-border-subtle -mx-4 px-4 sm:mx-0 sm:px-0"
+      >
+        {tabs.map((tab, idx) => {
+          const isActive = tab.id === activeId;
+          return (
+            <button
+              key={tab.id}
+              ref={(el) => {
+                tabRefs.current[idx] = el;
+              }}
+              type="button"
+              role="tab"
+              id={`tab-${tab.id}`}
+              aria-controls={`panel-${tab.id}`}
+              aria-selected={isActive}
+              tabIndex={isActive ? 0 : -1}
+              onClick={() => setActiveId(tab.id)}
+              onKeyDown={(e) => {
+                if (e.key === "ArrowRight") {
+                  e.preventDefault();
+                  focusTab(idx + 1);
+                } else if (e.key === "ArrowLeft") {
+                  e.preventDefault();
+                  focusTab(idx - 1);
+                }
+              }}
+              className={`relative shrink-0 py-5 text-[15px] sm:text-base whitespace-nowrap cursor-pointer transition-colors duration-300 ${
+                isActive
+                  ? "font-semibold text-espresso"
+                  : "text-muted hover:text-charcoal"
+              }`}
+            >
+              {tab.label}
+              {isActive && (
+                <motion.span
+                  layoutId="product-tab-underline"
+                  transition={{ duration: 0.35, ease: MOTION_EASE }}
+                  className="absolute inset-x-0 -bottom-px h-0.75 rounded-full bg-espresso"
+                />
+              )}
+            </button>
+          );
+        })}
+      </div>
+      {tabs.map((tab) => (
+        <div
+          key={tab.id}
+          role="tabpanel"
+          id={`panel-${tab.id}`}
+          aria-labelledby={`tab-${tab.id}`}
+          hidden={tab.id !== activeId}
+          className="py-10 sm:py-14 text-[15px] sm:text-base text-charcoal/80 leading-relaxed"
+        >
+          {tab.content}
+        </div>
+      ))}
+    </>
+  );
+}
+
+function DetailList({ rows }: { rows: Array<{ label: string; value: string }> }) {
+  return (
+    <dl className="max-w-2xl divide-y divide-border-subtle">
+      {rows.map((row) => (
+        <div key={row.label} className="flex justify-between gap-6 py-3.5 first:pt-0">
+          <dt className="text-muted shrink-0">{row.label}</dt>
+          <dd className="text-right text-charcoal first-letter:uppercase">{row.value}</dd>
+        </div>
+      ))}
+    </dl>
   );
 }
 

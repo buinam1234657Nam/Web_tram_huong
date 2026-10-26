@@ -38,7 +38,7 @@ export function ProductDetailSkeleton() {
       className="animate-pulse"
     >
       <div className="h-4 w-56 bg-ivory rounded" />
-      <div className="mt-8 grid grid-cols-1 lg:grid-cols-[1fr_400px] gap-8 lg:gap-14">
+      <div className="mt-8 grid grid-cols-1 lg:grid-cols-[minmax(0,800px)_minmax(0,440px)] lg:justify-center gap-8 lg:gap-14 xl:gap-20">
         <div className="aspect-square bg-ivory" />
         <div>
           <div className="h-8 w-3/4 bg-ivory rounded" />
