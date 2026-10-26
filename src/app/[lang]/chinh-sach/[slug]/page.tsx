@@ -3,6 +3,9 @@ import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Breadcrumbs } from "@/components/ui/Breadcrumbs";
 import { BreadcrumbJsonLd } from "@/components/seo/JsonLd";
+import { getLocale } from "@/i18n/server";
+import { localeAlternates, localizePath, type Locale } from "@/i18n/config";
+import { policyMessages } from "@/i18n/messages/policy";
 import { PolicyDetailView, PolicyData } from "./PolicyDetailView";
 
 interface PolicyPageProps {
@@ -78,6 +81,12 @@ Họ tên, số điện thoại, địa chỉ nhận hàng và email, dùng đ�
   },
 };
 
+/** A policy with its headline in the given locale; the body stays Vietnamese. */
+function localizePolicy(policy: PolicyData, locale: Locale): PolicyData {
+  const headline = policyMessages[locale].headlines[policy.slug];
+  return headline ? { ...policy, ...headline } : policy;
+}
+
 export async function generateStaticParams() {
   return Object.keys(policiesData).map((slug) => ({ slug }));
 }
@@ -86,28 +95,30 @@ export async function generateMetadata({
   params,
 }: PolicyPageProps): Promise<Metadata> {
   const { slug } = await params;
-  const policy = policiesData[slug];
+  const locale = await getLocale();
+  const t = policyMessages[locale];
+  const source = policiesData[slug];
 
-  if (!policy) {
-    return { title: "Không tìm thấy chính sách" };
+  if (!source) {
+    return { title: t.notFoundTitle };
   }
+
+  const policy = localizePolicy(source, locale);
 
   return {
     title: policy.title,
     description: policy.summary,
-    alternates: {
-      canonical: `/chinh-sach/${policy.slug}`,
-    },
+    alternates: localeAlternates(`/chinh-sach/${policy.slug}`, locale),
     openGraph: {
       title: `${policy.title} | VĨNH TRẦM`,
       description: policy.summary,
-      url: `/chinh-sach/${policy.slug}`,
+      url: localizePath(`/chinh-sach/${policy.slug}`, locale),
       images: [
         {
           url: "/images/hero-agarwood.jpg",
           width: 1376,
           height: 768,
-          alt: "Trầm hương tự nhiên Vĩnh Trầm",
+          alt: t.ogImageAlt,
         },
       ],
     },
@@ -128,14 +139,19 @@ export default function PolicyPage({ params }: PolicyPageProps) {
 
 async function PolicyContent({ params }: PolicyPageProps) {
   const { slug } = await params;
-  const policy = policiesData[slug];
+  const locale = await getLocale();
+  const source = policiesData[slug];
 
-  if (!policy) {
+  if (!source) {
     notFound();
   }
 
+  const policy = localizePolicy(source, locale);
   const breadcrumbs = [
-    { label: "Chính sách", href: "/chinh-sach/chinh-sach-bao-hanh" },
+    {
+      label: policyMessages[locale].breadcrumb,
+      href: "/chinh-sach/chinh-sach-bao-hanh",
+    },
     { label: policy.shortTitle, href: `/chinh-sach/${policy.slug}` },
   ];
 
@@ -145,7 +161,10 @@ async function PolicyContent({ params }: PolicyPageProps) {
       <Breadcrumbs items={breadcrumbs} />
       <PolicyDetailView
         currentSlug={slug}
-        policies={Object.values(policiesData)}
+        locale={locale}
+        policies={Object.values(policiesData).map((p) =>
+          localizePolicy(p, locale),
+        )}
       />
     </>
   );

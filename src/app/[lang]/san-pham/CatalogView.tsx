@@ -17,8 +17,13 @@ import { ritualsFor } from "@/data/content/rituals";
 import { gradeLabel, originLabel } from "@/lib/format/agarwood";
 import { useLocale, useMessages } from "@/i18n/client";
 import { catalogMessages } from "@/i18n/messages/catalog";
+import { localizeCategory } from "@/i18n/messages/categories";
 
 type CatalogText = (typeof catalogMessages)["vi"];
+/** Message keys holding plain strings (not formatter functions). */
+type LabelKey = {
+  [K in keyof CatalogText]: CatalogText[K] extends string ? K : never;
+}[keyof CatalogText];
 
 const GRADE_ORDER: AgarwoodGrade[] = ["chìm", "bán chìm", "nổi", "tốc"];
 
@@ -28,14 +33,14 @@ const PRICE_OPTIONS = [
   { value: "1m-3m", label: "price1to3m", min: 1000000, max: 3000000 },
   { value: "3m-5m", label: "price3to5m", min: 3000000, max: 5000000 },
   { value: "over-5m", label: "priceOver5m", min: 5000000, max: Infinity },
-] as const satisfies ReadonlyArray<{ label: keyof CatalogText }>;
+] as const satisfies ReadonlyArray<{ value: string; label: LabelKey; min: number; max: number }>;
 
 const SORT_OPTIONS = [
   { value: "bestseller", label: "sortFeatured" },
   { value: "price_desc", label: "sortPriceDesc" },
   { value: "price_asc", label: "sortPriceAsc" },
   { value: "rating", label: "sortRating" },
-] as const satisfies ReadonlyArray<{ label: keyof CatalogText }>;
+] as const satisfies ReadonlyArray<{ value: string; label: LabelKey }>;
 
 /** Cards rendered per "Xem thêm" step; the full catalog is several hundred items. */
 const PAGE_SIZE = 24;
@@ -56,7 +61,6 @@ export function CatalogView({
   /** Already scoped to the page (a category, a need, or everything). */
   products: ProductSummary[];
   categories: Category[];
-  /** Already localized by the server page. */
   activeCategory?: Category;
   title?: string;
   /** On /nhu-cau pages the need is the page itself. */
@@ -74,7 +78,13 @@ export function CatalogView({
   const reduceMotion = useReducedMotion();
   const locale = useLocale();
   const t = useMessages(catalogMessages);
-  const heading = title ?? activeCategory?.name ?? t.allProducts;
+  // Localized here too so every caller is covered; it is a no-op on already-localized input.
+  const categoryList = useMemo(
+    () => categories.map((c) => localizeCategory(c, locale)),
+    [categories, locale],
+  );
+  const heading =
+    title ?? (activeCategory && localizeCategory(activeCategory, locale).name) ?? t.allProducts;
   const priceOptions = PRICE_OPTIONS.map((o) => ({ ...o, label: t[o.label] }));
   const sortOptions = SORT_OPTIONS.map((o) => ({ ...o, label: t[o.label] }));
 
@@ -201,7 +211,7 @@ export function CatalogView({
               {t.allProducts}
             </CategoryLink>
           </li>
-          {categories.map((c) => (
+          {categoryList.map((c) => (
             <li key={c.id}>
               <CategoryLink
                 href={`/danh-muc/${c.slug}`}

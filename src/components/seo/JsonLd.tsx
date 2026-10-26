@@ -5,6 +5,7 @@ import { BreadcrumbItem } from "@/components/ui/Breadcrumbs";
 import { brandConfig } from "@/lib/config/brand";
 import { absoluteUrl, siteUrl } from "@/lib/config/site";
 import { localizePath, type Locale } from "@/i18n/config";
+import { getLocale } from "@/i18n/server";
 
 export function OrganizationJsonLd() {
   const schema = {
@@ -113,7 +114,9 @@ export function FaqJsonLd({
   );
 }
 
-export function BreadcrumbJsonLd({ items }: { items: BreadcrumbItem[] }) {
+/** Server-only: reads the page locale so item URLs point at the same language version. */
+export async function BreadcrumbJsonLd({ items }: { items: BreadcrumbItem[] }) {
+  const locale = await getLocale();
   const itemListElement = items.map((item, index) => ({
     "@type": "ListItem",
     position: index + 1,
@@ -121,8 +124,8 @@ export function BreadcrumbJsonLd({ items }: { items: BreadcrumbItem[] }) {
     item: item.href
       ? item.href.startsWith("http")
         ? item.href
-        : absoluteUrl(item.href)
-      : siteUrl,
+        : absoluteUrl(localizePath(item.href, locale))
+      : absoluteUrl(localizePath("/", locale)),
   }));
 
   const schema = {

@@ -7,6 +7,10 @@ import { Breadcrumbs } from "@/components/ui/Breadcrumbs";
 import { BreadcrumbJsonLd } from "@/components/seo/JsonLd";
 import { toSummary } from "@/data/catalog/products";
 import { CatalogView } from "@/app/[lang]/san-pham/CatalogView";
+import { getLocale } from "@/i18n/server";
+import { localeAlternates, localizePath } from "@/i18n/config";
+import { catalogMessages } from "@/i18n/messages/catalog";
+import { localizeCategory } from "@/i18n/messages/categories";
 
 interface CategoryPageProps {
   params: Promise<{ slug: string }>;
@@ -21,24 +25,27 @@ export async function generateMetadata({
   params,
 }: CategoryPageProps): Promise<Metadata> {
   const { slug } = await params;
-  const category = await catalogRepository.getCategoryBySlug(slug);
+  const [found, locale] = await Promise.all([
+    catalogRepository.getCategoryBySlug(slug),
+    getLocale(),
+  ]);
 
-  if (!category) {
+  if (!found) {
     return {
-      title: "Không tìm thấy danh mục",
+      title: catalogMessages[locale].categoryNotFound,
     };
   }
 
+  const category = localizeCategory(found, locale);
+  const path = `/danh-muc/${category.slug}`;
   return {
     title: category.name,
     description: category.description,
-    alternates: {
-      canonical: `/danh-muc/${category.slug}`,
-    },
+    alternates: localeAlternates(path, locale),
     openGraph: {
       title: `${category.name} | VĨNH TRẦM`,
       description: category.description,
-      url: `/danh-muc/${category.slug}`,
+      url: localizePath(path, locale),
       images: [{ url: category.image, alt: category.name }],
     },
   };
@@ -58,20 +65,27 @@ export default function CategoryPage({ params }: CategoryPageProps) {
 
 async function CategoryContent({ params }: CategoryPageProps) {
   const { slug } = await params;
-  const category = await catalogRepository.getCategoryBySlug(slug);
+  const [found, locale] = await Promise.all([
+    catalogRepository.getCategoryBySlug(slug),
+    getLocale(),
+  ]);
 
-  if (!category) {
+  if (!found) {
     notFound();
   }
 
+  const category = localizeCategory(found, locale);
   const [products, categories] = await Promise.all([
     catalogRepository.getProducts({ categorySlug: category.slug }),
     catalogRepository.getCategories(),
   ]);
 
   const breadcrumbs = [
-    { label: "Sản phẩm", href: "/san-pham" },
-    { label: category.name, href: `/danh-muc/${category.slug}` },
+    {
+      label: catalogMessages[locale].breadcrumbProducts,
+      href: localizePath("/san-pham", locale),
+    },
+    { label: category.name, href: localizePath(`/danh-muc/${category.slug}`, locale) },
   ];
 
   return (
@@ -80,7 +94,7 @@ async function CategoryContent({ params }: CategoryPageProps) {
       <Breadcrumbs items={breadcrumbs} />
       <CatalogView
         products={products.map(toSummary)}
-        categories={categories}
+        categories={categories.map((c) => localizeCategory(c, locale))}
         activeCategory={category}
       />
     </>

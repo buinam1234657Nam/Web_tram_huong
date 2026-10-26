@@ -2,83 +2,80 @@ import { MetadataRoute } from "next";
 import { catalogRepository } from "@/data/repositories/catalog-repository";
 import { siteUrl } from "@/lib/config/site";
 import { RITUALS } from "@/data/content/rituals";
+import { DEFAULT_LOCALE, LOCALES, LOCALE_TAGS, localizePath } from "@/i18n/config";
+
+type Entry = MetadataRoute.Sitemap[number];
+type Route = Omit<Entry, "url" | "alternates"> & { path: string };
+
+const absolute = (path: string) => `${siteUrl}${path === "/" ? "" : path}`;
+
+/**
+ * One sitemap entry per locale (vi unprefixed, en under /en), each listing
+ * every language version as an hreflang alternate.
+ */
+function withLocales({ path, ...rest }: Route): MetadataRoute.Sitemap {
+  const languages = {
+    ...Object.fromEntries(
+      LOCALES.map((l) => [LOCALE_TAGS[l], absolute(localizePath(path, l))]),
+    ),
+    "x-default": absolute(localizePath(path, DEFAULT_LOCALE)),
+  };
+  return LOCALES.map((locale) => ({
+    ...rest,
+    url: absolute(localizePath(path, locale)),
+    alternates: { languages },
+  }));
+}
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const baseUrl = siteUrl;
-
   const [products, categories, articles] = await Promise.all([
     catalogRepository.getProducts(),
     catalogRepository.getCategories(),
     catalogRepository.getArticles(),
   ]);
 
-  const staticRoutes: MetadataRoute.Sitemap = [
-    {
-      url: baseUrl,
-      lastModified: new Date(),
-      changeFrequency: "daily",
-      priority: 1.0,
-    },
-    {
-      url: `${baseUrl}/san-pham`,
-      lastModified: new Date(),
-      changeFrequency: "daily",
-      priority: 0.9,
-    },
-    {
-      url: `${baseUrl}/ve-chung-toi`,
-      lastModified: new Date(),
-      changeFrequency: "monthly",
-      priority: 0.7,
-    },
-    {
-      url: `${baseUrl}/bai-viet`,
-      lastModified: new Date(),
-      changeFrequency: "weekly",
-      priority: 0.8,
-    },
-    {
-      url: `${baseUrl}/hieu-ve-tram`,
-      lastModified: new Date(),
-      changeFrequency: "monthly",
-      priority: 0.8,
-    },
+  const staticRoutes: Route[] = [
+    { path: "/", lastModified: new Date(), changeFrequency: "daily", priority: 1.0 },
+    { path: "/san-pham", lastModified: new Date(), changeFrequency: "daily", priority: 0.9 },
+    { path: "/ve-chung-toi", lastModified: new Date(), changeFrequency: "monthly", priority: 0.7 },
+    { path: "/bai-viet", lastModified: new Date(), changeFrequency: "weekly", priority: 0.8 },
+    { path: "/hieu-ve-tram", lastModified: new Date(), changeFrequency: "monthly", priority: 0.8 },
     ...RITUALS.map((r) => ({
-      url: `${baseUrl}/nhu-cau/${r.slug}`,
+      path: `/nhu-cau/${r.slug}`,
       lastModified: new Date(),
       changeFrequency: "weekly" as const,
       priority: 0.85,
     })),
   ];
 
-  const categoryRoutes: MetadataRoute.Sitemap = categories.map((cat) => ({
-    url: `${baseUrl}/danh-muc/${cat.slug}`,
+  const categoryRoutes: Route[] = categories.map((cat) => ({
+    path: `/danh-muc/${cat.slug}`,
     lastModified: new Date(),
     changeFrequency: "weekly",
     priority: 0.85,
   }));
 
-  const productRoutes: MetadataRoute.Sitemap = products.map((prod) => ({
-    url: `${baseUrl}/san-pham/${prod.slug}`,
+  const productRoutes: Route[] = products.map((prod) => ({
+    path: `/san-pham/${prod.slug}`,
     lastModified: new Date(),
     changeFrequency: "weekly",
     priority: 0.8,
   }));
 
-  const articleRoutes: MetadataRoute.Sitemap = articles.map((art) => ({
-    url: `${baseUrl}/bai-viet/${art.slug}`,
+  const articleRoutes: Route[] = articles.map((art) => ({
+    path: `/bai-viet/${art.slug}`,
     lastModified: new Date(art.publishedAt),
     changeFrequency: "monthly",
     priority: 0.75,
   }));
 
-  const policyRoutes: MetadataRoute.Sitemap = [
+  const policyRoutes: Route[] = [
     "chinh-sach-bao-hanh",
     "chinh-sach-doi-tra",
     "chinh-sach-giao-hang",
     "chinh-sach-bao-mat",
   ].map((slug) => ({
-    url: `${baseUrl}/chinh-sach/${slug}`,
+    path: `/chinh-sach/${slug}`,
     lastModified: new Date(),
     changeFrequency: "yearly",
     priority: 0.5,
@@ -90,5 +87,5 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...productRoutes,
     ...articleRoutes,
     ...policyRoutes,
-  ];
+  ].flatMap(withLocales);
 }

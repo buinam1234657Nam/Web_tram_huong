@@ -3,6 +3,9 @@ import Link from "@/components/i18n/Link";
 import { ChevronRight } from "lucide-react";
 import { brandConfig } from "@/lib/config/brand";
 import { MarkdownContent } from "@/app/[lang]/bai-viet/MarkdownContent";
+import type { Locale } from "@/i18n/config";
+import { brandMessages } from "@/i18n/messages/brand";
+import { policyMessages } from "@/i18n/messages/policy";
 
 export interface PolicyData {
   slug: string;
@@ -14,18 +17,22 @@ export interface PolicyData {
 
 export function PolicyDetailView({
   currentSlug,
+  locale,
   policies,
 }: {
   currentSlug: string;
+  locale: Locale;
+  /** Already localized (headlines) by the page. */
   policies: PolicyData[];
 }) {
+  const t = policyMessages[locale];
   const policy = policies.find((p) => p.slug === currentSlug) ?? policies[0];
 
   return (
     <div className="mt-8 lg:mt-14 grid grid-cols-1 lg:grid-cols-12 gap-x-16">
       {/* Mobile: compact scrollable tabs so the document comes right after */}
       <nav
-        aria-label="Chính sách"
+        aria-label={t.navLabel}
         className="lg:hidden flex gap-6 overflow-x-auto no-scrollbar border-b border-border-subtle -mx-4 px-4 mb-8"
       >
         {policies.map((p) => (
@@ -38,10 +45,12 @@ export function PolicyDetailView({
       {/* Desktop: quiet sidebar list */}
       <aside className="hidden lg:block lg:col-span-3">
         <nav
-          aria-label="Chính sách"
+          aria-label={t.navLabel}
           className="sticky top-[calc(var(--header-h)+2rem)]"
         >
-          <p className="text-base font-medium text-charcoal">Chính sách</p>
+          <p className="text-base font-medium text-charcoal">
+            {t.sidebarHeading}
+          </p>
           <ul className="mt-4 space-y-3">
             {policies.map((p) => (
               <li key={p.slug}>
@@ -60,7 +69,7 @@ export function PolicyDetailView({
             ))}
           </ul>
           <p className="mt-10 text-sm text-muted leading-relaxed">
-            Cần hỗ trợ thêm? Gọi{" "}
+            {t.needHelp}{" "}
             <a
               href={`tel:${brandConfig.contact.hotline}`}
               className="text-charcoal font-medium hover:text-gold-dark"
@@ -79,24 +88,30 @@ export function PolicyDetailView({
           {policy.summary}
         </p>
 
+        {t.vietnameseOnly && (
+          <p className="mt-6 max-w-[65ch] rounded-xl bg-ivory px-5 py-3 text-sm text-muted">
+            {t.vietnameseOnly}
+          </p>
+        )}
+
         <MarkdownContent className="mt-10">{policy.content}</MarkdownContent>
 
         <div className="mt-14 pt-8 border-t border-border-subtle max-w-[65ch] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <p className="text-[15px] text-muted">
-            Còn câu hỏi? Gọi{" "}
+            {t.stillQuestions}{" "}
             <a
               href={`tel:${brandConfig.contact.hotline}`}
               className="text-charcoal font-medium hover:text-gold-dark"
             >
               {brandConfig.contact.phoneFormatted}
             </a>{" "}
-            ({brandConfig.contact.workingHours}).
+            ({brandMessages[locale].workingHours}).
           </p>
           <Link
             href="/san-pham"
             className="shrink-0 inline-flex items-center gap-0.5 text-[15px] text-gold-dark hover:underline underline-offset-4"
           >
-            Xem sản phẩm
+            {t.browseProducts}
             <ChevronRight className="w-4 h-4" />
           </Link>
         </div>
